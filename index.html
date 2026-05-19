@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEA MORRIS — Order Request</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --navy: #0B1829;
+  --ink: #0F2137;
+  --blue: #1355C2;
+  --blue-mid: #1A6FE8;
+  --sky: #2990FF;
+  --ice: #C8DFF8;
+  --frost: #E8F2FD;
+  --mist: #F4F8FF;
+  --white: #FFFFFF;
+  --slate: #4D6B8A;
+  --silver: #8BAAC4;
+  --border: #D4E4F4;
+  --green: #0D7A4E;
+  --green-bg: #E6F5EE;
+  --red: #C0392B;
+  --red-bg: #FDECEA;
+  --amber: #B85C00;
+  --amber-bg: #FFF3E6;
+  --font-display: 'DM Serif Display', Georgia, serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+}
+html { font-size: 16px; scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body);
+  background: linear-gradient(160deg, #0B1829 0%, #0F2D4A 50%, #0B1829 100%);
+  min-height: 100vh;
+  padding: 32px 16px 80px;
+  color: var(--ink);
+}
+
+/* ── WRAPPER ── */
+.wrapper { max-width: 780px; margin: 0 auto; }
+
+/* ── HEADER ── */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+.logo-wrap {
+  width: 56px; height: 56px;
+  background: var(--blue);
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display);
+  font-size: 22px;
+  color: white;
+  flex-shrink: 0;
+  box-shadow: 0 8px 24px rgba(19,85,194,0.4);
+}
+.header-text h1 {
+  font-family: var(--font-display);
+  font-size: 22px;
+  color: white;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+.header-text p {
+  font-size: 12px;
+  color: rgba(255,255,255,0.5);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-top: 3px;
+}
+
+/* ── CARD ── */
+.card {
+  background: var(--white);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 40px 100px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
+}
+
+/* ── CARD HEADER ── */
+.card-header {
+  background: linear-gradient(135deg, #1355C2 0%, #0A1E4A 100%);
+  padding: 28px 36px 24px;
+  position: relative;
+  overflow: hidden;
+}
+.card-header::before {
+  content: '';
+  position: absolute;
+  right: -60px; top: -60px;
+  width: 240px; height: 240px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.04);
+}
+.card-header::after {
+  content: '';
+  position: absolute;
+  left: -30px; bottom: -80px;
+  width: 200px; height: 200px;
+  border-radius: 50%;
+  background: rgba(41,144,255,0.08);
+}
+.card-header-inner { position: relative; z-index: 2; }
+.card-header h2 {
+  font-family: var(--font-display);
+  font-size: 26px;
+  color: white;
+  letter-spacing: -0.02em;
+  margin-bottom: 6px;
+}
+.card-header p { font-size: 13px; color: rgba(255,255,255,0.6); }
+.progress-bar {
+  margin-top: 18px;
+  height: 4px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3B9EFF, #29D9C2);
+  border-radius: 2px;
+  transition: width 0.4s ease;
+  width: 0%;
+}
+
+/* ── FORM BODY ── */
+.form-body { padding: 32px 36px 36px; }
+
+/* ── SECTION ── */
+.form-section { margin-bottom: 32px; }
+.section-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--slate);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.section-icon {
+  width: 22px; height: 22px;
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+/* ── GRID ── */
+.grid { display: grid; gap: 14px; }
+.grid-2 { grid-template-columns: 1fr 1fr; }
+.grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+.col-span-2 { grid-column: span 2; }
+.col-span-3 { grid-column: span 3; }
+
+/* ── FIELD ── */
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--slate);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.required { color: var(--red); font-size: 13px; }
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  padding: 10px 13px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--mist);
+  transition: all 0.15s;
+  outline: none;
+  appearance: none;
+}
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  border-color: var(--blue-mid);
+  background: var(--white);
+  box-shadow: 0 0 0 4px rgba(19,85,194,0.08);
+}
+.field input.error,
+.field select.error { border-color: var(--red); background: var(--red-bg); }
+.field textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+.field select {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%234D6B8A' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+}
+.error-msg { font-size: 11px; color: var(--red); margin-top: 2px; display: none; }
+.error-msg.show { display: block; }
+
+/* ── TOGGLE (Occupancy) ── */
+.toggle-wrap {
+  display: flex;
+  gap: 8px;
+}
+.toggle-opt {
+  flex: 1;
+  padding: 10px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  text-align: center;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--slate);
+  background: var(--mist);
+  transition: all 0.15s;
+  user-select: none;
+}
+.toggle-opt:hover { border-color: var(--blue); color: var(--blue); }
+.toggle-opt.selected-yes { background: var(--green-bg); border-color: var(--green); color: var(--green); }
+.toggle-opt.selected-no { background: var(--red-bg); border-color: var(--red); color: var(--red); }
+
+/* ── MULTI-UNIT ── */
+.unit-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+.unit-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.unit-row input {
+  flex: 1;
+  padding: 10px 13px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--mist);
+  outline: none;
+  transition: all 0.15s;
+}
+.unit-row input:focus {
+  border-color: var(--blue-mid);
+  background: var(--white);
+  box-shadow: 0 0 0 4px rgba(19,85,194,0.08);
+}
+.unit-badge {
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  background: var(--frost);
+  color: var(--blue);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  flex-shrink: 0;
+  border: 1px solid var(--ice);
+}
+.remove-unit {
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--silver);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  transition: all 0.15s;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.remove-unit:hover { background: var(--red-bg); border-color: var(--red); color: var(--red); }
+.add-unit-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--blue);
+  background: var(--frost);
+  border: 1.5px dashed var(--ice);
+  border-radius: 10px;
+  padding: 9px 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: var(--font-body);
+  width: 100%;
+  justify-content: center;
+}
+.add-unit-btn:hover { background: var(--ice); border-color: var(--sky); }
+.unit-count-badge {
+  font-size: 11px;
+  background: var(--blue);
+  color: white;
+  border-radius: 20px;
+  padding: 1px 7px;
+  font-weight: 600;
+}
+
+/* ── SERVICE TYPE GRID ── */
+.service-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+}
+.service-chip {
+  padding: 9px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  font-size: 13px;
+  color: var(--slate);
+  background: var(--mist);
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s;
+  user-select: none;
+  font-weight: 400;
+}
+.service-chip:hover { border-color: var(--blue); color: var(--blue); background: var(--frost); }
+.service-chip.selected {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: white;
+  font-weight: 500;
+}
+
+/* ── STATUS ── */
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.status-chip {
+  padding: 10px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: center;
+  border: 1.5px solid transparent;
+  transition: all 0.15s;
+  user-select: none;
+}
+.status-chip[data-val="Not Started"] { background: #F3F4F6; color: #6B7280; border-color: #E5E7EB; }
+.status-chip[data-val="Not Started"].selected { background: #374151; border-color: #374151; color: white; }
+.status-chip[data-val="In Progress"] { background: #EFF6FF; color: #1D4ED8; border-color: #BFDBFE; }
+.status-chip[data-val="In Progress"].selected { background: #1D4ED8; border-color: #1D4ED8; color: white; }
+.status-chip[data-val="Completed"] { background: var(--green-bg); color: var(--green); border-color: #A7F3D0; }
+.status-chip[data-val="Completed"].selected { background: var(--green); border-color: var(--green); color: white; }
+.status-chip[data-val="Pending"] { background: var(--amber-bg); color: var(--amber); border-color: #FED7AA; }
+.status-chip[data-val="Pending"].selected { background: var(--amber); border-color: var(--amber); color: white; }
+
+/* ── PHOTO UPLOAD ── */
+.photo-drop {
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  padding: 24px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.18s;
+  background: var(--mist);
+  position: relative;
+}
+.photo-drop:hover, .photo-drop.drag-over { border-color: var(--sky); background: var(--frost); }
+.photo-drop input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.photo-icon { font-size: 28px; margin-bottom: 8px; }
+.photo-drop p { font-size: 13px; color: var(--slate); margin-bottom: 3px; }
+.photo-drop span { font-size: 11px; color: var(--silver); }
+.photo-previews { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.photo-thumb {
+  position: relative;
+  width: 76px; height: 76px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.photo-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.photo-thumb .rm {
+  position: absolute; top: 3px; right: 3px;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.6);
+  color: white; border: none; cursor: pointer;
+  font-size: 10px; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+}
+.photo-thumb .pname {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: rgba(0,0,0,0.5);
+  color: white; font-size: 9px;
+  padding: 2px 4px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* ── SUBMIT ── */
+.submit-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: flex-end;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+  margin-top: 8px;
+}
+.btn-clear {
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1.5px solid var(--border);
+  background: transparent;
+  color: var(--slate);
+  transition: all 0.15s;
+}
+.btn-clear:hover { border-color: var(--blue); color: var(--blue); }
+.btn-submit {
+  padding: 12px 32px;
+  border-radius: 10px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  background: linear-gradient(135deg, #1355C2, #1A6FE8);
+  color: white;
+  box-shadow: 0 4px 16px rgba(19,85,194,0.35);
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn-submit:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(19,85,194,0.4); }
+.btn-submit:disabled { opacity: 0.6; cursor: default; transform: none; }
+
+/* ── SUCCESS ── */
+.success-overlay {
+  display: none;
+  padding: 60px 36px;
+  text-align: center;
+}
+.success-overlay.show { display: block; }
+.success-icon {
+  width: 80px; height: 80px;
+  background: linear-gradient(135deg, var(--blue), var(--sky));
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 24px;
+  box-shadow: 0 16px 40px rgba(19,85,194,0.3);
+  font-size: 32px;
+}
+.success-overlay h3 {
+  font-family: var(--font-display);
+  font-size: 28px;
+  color: var(--ink);
+  margin-bottom: 10px;
+}
+.success-overlay p { font-size: 14px; color: var(--slate); line-height: 1.6; margin-bottom: 8px; }
+.summary-chips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 16px 0 24px; }
+.summary-chip {
+  font-size: 12px; font-weight: 500;
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: var(--frost);
+  color: var(--blue);
+  border: 1px solid var(--ice);
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 600px) {
+  .form-body { padding: 24px 20px 28px; }
+  .card-header { padding: 22px 20px 18px; }
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  .col-span-2, .col-span-3 { grid-column: span 1; }
+  .status-grid { grid-template-columns: 1fr 1fr; }
+  .service-grid { grid-template-columns: repeat(auto-fill, minmax(120px,1fr)); }
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+
+  <div class="header">
+    <div class="logo-wrap">SM</div>
+    <div class="header-text">
+      <h1>SEA MORRIS ENTERPRISES</h1>
+      <p>Sales Order Request Form</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-header-inner">
+        <h2>New Service Order Request</h2>
+        <p>Complete all required fields and submit — the order will be logged to SharePoint automatically</p>
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      </div>
+    </div>
+
+    <div class="form-body" id="formBody">
+
+      <!-- REQUESTOR INFO -->
+      <div class="form-section">
+        <div class="section-label"><span class="section-icon" style="background:#EBF4FF;">👤</span> Requestor Information</div>
+        <div class="grid grid-2">
+          <div class="field">
+            <label>Requestor's Name <span class="required">*</span></label>
+            <input type="text" id="requestorName" placeholder="e.g. Maria Gonzalez" oninput="updateProgress()">
+            <div class="error-msg" id="err-requestorName">Requestor's name is required</div>
+          </div>
+          <div class="field">
+            <label>Contact Phone <span class="required">*</span></label>
+            <input type="tel" id="contactPhone" placeholder="e.g. (305) 555-0123" oninput="updateProgress()">
+            <div class="error-msg" id="err-contactPhone">Contact phone is required</div>
+          </div>
+          <div class="field">
+            <label>Email Address</label>
+            <input type="email" id="requestorEmail" placeholder="e.g. maria@company.com" oninput="updateProgress()">
+          </div>
+          <div class="field">
+            <label>Order Reference #</label>
+            <input type="text" id="orderRef" readonly style="background:var(--frost);color:var(--blue);font-weight:500;cursor:default;">
+          </div>
+        </div>
+      </div>
+
+      <!-- PROPERTY INFO -->
+      <div class="form-section">
+        <div class="section-label"><span class="section-icon" style="background:#EBF4FF;">🏢</span> Property Information</div>
+        <div class="grid grid-2">
+          <div class="field">
+            <label>Property Name <span class="required">*</span></label>
+            <input type="text" id="propertyName" placeholder="e.g. Sunrise Apartments" oninput="updateProgress()">
+            <div class="error-msg" id="err-propertyName">Property name is required</div>
+          </div>
+          <div class="field">
+            <label>P.O. Number</label>
+            <input type="text" id="poNumber" placeholder="e.g. PO-2026-001" oninput="updateProgress()">
+          </div>
+        </div>
+      </div>
+
+      <!-- UNIT NUMBERS -->
+      <div class="form-section">
+        <div class="section-label"><span class="section-icon" style="background:#EBF4FF;">🔢</span> Unit Numbers <span class="unit-count-badge" id="unitCountBadge">1</span></div>
+        <div class="unit-list" id="unitList">
+          <div class="unit-row">
+            <div class="unit-badge">1</div>
+            <input type="text" placeholder="e.g. 204B" oninput="updateProgress()">
+          </div>
+        </div>
+        <button class="add-unit-btn" type="button" onclick="addUnit()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add another unit
+        </button>
+      </div>
+
+      <!-- OCCUPANCY -->
+      <div class="form-section">
+        <div class="section-label"><span class="section-icon" style="background:#EBF4FF;">👤</span> Occupancy</div>
+        <div class="field">
+          <label>Is the unit currently occupied? <span class="required">*</span></label>
+          <div class="toggle-wrap" id="occupancyToggle">
+            <div class="toggle-opt" data-val="Yes" onclick="selectOccupancy(this)">✓ &nbsp; Yes — Occupied</div>
+            <div class="toggle-opt" data-val="No" onclick="selectOccupancy(this)">✗ &nbsp; No — Vacant</div>
+          </div>
+          <input type="hidden" id="occupancy">
+          <div class="error-msg" id="err-occupancy">Please select occupancy status</div>
+        </div>
+      </div>
+
+      <!-- PRIORITY -->
+      <div class="form-section">
+        <div class="section-label"><span class="section-icon" style="background:#EBF4FF;">🚦</span> Priority Level <span class="required">*</span></div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+          <div class="priority-chip" data-val="Low" onclick="selectPriority(this)" style="border-radius:10px;padding:10px 8px;text-align:center;font-size:12px;font-weight:500;cursor:pointer;border:1.5px solid #D1FAE5;background:#ECFDF5;color:#065F46;transition:all 0.15s;user-select:none;">
+            🟢 Low
+          </div>
+          <div class="priority-chip" data-val="Normal" onclick="selectPriority(this)" style="border-radius:10px;padding:10px 8px;text-align:center;font-size:12px;font-weight:500;cursor:pointer;border:1.5px solid var(--ice);background:var(--frost);color:var(--blue);transition:all 0.15s;user-select:none;">
+            🔵 Normal
+          </div>
+          <div class="priority-chip" data-val="High" onclick="selectPriority(this)" style="border-radius:10px;padding:10px 8px;text-align:center;font-size:12px;font-weight:500;cursor:pointer;border:1.5px solid #FED7AA;background:#FFF7ED;color:#9A3412;transition:all 0.15s;user-select:none;">
+            🟠 High
+          </div>
+          <div class="priority-chip" data-val="Urgent" onclick="selectPriority(this)" style="border-radius:10px;padding:10px 8px;text-align:center;font-size:12px;font-weight:500;cursor:pointer;border:1.5px solid #FECACA;background:#FEF2F2;color:#991B1B;transition:all 0.15s;user-select:none;">
+            🔴 Urgent
+          </div>
+        </div>
+        <input type="hidden" id="priority" value="">
+        <div class="error-msg" id="err-priority">Please select a priority level</div>
+        <div id="urgentWarning" style="display:none;margin-top:10px;background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:10px 12px;font-size:12px;color:#991B1B;line-height:1.5;">
+          ⚠️ <strong>Urgent orders</strong> require manager approval. Please contact Samuel Hoyos at <strong>samuel@seamorris.com</strong> immediately after submitting.
+        </div>
+      </div>
+
+      <!-- TYPE OF SERVICE -->
+      <div class="form-section">
+        <div class="section-label"><span class="section-icon" style="background:#EBF4FF;">🛠️</span> Type of Service <span class="required">*</span></div>
+        <div class="service-grid" id="serviceGrid">
+          <div class="service-chip" onclick="toggleService(this)">Paint</div>
+          <div class="service-chip" onclick="toggleService(this)">Clean</div>
+          <div class="service-chip" onclick="toggleService(this)">Repair</div>
+          <div class="service-chip" onclick="toggleService(this)">Resurface</div>
+          <div class="service-chip" onclick="toggleService(this)">Touch Paint</div>
+          <div class="service-chip" onclick="toggleService(this)">Touch Clean</div>
+          <div class="service-chip" onclick="toggleService(this)">Paint & Clean</div>
+          <div class="service-chip" onclick="toggleService(this)">Paint, Clean, Resurface</div>
+          <div class="service-chip" onclick="toggleService(this)">Go Back</div>
+          <div class="service-chip" onclick="toggleService(this)">Chem Wash</div>
+          <div class="service-chip" onclick="toggleService(this)">Other</div>
+        </div>
+        <input type="hidden" id="serviceType">
+        <div class="error-msg" id="err-serviceType">Please select at least one service type</div>
+      </div>
+
+      <!-- STATUS & DATE -->
+      <div class="form-section">
+        <div class="section-label"><span class="section-icon" style="background:#EBF4FF;">📊</span> Status & Timeline</div>
+        <div class="field" style="margin-bottom:14px;">
+          <label>Status <span class="required">*</span></label>
+          <div class="status-grid">
+            <div class="status-chip selected" data-val="Not Started" onclick="selectStatus(this)">Not Started</div>
+            <div class="status-chip" data-val="In Progress" onclick="selectStatus(this)">In Progress</div>
+            <div class="status-chip" data-val="Completed" onclick="selectStatus(this)">Completed</div>
+            <div class="status-chip" data-val="Pending" onclick="selectStatus(this)">Pending</div>
+          </div>
+          <input type="hidden" id="status" value="Not Started">
+        </div>
+        <div class="grid grid-2">
+          <div class="field">
+            <label>Due Date <span class="required">*</span></label>
+            <input type="date" id="dueDate" oninput="updateProgress()">
+            <div class="error-msg" id="err-dueDate">Due date is required</div>
+          </div>
+          <div class="field">
+            <label>Submitted By</label>
+            <input type="text" id="submittedBy" placeholder="Your name" oninput="updateProgress()">
+          </div>
+        </div>
+      </div>
+
+      <!-- ACCESS INSTRUCTIONS -->
+      <div class="form-section">
+        <div class="section-label"><span class="section-icon" style="background:#EBF4FF;">🔑</span> Access Instructions</div>
+        <div class="grid grid-2">
+          <div class="field">
+            <label>Key / Access Code</label>
+            <input type="text" id="accessCode" placeholder="e.g. Lockbox #4421 or Key #12" oninput="updateProgress()">
+          </div>
+          <div class="field">
+            <label>Point of Contact on Site</label>
+            <input type="text" id="siteContact" placeholder="e.g. Front desk — Maria (305) 555-0100" oninput="updateProgress()">
+          </div>
+        </div>
+      </div>
+
+      <!-- NOTES -->
+      <div class="form-section">
+        <div class="section-label"><span class="section-icon" style="background:#EBF4FF;">📝</span> Notes</div>
+        <div class="field">
+          <label>Additional Notes</label>
+          <textarea id="notes" placeholder="Any special instructions, access codes, or additional details…" oninput="updateProgress()"></textarea>
+        </div>
+      </div>
+
+      <!-- PHOTOS -->
+      <div class="form-section">
+        <div class="section-label"><span class="section-icon" style="background:#EBF4FF;">📷</span> Attachments & Photos</div>
+        <div class="photo-drop" id="photoDrop"
+          ondragover="photoDragOver(event)"
+          ondragleave="photoDragLeave()"
+          ondrop="photoDrop(event)">
+          <input type="file" accept="image/*,.pdf,.doc,.docx" multiple onchange="photoSelected(event)" id="fileInput">
+          <div class="photo-icon">📎</div>
+          <p>Drag & drop photos or files here, or <strong style="color:var(--blue);">browse</strong></p>
+          <span>JPG, PNG, PDF, DOC — multiple files allowed</span>
+        </div>
+        <div class="photo-previews" id="photoPreviews"></div>
+      </div>
+
+      <!-- SUBMIT -->
+      <div class="submit-row">
+        <button class="btn-clear" type="button" onclick="clearForm()">Clear form</button>
+        <button class="btn-submit" type="button" id="submitBtn" onclick="submitForm()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          Submit Order Request
+        </button>
+      </div>
+
+    </div><!-- /form-body -->
+
+    <!-- SUCCESS -->
+    <div class="success-overlay" id="successOverlay">
+      <div class="success-icon">✓</div>
+      <h3>Order Submitted!</h3>
+      <p>Your service order request has been successfully submitted.</p>
+      <p id="successUnits"></p>
+      <div class="summary-chips" id="successChips"></div>
+      <button class="btn-submit" style="margin:0 auto;" type="button" onclick="resetForm()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4"/></svg>
+        Submit Another Order
+      </button>
+    </div>
+
+  </div><!-- /card -->
+
+</div><!-- /wrapper -->
+
+<script>
+// ─────────────────────────────────────────────
+// SHAREPOINT CONNECTION
+// Power Automate flow URL — wired and active
+// ─────────────────────────────────────────────
+const SHAREPOINT_FLOW_URL = 'https://default3f5356f97f6649efa4a1060191aada.8c.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/0cb7fcb300d64e82aca0a2591b2dd8eb/triggers/manual/paths/invoke?api-version=1';
+function generateOrderRef() {
+  const now = new Date();
+  const yy = now.getFullYear().toString().slice(-2);
+  const mm = String(now.getMonth()+1).padStart(2,'0');
+  const dd = String(now.getDate()).padStart(2,'0');
+  const rand = Math.floor(1000 + Math.random() * 9000);
+  return `SME-${yy}${mm}${dd}-${rand}`;
+}
+
+// ── PRIORITY ──
+function selectPriority(chip) {
+  document.querySelectorAll('.priority-chip').forEach(c => {
+    c.style.opacity = '0.5';
+    c.style.transform = 'scale(0.97)';
+  });
+  chip.style.opacity = '1';
+  chip.style.transform = 'scale(1.03)';
+  chip.style.boxShadow = '0 4px 12px rgba(0,0,0,0.12)';
+  document.getElementById('priority').value = chip.dataset.val;
+  document.getElementById('err-priority').classList.remove('show');
+  document.getElementById('urgentWarning').style.display =
+    chip.dataset.val === 'Urgent' ? 'block' : 'none';
+  updateProgress();
+}
+
+
+let photos = [];
+
+function photoDragOver(e) {
+  e.preventDefault();
+  document.getElementById('photoDrop').classList.add('drag-over');
+}
+function photoDragLeave() {
+  document.getElementById('photoDrop').classList.remove('drag-over');
+}
+function photoDrop(e) {
+  e.preventDefault();
+  document.getElementById('photoDrop').classList.remove('drag-over');
+  handleFiles(Array.from(e.dataTransfer.files));
+}
+function photoSelected(e) {
+  handleFiles(Array.from(e.target.files));
+  document.getElementById('fileInput').value = '';
+}
+function handleFiles(files) {
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      photos.push({ name: file.name, dataUrl: e.target.result, type: file.type });
+      renderPreviews();
+    };
+    reader.readAsDataURL(file);
+  });
+}
+function renderPreviews() {
+  const c = document.getElementById('photoPreviews');
+  c.innerHTML = '';
+  photos.forEach((p, i) => {
+    const isImg = p.type.startsWith('image/');
+    const thumb = document.createElement('div');
+    thumb.className = 'photo-thumb';
+    thumb.style.cssText = isImg ? '' : 'display:flex;align-items:center;justify-content:center;background:#F3F4F6;font-size:24px;';
+    thumb.innerHTML = isImg
+      ? `<img src="${p.dataUrl}" alt="${p.name}"><div class="pname">${p.name}</div><button class="rm" onclick="removePhoto(${i})">✕</button>`
+      : `📄<div class="pname">${p.name}</div><button class="rm" onclick="removePhoto(${i})">✕</button>`;
+    c.appendChild(thumb);
+  });
+}
+function removePhoto(i) {
+  photos.splice(i, 1);
+  renderPreviews();
+}
+
+// ── UNITS ──
+function addUnit() {
+  const list = document.getElementById('unitList');
+  const count = list.children.length + 1;
+  const row = document.createElement('div');
+  row.className = 'unit-row';
+  row.innerHTML = `
+    <div class="unit-badge">${count}</div>
+    <input type="text" placeholder="e.g. ${100 + count}B" oninput="updateProgress()">
+    <button class="remove-unit" type="button" onclick="removeUnit(this)" title="Remove unit">✕</button>
+  `;
+  list.appendChild(row);
+  updateUnitBadges();
+  row.querySelector('input').focus();
+}
+function removeUnit(btn) {
+  const list = document.getElementById('unitList');
+  if (list.children.length > 1) {
+    btn.closest('.unit-row').remove();
+    updateUnitBadges();
+    updateProgress();
+  }
+}
+function updateUnitBadges() {
+  const rows = document.querySelectorAll('.unit-row');
+  rows.forEach((r, i) => {
+    const badge = r.querySelector('.unit-badge');
+    if (badge) badge.textContent = i + 1;
+  });
+  document.getElementById('unitCountBadge').textContent = rows.length;
+}
+function getUnits() {
+  return Array.from(document.querySelectorAll('.unit-row input'))
+    .map(i => i.value.trim()).filter(Boolean);
+}
+
+// ── OCCUPANCY ──
+function selectOccupancy(el) {
+  document.querySelectorAll('.toggle-opt').forEach(o => o.className = 'toggle-opt');
+  el.classList.add(el.dataset.val === 'Yes' ? 'selected-yes' : 'selected-no');
+  document.getElementById('occupancy').value = el.dataset.val;
+  document.getElementById('err-occupancy').classList.remove('show');
+  updateProgress();
+}
+
+// ── SERVICE TYPE ──
+function toggleService(chip) {
+  chip.classList.toggle('selected');
+  const selected = Array.from(document.querySelectorAll('.service-chip.selected')).map(c => c.textContent.trim());
+  document.getElementById('serviceType').value = selected.join(', ');
+  document.getElementById('err-serviceType').classList.remove('show');
+  updateProgress();
+}
+
+// ── STATUS ──
+function selectStatus(chip) {
+  document.querySelectorAll('.status-chip').forEach(c => c.classList.remove('selected'));
+  chip.classList.add('selected');
+  document.getElementById('status').value = chip.dataset.val;
+}
+
+// ── PROGRESS ──
+function updateProgress() {
+  const fields = [
+    document.getElementById('requestorName').value.trim(),
+    document.getElementById('contactPhone').value.trim(),
+    document.getElementById('propertyName').value.trim(),
+    getUnits().length > 0 ? 'ok' : '',
+    document.getElementById('occupancy').value,
+    document.getElementById('priority').value,
+    document.getElementById('serviceType').value,
+    document.getElementById('dueDate').value,
+  ];
+  const filled = fields.filter(Boolean).length;
+  const pct = Math.round((filled / fields.length) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
+// ── VALIDATE ──
+function validate() {
+  let valid = true;
+  const checks = [
+    { id: 'requestorName', err: 'err-requestorName', check: () => document.getElementById('requestorName').value.trim() },
+    { id: 'contactPhone',  err: 'err-contactPhone',  check: () => document.getElementById('contactPhone').value.trim() },
+    { id: 'propertyName',  err: 'err-propertyName',  check: () => document.getElementById('propertyName').value.trim() },
+    { id: 'occupancy',     err: 'err-occupancy',     check: () => document.getElementById('occupancy').value },
+    { id: 'priority',      err: 'err-priority',      check: () => document.getElementById('priority').value },
+    { id: 'serviceType',   err: 'err-serviceType',   check: () => document.getElementById('serviceType').value },
+    { id: 'dueDate',       err: 'err-dueDate',       check: () => document.getElementById('dueDate').value },
+  ];
+  checks.forEach(({ id, err, check }) => {
+    const el = document.getElementById(id);
+    const errEl = document.getElementById(err);
+    if (!check()) {
+      if (el) el.classList.add('error');
+      if (errEl) errEl.classList.add('show');
+      valid = false;
+    } else {
+      if (el) el.classList.remove('error');
+      if (errEl) errEl.classList.remove('show');
+    }
+  });
+  if (getUnits().length === 0) valid = false;
+  return valid;
+}
+
+// ── SUBMIT ──
+async function submitForm() {
+  if (!validate()) {
+    document.querySelector('.error-msg.show')?.closest('.field, .form-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<svg style="width:16px;height:16px;animation:spin 1s linear infinite;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Submitting…';
+
+  const units = getUnits();
+  const data = {
+    orderRef:        document.getElementById('orderRef').value,
+    requestorName:   document.getElementById('requestorName').value.trim(),
+    contactPhone:    document.getElementById('contactPhone').value.trim(),
+    requestorEmail:  document.getElementById('requestorEmail').value.trim(),
+    propertyName:    document.getElementById('propertyName').value.trim(),
+    poNumber:        document.getElementById('poNumber').value.trim(),
+    units,
+    occupancy:       document.getElementById('occupancy').value,
+    priority:        document.getElementById('priority').value,
+    serviceType:     document.getElementById('serviceType').value,
+    status:          document.getElementById('status').value,
+    dueDate:         document.getElementById('dueDate').value,
+    submittedBy:     document.getElementById('submittedBy').value.trim(),
+    notes:           document.getElementById('notes').value.trim(),
+    accessCode:      document.getElementById('accessCode').value.trim(),
+    siteContact:     document.getElementById('siteContact').value.trim(),
+    photoCount:      photos.length,
+    submittedAt:     new Date().toLocaleString('en-US', { dateStyle:'medium', timeStyle:'short' }),
+  };
+
+  // POST to Power Automate → SharePoint
+  try {
+    const response = await fetch(SHAREPOINT_FLOW_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+
+    if (!response.ok && response.status !== 202) {
+      throw new Error(`Server responded with ${response.status}`);
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Submit Order Request';
+
+    // Show success
+    document.getElementById('formBody').style.display = 'none';
+    const overlay = document.getElementById('successOverlay');
+    overlay.classList.add('show');
+
+    document.getElementById('successUnits').textContent =
+      `${units.length} unit${units.length > 1 ? 's' : ''} submitted: ${units.join(', ')}`;
+
+    const chips = document.getElementById('successChips');
+    chips.innerHTML = [
+      data.orderRef,
+      data.requestorName,
+      data.propertyName,
+      data.serviceType,
+      `Priority: ${data.priority}`,
+      data.status,
+      `Due: ${data.dueDate}`,
+      `${data.photoCount} photo${data.photoCount !== 1 ? 's' : ''}`,
+    ].map(t => `<span class="summary-chip">${t}</span>`).join('');
+
+  } catch(err) {
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Submit Order Request';
+    alert('Submission failed: ' + err.message + '\n\nPlease try again or contact samuel@seamorris.com');
+  }
+}
+
+// ── RESET ──
+function clearForm() {
+  document.querySelectorAll('input[type=text], input[type=date], input[type=tel], input[type=email], textarea').forEach(el => {
+    if (el.id !== 'orderRef') el.value = '';
+  });
+  document.getElementById('occupancy').value = '';
+  document.getElementById('serviceType').value = '';
+  document.getElementById('priority').value = '';
+  document.getElementById('status').value = 'Not Started';
+  document.querySelectorAll('.toggle-opt').forEach(o => o.className = 'toggle-opt');
+  document.querySelectorAll('.service-chip').forEach(c => c.classList.remove('selected'));
+  document.querySelectorAll('.status-chip').forEach(c => c.classList.remove('selected'));
+  document.querySelector('.status-chip[data-val="Not Started"]').classList.add('selected');
+  document.querySelectorAll('.priority-chip').forEach(c => { c.style.opacity='1'; c.style.transform=''; c.style.boxShadow=''; });
+  document.getElementById('urgentWarning').style.display = 'none';
+  document.querySelectorAll('.error-msg').forEach(e => e.classList.remove('show'));
+  document.querySelectorAll('.error').forEach(e => e.classList.remove('error'));
+  photos = [];
+  renderPreviews();
+  const list = document.getElementById('unitList');
+  list.innerHTML = `<div class="unit-row"><div class="unit-badge">1</div><input type="text" placeholder="e.g. 204B" oninput="updateProgress()"></div>`;
+  updateUnitBadges();
+  updateProgress();
+}
+
+function resetForm() {
+  clearForm();
+  document.getElementById('orderRef').value = generateOrderRef();
+  document.getElementById('formBody').style.display = 'block';
+  document.getElementById('successOverlay').classList.remove('show');
+}
+
+// Init
+updateProgress();
+document.getElementById('dueDate').min = new Date().toISOString().split('T')[0];
+document.getElementById('orderRef').value = generateOrderRef();
+</script>
+</body>
+</html>
