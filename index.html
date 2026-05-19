@@ -925,7 +925,7 @@ async function submitForm() {
     requestorEmail:  document.getElementById('requestorEmail').value.trim(),
     propertyName:    document.getElementById('propertyName').value.trim(),
     poNumber:        document.getElementById('poNumber').value.trim(),
-    units,
+    units:           getUnits().join(', '),
     occupancy:       document.getElementById('occupancy').value,
     priority:        document.getElementById('priority').value,
     serviceType:     document.getElementById('serviceType').value,
