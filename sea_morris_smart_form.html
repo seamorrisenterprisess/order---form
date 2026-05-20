@@ -564,7 +564,17 @@ function getVals() {
     assigned:    document.getElementById('sf-assigned').value.trim(),
     date:        document.getElementById('sf-date').value,
     priority:    document.getElementById('sf-priority').value,
-    description: document.getElementById('sf-description').value.trim(),
+    description: (() => {
+      const manual = document.getElementById('sf-description').value.trim();
+      if (manual) return manual;
+      // Auto-build from line items if description field is empty
+      const filled = lines.filter(l => l.desc);
+      if (!filled.length) return '';
+      const lineText = filled.map(l =>
+        `${l.desc} x${l.qty} @ $${parseFloat(l.price||0).toFixed(2)} = ${l.sub}`
+      ).join('\n');
+      return lineText + '\nTOTAL: ' + document.getElementById('sf-grand').textContent;
+    })(),
     notes:       document.getElementById('sf-notes').value.trim(),
     total:       document.getElementById('sf-grand').textContent,
     cost:        document.getElementById('sf-cost').value,
@@ -741,11 +751,16 @@ async function submitSmartForm() {
     updateSubmitButton();
 
     document.getElementById('smartFormBody').style.display = 'none';
-    document.getElementById('sf-success').classList.add('show');
-    document.getElementById('sf-success-title').textContent = isNewItem ? 'Item Created!' : 'Item Updated!';
-    document.getElementById('sf-success-msg').textContent   = `monday.com ${isNewItem ? 'item created' : 'updated'} to "${currentStatus}" · Team notified${currentStatus==='Sent Extras'?' · Use Preview Email or Copy HTML to send to customer':''}`;
-    document.getElementById('sf-success-mode').textContent  = isNewItem ? 'Item created' : 'Item updated';
-    document.getElementById('sf-success-item-id').textContent = isNewItem ? 'Created via Power Automate' : (mondayItemId || 'Updated');
+    const successEl = document.getElementById('sf-success');
+    successEl.classList.add('show');
+    const titleEl = document.getElementById('sf-success-title');
+    const msgEl   = document.getElementById('sf-success-msg');
+    const modeEl  = document.getElementById('sf-success-mode');
+    const idEl    = document.getElementById('sf-success-item-id');
+    if (titleEl) titleEl.textContent = isNewItem ? 'Item Created!' : 'Item Updated!';
+    if (msgEl)   msgEl.textContent   = `monday.com ${isNewItem ? 'item created' : 'updated'} to "${currentStatus}" · Team notified${currentStatus==='Sent Extras'?' · Use Preview Email or Copy HTML to send to customer':''}`;
+    if (modeEl)  modeEl.textContent  = isNewItem ? 'Item created' : 'Item updated';
+    if (idEl)    idEl.textContent    = isNewItem ? 'Created via Power Automate' : (mondayItemId || 'Updated');
 
   } catch(err) {
     showBanner('error', '❌ &nbsp;Error: ' + err.message + ' — Please try again.');
