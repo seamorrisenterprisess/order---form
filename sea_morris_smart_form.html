@@ -343,15 +343,8 @@ canvas{display:block;touch-action:none;cursor:crosshair}
 
     </div><!-- /form-body -->
 
-    <!-- SUCCESS OVERLAY -->
-    <div class="success-overlay" id="sf-success">
-      <div class="success-icon" id="sf-success-icon" style="background:linear-gradient(135deg,#1355C2,#3B9EFF);box-shadow:0 12px 32px rgba(19,85,194,0.3);">✓</div>
-      <h3 id="sf-success-title">Done!</h3>
-      <p id="sf-success-msg">monday.com updated and team notified.</p>
-      <div class="success-item-box">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-        <span id="sf-success-mode">Item created</span> &nbsp;·&nbsp; monday.com Item ID: <strong id="sf-success-item-id" style="font-family:monospace;font-size:14px;"></strong>
-      </div>
+    <!-- NEW ENTRY BUTTON (shown after success) -->
+    <div id="sf-new-entry-bar" style="display:none;padding:20px 32px;text-align:center;border-top:1px solid var(--border);">
       <button class="btn-primary" style="margin:0 auto;background:linear-gradient(135deg,#1355C2,#1A6FE8)" onclick="resetSmartForm()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4"/></svg>
         New Entry
@@ -750,18 +743,13 @@ async function submitSmartForm() {
     refreshItemIdBar(isNewItem);
     updateSubmitButton();
 
-    document.getElementById('smartFormBody').style.display = 'none';
-    const successEl = document.getElementById('sf-success');
-    successEl.style.display = 'block';
-    successEl.classList.add('show');
-    const titleEl = document.getElementById('sf-success-title');
-    const msgEl   = document.getElementById('sf-success-msg');
-    const modeEl  = document.getElementById('sf-success-mode');
-    const idEl    = document.getElementById('sf-success-item-id');
-    if (titleEl) titleEl.textContent = isNewItem ? 'Item Created!' : 'Item Updated!';
-    if (msgEl)   msgEl.textContent   = `monday.com ${isNewItem ? 'item created' : 'updated'} to "${currentStatus}" · Team notified${currentStatus==='Sent Extras'?' · Use Preview Email or Copy HTML to send to customer':''}`;
-    if (modeEl)  modeEl.textContent  = isNewItem ? 'Item created' : 'Item updated';
-    if (idEl)    idEl.textContent    = isNewItem ? 'Created via Power Automate' : (mondayItemId || 'Updated');
+    // Show success banner and reset button
+    showBanner('success', `✅ &nbsp;<strong>${isNewItem ? 'Item Created!' : 'Item Updated!'}</strong> &nbsp;monday.com ${isNewItem ? 'item created' : 'updated'} to "${currentStatus}" · Team notified${currentStatus==='Sent Extras'?' · Use Preview Email or Copy HTML to send to customer':''}`);
+    btn.disabled = false;
+    updateSubmitButton();
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> <span id="sf-submit-label">${isNewItem ? 'Create Item' : document.getElementById('sf-submit-label')?.textContent||'Send Notification'}</span>`;
+    const newEntryBar = document.getElementById('sf-new-entry-bar');
+    if (newEntryBar) newEntryBar.style.display = 'block';
 
   } catch(err) {
     showBanner('error', '❌ &nbsp;Error: ' + err.message + ' — Please try again.');
@@ -802,7 +790,8 @@ function resetSmartForm() {
   mondayItemId = null;   // ← clear the item ID so next job creates fresh
   clearSmartForm();
   document.getElementById('smartFormBody').style.display = 'block';
-  document.getElementById('sf-success').classList.remove('show');
+  const newEntryBar2 = document.getElementById('sf-new-entry-bar');
+  if (newEntryBar2) newEntryBar2.style.display = 'none';
   document.getElementById('itemIdBar').classList.remove('show');
   // Reset status tab to In Progress
   document.querySelectorAll('.stab').forEach(t => t.classList.remove('active'));
