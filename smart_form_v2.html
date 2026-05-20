@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="expires" content="0">
+<!-- SEA MORRIS SMART FORM v2.0 -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEA MORRIS — Smart Service Order Form</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0A1628;--ink:#112240;--blue:#1355C2;--blue-mid:#1A6FE8;
+  --sky:#3B9EFF;--ice:#D6EAFF;--frost:#EBF4FF;--mist:#F0F7FF;
+  --white:#FFFFFF;--slate:#5B7A99;--silver:#A8C0D6;
+  --border:#D4E4F4;--green:#1B8C5A;--green-bg:#E6F5EE;
+  --red:#C0392B;--red-bg:#FDECEA;--amber:#C97B1A;--amber-bg:#FFF8EC;
+  --font-display:'DM Serif Display',Georgia,serif;
+  --font-body:'DM Sans',system-ui,sans-serif;
+}
+html{font-size:16px;scroll-behavior:smooth}
+body{font-family:var(--font-body);background:linear-gradient(160deg,#0A1628 0%,#0F2D4A 60%,#0A1628 100%);min-height:100vh;padding:32px 16px 80px;color:var(--ink)}
+.shell{max-width:860px;margin:0 auto}
+.masthead{display:flex;align-items:center;gap:14px;margin-bottom:24px}
+.logo{width:52px;height:52px;background:var(--blue);border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:20px;color:white;flex-shrink:0;box-shadow:0 8px 24px rgba(19,85,194,0.4)}
+.masthead h1{font-family:var(--font-display);font-size:20px;color:white;letter-spacing:-0.02em;line-height:1.1}
+.masthead p{font-size:11px;color:rgba(255,255,255,0.5);letter-spacing:0.06em;text-transform:uppercase;margin-top:3px}
+.card{background:var(--white);border-radius:20px;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,0.45)}
+.status-bar{padding:20px 32px 0;background:var(--mist);border-bottom:1px solid var(--border)}
+.status-bar-label{font-size:10px;font-weight:600;color:var(--slate);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.status-bar-label::after{content:'';flex:1;height:1px;background:var(--border)}
+.status-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:0;scrollbar-width:none}
+.status-tabs::-webkit-scrollbar{display:none}
+.stab{padding:8px 14px;border-radius:8px 8px 0 0;font-size:12px;font-weight:500;cursor:pointer;border:1px solid transparent;border-bottom:none;white-space:nowrap;transition:all 0.15s;background:transparent;color:var(--slate);font-family:var(--font-body);position:relative;top:1px}
+.stab:hover{background:rgba(19,85,194,0.06);color:var(--blue)}
+.stab.active{background:var(--white);color:var(--ink);border-color:var(--border);font-weight:600}
+.stab[data-status="In Progress"].active{color:rgb(109,24,241);border-top:3px solid rgb(109,24,241)}
+.stab[data-status="Sent Extras"].active{color:var(--blue);border-top:3px solid var(--blue)}
+.stab[data-status="Waiting for Approval"].active{color:rgb(56,149,255);border-top:3px solid rgb(56,149,255)}
+.stab[data-status="Approved Without Manager"].active{color:var(--green);border-top:3px solid var(--green)}
+.stab[data-status="Approved With Manager"].active{color:rgb(21,209,59);border-top:3px solid rgb(21,209,59)}
+.stab[data-status="Declined"].active{color:var(--red);border-top:3px solid var(--red)}
+.stab[data-status="No Response"].active{color:rgb(255,93,242);border-top:3px solid rgb(255,93,242)}
+
+/* ITEM ID BAR */
+.item-id-bar{display:none;align-items:center;gap:10px;background:var(--green-bg);border-bottom:1px solid #A7F3D0;padding:10px 32px;font-size:12px;color:var(--green);flex-wrap:wrap}
+.item-id-bar.show{display:flex}
+.item-id-pill{background:var(--green);color:white;border-radius:20px;padding:2px 12px;font-size:11px;font-weight:700;font-family:monospace;letter-spacing:0.04em}
+.item-id-mode-badge{background:var(--green);color:white;border-radius:20px;padding:2px 10px;font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase}
+
+.card-header{padding:24px 32px 20px;position:relative;overflow:hidden;transition:background 0.3s}
+.card-header::before{content:'';position:absolute;right:-50px;top:-50px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,0.06)}
+.card-header-inner{position:relative;z-index:2}
+.status-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,0.15);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:500;color:white;margin-bottom:10px;letter-spacing:0.04em}
+.status-indicator{width:7px;height:7px;border-radius:50%;background:white;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.6;transform:scale(0.8)}}
+.card-header h2{font-family:var(--font-display);font-size:22px;color:white;letter-spacing:-0.02em;margin-bottom:4px}
+.card-header p{font-size:12px;color:rgba(255,255,255,0.65);line-height:1.5}
+.form-body{padding:28px 32px 32px}
+.section-title{font-size:10px;font-weight:600;color:var(--slate);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px;margin-top:20px}
+.section-title:first-child{margin-top:0}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.fields-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:4px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:11px;font-weight:500;color:var(--slate);letter-spacing:0.04em;text-transform:uppercase}
+.field input,.field select,.field textarea{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:9px;font-family:var(--font-body);font-size:13px;color:var(--ink);background:var(--mist);outline:none;transition:all 0.15s;appearance:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--blue-mid);background:var(--white);box-shadow:0 0 0 3px rgba(19,85,194,0.08)}
+.field textarea{resize:vertical;min-height:70px;line-height:1.5}
+.field select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235B7A99' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:30px}
+.field-full{grid-column:span 2}
+.internal-box{background:var(--amber-bg);border:1px solid #F5D49A;border-radius:12px;padding:16px;margin:16px 0}
+.internal-label{font-size:10px;font-weight:600;color:var(--amber);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.internal-fields{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.profit-display{background:var(--white);border:1px solid #F5D49A;border-radius:8px;padding:8px 12px;font-size:13px;font-weight:600;color:var(--amber)}
+.line-items-wrap{border:0.5px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:12px}
+.line-header{display:grid;grid-template-columns:3fr 1fr 1fr 1fr 32px;gap:0;background:var(--mist);padding:8px 12px;font-size:10px;font-weight:600;color:var(--slate);letter-spacing:0.08em;text-transform:uppercase}
+.line-row{display:grid;grid-template-columns:3fr 1fr 1fr 1fr 32px;gap:6px;padding:8px 12px;border-top:0.5px solid var(--border);align-items:center}
+.line-input{border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:13px;width:100%;outline:none;font-family:var(--font-body);background:var(--white)}
+.line-input:focus{border-color:var(--blue-mid);box-shadow:0 0 0 2px rgba(19,85,194,0.08)}
+.line-total{border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:13px;width:100%;outline:none;text-align:right;background:var(--mist);color:var(--blue);font-weight:500;font-family:var(--font-body)}
+.line-remove{width:24px;height:24px;border-radius:6px;border:1px solid var(--border);background:transparent;cursor:pointer;color:var(--silver);font-size:14px;display:flex;align-items:center;justify-content:center;padding:0;transition:all 0.15s}
+.line-remove:hover{background:var(--red-bg);border-color:var(--red);color:var(--red)}
+.totals-row{padding:10px 12px;border-top:1px solid var(--border);background:var(--mist)}
+.total-line{display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px}
+.grand-total-line{display:flex;justify-content:space-between;font-size:15px;font-weight:700;border-top:1px solid var(--border);padding-top:8px;margin-top:4px}
+.add-line-btn{width:100%;padding:9px;border:1.5px dashed var(--ice);border-radius:10px;background:var(--frost);color:var(--blue);font-size:13px;font-weight:500;cursor:pointer;margin-bottom:20px;font-family:var(--font-body)}
+.add-line-btn:hover{background:var(--ice)}
+.photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.photo-zone-label{font-size:11px;font-weight:500;color:var(--slate);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px}
+.photo-zone{border:2px dashed var(--border);border-radius:10px;padding:16px;text-align:center;background:var(--mist);position:relative;cursor:pointer;transition:all 0.15s}
+.photo-zone:hover{border-color:var(--sky);background:var(--frost)}
+.photo-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.photo-icon{font-size:20px;margin-bottom:4px}
+.photo-zone p{font-size:12px;color:var(--slate)}
+.photo-previews{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.photo-thumb{position:relative;width:60px;height:60px;border-radius:8px;overflow:hidden;border:1px solid var(--border);flex-shrink:0}
+.photo-thumb img{width:100%;height:100%;object-fit:cover}
+.photo-rm{position:absolute;top:2px;right:2px;width:15px;height:15px;border-radius:50%;background:rgba(0,0,0,0.65);color:white;border:none;cursor:pointer;font-size:8px;display:flex;align-items:center;justify-content:center;padding:0}
+.sig-wrap{border:1.5px solid var(--border);border-radius:10px;overflow:hidden;background:var(--mist);margin-bottom:6px}
+canvas{display:block;touch-action:none;cursor:crosshair}
+.customer-section{background:linear-gradient(135deg,var(--frost),#EBF4FF);border:1.5px solid var(--ice);border-radius:14px;padding:20px;margin:20px 0;display:none}
+.customer-section.show{display:block}
+.customer-section-label{font-size:11px;font-weight:600;color:var(--blue);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.send-box{background:var(--mist);border-radius:12px;padding:16px;border:0.5px solid var(--border);margin-top:16px}
+.send-box-label{font-size:10px;font-weight:600;color:var(--slate);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px}
+.send-btns{display:flex;gap:8px;flex-wrap:wrap}
+.btn-row{display:flex;gap:10px;align-items:center;justify-content:flex-end;padding-top:24px;border-top:1px solid var(--border);margin-top:20px}
+.btn-clear{padding:11px 22px;border-radius:9px;font-family:var(--font-body);font-size:13px;font-weight:500;cursor:pointer;border:1.5px solid var(--border);background:transparent;color:var(--slate);transition:all 0.15s}
+.btn-clear:hover{border-color:var(--blue);color:var(--blue)}
+.btn-primary{padding:11px 28px;border-radius:9px;font-family:var(--font-body);font-size:13px;font-weight:600;cursor:pointer;border:none;color:white;box-shadow:0 4px 14px rgba(19,85,194,0.3);transition:all 0.15s;display:flex;align-items:center;gap:8px}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(19,85,194,0.35)}
+.btn-primary:disabled{opacity:0.65;cursor:default;transform:none}
+.btn-outline{padding:10px 16px;border-radius:9px;font-family:var(--font-body);font-size:13px;font-weight:500;cursor:pointer;border:1.5px solid var(--border);background:transparent;color:var(--slate);transition:all 0.15s;display:flex;align-items:center;gap:7px}
+.btn-outline:hover{border-color:var(--blue);color:var(--blue)}
+.banner{display:none;align-items:flex-start;gap:10px;padding:12px 16px;border-radius:10px;font-size:13px;margin-bottom:16px;line-height:1.5}
+.banner.show{display:flex}
+.banner.success{background:var(--green-bg);color:var(--green);border:1px solid #A7F3D0}
+.banner.error{background:var(--red-bg);color:var(--red);border:1px solid #FECACA}
+.banner.loading{background:var(--frost);color:var(--blue);border:1px solid var(--ice)}
+.success-overlay{display:none;padding:60px 32px;text-align:center}
+.success-overlay.show{display:block}
+.success-icon{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:28px}
+.success-overlay h3{font-family:var(--font-display);font-size:26px;color:var(--ink);margin-bottom:8px}
+.success-overlay p{font-size:14px;color:var(--slate);line-height:1.6;margin-bottom:16px}
+.success-item-box{display:inline-flex;align-items:center;gap:10px;background:var(--green-bg);border:1px solid #A7F3D0;border-radius:10px;padding:10px 20px;margin-bottom:20px;font-size:13px;color:var(--green)}
+.preview-area{display:none;margin-bottom:20px}
+.preview-header{background:var(--mist);padding:10px 14px;font-size:11px;font-weight:600;color:var(--slate);letter-spacing:0.08em;text-transform:uppercase;display:flex;align-items:center;justify-content:space-between;border:1.5px solid var(--border);border-radius:12px 12px 0 0}
+@media(max-width:600px){
+  .form-body,.card-header,.item-id-bar{padding-left:20px;padding-right:20px}
+  .fields-grid,.internal-fields,.photo-grid{grid-template-columns:1fr}
+  .field-full{grid-column:span 1}
+  .line-header,.line-row{grid-template-columns:2fr 1fr 1fr 28px}
+  .line-header span:nth-child(3),.line-row .line-input:nth-child(3){display:none}
+  .status-tabs{gap:4px}
+  .stab{padding:7px 10px;font-size:11px}
+  .btn-row{flex-wrap:wrap}
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="masthead">
+    <div class="logo">SM</div>
+    <div>
+      <h1>SEA MORRIS ENTERPRISES</h1>
+      <p>Jobs &amp; Extras Board — Smart Service Order</p>
+    </div>
+  </div>
+
+  <div class="card">
+
+    <!-- STATUS TABS -->
+    <div class="status-bar">
+      <div class="status-bar-label">Select Status to Update</div>
+      <div class="status-tabs">
+        <button class="stab active" data-status="In Progress" onclick="setStatus(this)">● In Progress</button>
+        <button class="stab" data-status="Sent Extras" onclick="setStatus(this)">● Sent Extras</button>
+        <button class="stab" data-status="Waiting for Approval" onclick="setStatus(this)">● Waiting for Approval</button>
+        <button class="stab" data-status="Approved Without Manager" onclick="setStatus(this)">● Approved (No Mgr)</button>
+        <button class="stab" data-status="Approved With Manager" onclick="setStatus(this)">● Approved (Mgr)</button>
+        <button class="stab" data-status="Declined" onclick="setStatus(this)">● Declined</button>
+        <button class="stab" data-status="No Response" onclick="setStatus(this)">● No Response</button>
+      </div>
+    </div>
+
+    <!-- ITEM ID BAR: shown after first submission -->
+    <div class="item-id-bar" id="itemIdBar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15" style="flex-shrink:0"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      <span id="itemModeLabel">Item created on monday.com</span>
+      &nbsp;·&nbsp; Item ID: <span class="item-id-pill" id="itemIdPill"></span>
+      &nbsp;·&nbsp; <span style="opacity:0.8;">Changing the status tab and resubmitting will <strong>update this same item</strong> — no duplicate rows.</span>
+    </div>
+
+    <!-- CARD HEADER -->
+    <div class="card-header" id="cardHeader" style="background:linear-gradient(135deg,#1355C2 0%,#082B6E 100%);">
+      <div class="card-header-inner">
+        <div class="status-badge"><span class="status-indicator"></span><span id="headerBadge">In Progress</span></div>
+        <h2 id="headerTitle">Service Order — In Progress</h2>
+        <p id="headerDesc">Fill in the job details below. Updating the status tab will trigger the correct monday.com update and team notification.</p>
+      </div>
+    </div>
+
+    <!-- FORM BODY -->
+    <div class="form-body" id="smartFormBody">
+
+      <div class="banner" id="smartBanner"></div>
+
+      <!-- IN PROGRESS NOTE -->
+      <div id="inProgressNote" style="display:flex;align-items:flex-start;gap:10px;background:#F3EEFF;border:1px solid #C9B3F5;border-radius:10px;padding:12px 16px;margin-bottom:14px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="rgb(109,24,241)" stroke-width="2" width="16" height="16" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <div>
+          <div style="font-size:12px;font-weight:600;color:rgb(109,24,241);margin-bottom:2px;">Starting a New Job?</div>
+          <div style="font-size:12px;color:#6B35BE;line-height:1.5;">Use <strong>In Progress</strong> to add a new extra job or item to the monday.com board. This is always the first step — it creates the item. All other tabs update that same item.</div>
+        </div>
+      </div>
+
+      <!-- NOTIFY -->
+      <div style="display:flex;align-items:center;gap:10px;background:var(--mist);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:20px;cursor:pointer;" onclick="document.getElementById('sf-notify').click()">
+        <input type="checkbox" id="sf-notify" checked style="width:18px;height:18px;accent-color:var(--blue);cursor:pointer;flex-shrink:0;">
+        <div>
+          <div style="font-size:13px;font-weight:500;color:var(--ink);">Notify internal team</div>
+          <div style="font-size:11px;color:var(--slate);margin-top:1px;">Erika · Steve · Tiffany · German · Paola · Samuel</div>
+        </div>
+      </div>
+
+      <!-- JOB DETAILS -->
+      <div class="section-title">Job Details</div>
+      <div class="fields-grid">
+        <div class="field"><label>Property Name <span style="color:var(--red)">*</span></label><input type="text" id="sf-property" placeholder="e.g. Sunrise Apartments"></div>
+        <div class="field"><label>Unit Number <span style="color:var(--red)">*</span></label><input type="text" id="sf-unit" placeholder="e.g. 204B"></div>
+        <div class="field"><label>Job Type</label>
+          <select id="sf-job-type">
+            <option value="">Select job type…</option>
+            <option>Paint</option><option>Clean</option><option>Repair</option>
+            <option>Touch Paint</option><option>Touch Clean</option>
+            <option>Paint &amp; Clean</option><option>Paint, Clean, Resurface</option>
+            <option>Resurface</option><option>Go Back</option>
+            <option>Chem Wash</option><option>Other</option>
+          </select>
+        </div>
+        <div class="field"><label>Assigned To</label><input type="text" id="sf-assigned" placeholder="Team member name"></div>
+        <div class="field"><label>Date</label><input type="date" id="sf-date"></div>
+        <div class="field"><label>Priority</label>
+          <select id="sf-priority">
+            <option>Normal</option><option>Low</option><option>High</option><option>Urgent</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- DESCRIPTION -->
+      <div class="section-title">Description of Extras</div>
+      <div class="field field-full" style="margin-bottom:20px;">
+        <textarea id="sf-description" rows="3" placeholder="Describe the extras requested…"></textarea>
+      </div>
+
+      <!-- LINE ITEMS -->
+      <div class="section-title">Extras Line Items</div>
+      <div class="line-items-wrap">
+        <div class="line-header">
+          <span>Description</span><span style="text-align:center">Qty</span>
+          <span style="text-align:right">Unit Price</span><span style="text-align:right">Subtotal</span><span></span>
+        </div>
+        <div id="sf-line-items">
+          <div class="line-row">
+            <input type="text" class="line-input sf-desc" placeholder="e.g. Replace fixture" oninput="calcLine(this)">
+            <input type="number" class="line-input sf-qty" value="1" min="0" style="text-align:center" oninput="calcLine(this)">
+            <input type="number" class="line-input sf-price" placeholder="0.00" min="0" step="0.01" style="text-align:right" oninput="calcLine(this)">
+            <input type="text" class="line-total sf-sub" readonly value="$0.00">
+            <button class="line-remove" onclick="removeLine(this)" title="Remove">✕</button>
+          </div>
+        </div>
+        <div class="totals-row">
+          <div class="total-line"><span style="color:var(--slate)">Subtotal</span><span id="sf-subtotal">$0.00</span></div>
+          <div class="total-line" style="align-items:center"><span style="color:var(--slate)">Tax (%)</span>
+            <input type="number" id="sf-tax" value="0" min="0" max="100" style="width:56px;border:1px solid var(--border);border-radius:6px;padding:4px 6px;font-size:12px;text-align:right;outline:none;font-family:var(--font-body)" oninput="calcGrand()">
+          </div>
+          <div class="grand-total-line"><span>TOTAL IN EXTRAS</span><span id="sf-grand" style="color:var(--blue)">$0.00</span></div>
+        </div>
+      </div>
+      <button class="add-line-btn" onclick="addLine()">+ Add line item</button>
+
+      <!-- INTERNAL ONLY -->
+      <div class="internal-box">
+        <div class="internal-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Internal Only — Hidden from Customer
+        </div>
+        <div class="internal-fields">
+          <div class="field"><label>Cost Amount ($)</label><input type="number" id="sf-cost" placeholder="0.00" min="0" step="0.01" oninput="calcProfit()"></div>
+          <div class="field"><label>Profit ($)</label><div class="profit-display" id="sf-profit-display">$0.00</div></div>
+          <div class="field"><label>Profit (%)</label><div class="profit-display" id="sf-profit-pct-display">0.00%</div></div>
+        </div>
+      </div>
+
+      <!-- PHOTOS -->
+      <div class="section-title">Before &amp; After Photos</div>
+      <div class="photo-grid">
+        <div>
+          <div class="photo-zone-label">📷 Before Photos</div>
+          <div class="photo-zone">
+            <input type="file" accept="image/*" multiple onchange="addPhotos(event,'before')">
+            <div class="photo-icon">📷</div><p>Tap to add before photos</p>
+          </div>
+          <div class="photo-previews" id="before-previews"></div>
+        </div>
+        <div>
+          <div class="photo-zone-label">✅ After Photos</div>
+          <div class="photo-zone">
+            <input type="file" accept="image/*" multiple onchange="addPhotos(event,'after')">
+            <div class="photo-icon">✅</div><p>Tap to add after photos</p>
+          </div>
+          <div class="photo-previews" id="after-previews"></div>
+        </div>
+      </div>
+
+      <!-- JOB NOTES -->
+      <div class="section-title">Job Notes</div>
+      <div class="field field-full" style="margin-bottom:20px;">
+        <textarea id="sf-notes" rows="2" placeholder="Any additional information…"></textarea>
+      </div>
+
+      <!-- CUSTOMER SECTION (visible only on Sent Extras tab) -->
+      <div class="customer-section" id="customerSection">
+        <div class="customer-section-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>
+          Send Extras to Customer
+        </div>
+        <div class="fields-grid" style="margin-bottom:14px;">
+          <div class="field"><label>Customer Name <span style="color:var(--red)">*</span></label><input type="text" id="sf-cust-name" placeholder="e.g. John Smith"></div>
+          <div class="field"><label>Customer Email <span style="color:var(--red)">*</span></label><input type="email" id="sf-cust-email" placeholder="customer@email.com"></div>
+        </div>
+        <div class="field" style="margin-bottom:14px;">
+          <label>Message to Customer</label>
+          <textarea id="sf-cust-msg" rows="3" style="border:1.5px solid var(--ice)">While completing your unit, our team identified additional items requiring attention to bring it up to SEA MORRIS quality standards. Please review the extras below and provide your approval to proceed.</textarea>
+        </div>
+        <div class="section-title" style="margin-top:0">Customer Signature</div>
+        <div class="sig-wrap"><canvas id="sf-sig" width="760" height="110" style="width:100%;height:110px;"></canvas></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+          <span style="font-size:11px;color:var(--silver)">Customer signs above</span>
+          <button onclick="clearSig()" style="font-size:11px;padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--slate);cursor:pointer;font-family:var(--font-body)">Clear</button>
+        </div>
+        <div class="send-box">
+          <div class="send-box-label">Send to Customer</div>
+          <div class="send-btns">
+            <button class="btn-primary" style="background:linear-gradient(135deg,var(--blue),var(--blue-mid))" onclick="previewCustomerEmail()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              Preview Email
+            </button>
+            <button class="btn-outline" onclick="copyCustomerEmail()">📋 Copy HTML</button>
+          </div>
+        </div>
+        <div class="preview-area" id="sf-preview-area"></div>
+      </div>
+
+      <!-- BOTTOM BUTTONS -->
+      <div class="btn-row">
+        <button class="btn-clear" onclick="clearSmartForm()">Clear form</button>
+        <button class="btn-primary" id="sf-submit-btn" style="background:linear-gradient(135deg,#1355C2,#1A6FE8)" onclick="submitSmartForm()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          <span id="sf-submit-label">Create Item</span>
+        </button>
+      </div>
+
+    </div><!-- /form-body -->
+
+    <!-- NEW ENTRY BUTTON (shown after success) -->
+    <div id="sf-new-entry-bar" style="display:none;padding:20px 32px;text-align:center;border-top:1px solid var(--border);">
+      <button class="btn-primary" style="margin:0 auto;background:linear-gradient(135deg,#1355C2,#1A6FE8)" onclick="resetSmartForm()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4"/></svg>
+        New Entry
+      </button>
+    </div>
+
+  </div><!-- /card -->
+</div><!-- /shell -->
+
+<script>
+// ─── CONFIG ───────────────────────────────────
+const MONDAY = {
+  token:   'eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjY1OTU2Nzc0MiwiYWFpIjoxMSwidWlkIjoyNjQxODA1NiwiYWFkIjoiMjAyNi0wNS0xOFQwNjo1MzowNS41ODRaIiwicGVyIjoibWU6d3JpdGUiLCJhY3RpZCI6MTA2MDY0ODEsInJnbiI6InVzZTEifQ.toC3Wrft4tYNyg8P6ynKn2byCyUCneWgxOotAwXKoN4',
+  boardId: '18412837071',
+  apiUrl:  'https://api.monday.com/v2',
+  columns: {
+    property:    'text_mm39ba54',
+    unit:        'text_mm3956e7',
+    job_type:    'color_mm39d8m3',
+    description: 'long_text_mm39cqts',
+    status:      'color_mm39qfeq',
+    sent_date:   'date_mm3bafvt',
+    total:       'numeric_mm395vkq',
+    cost:        'numeric_mm395qnv',
+  }
+};
+
+const PA_WEBHOOKS = {
+  'Sent Extras':              'https://default3f5356f97f6649efa4a1060191aada.8c.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/1ff125033865422c92286a475ad8be53/triggers/manual/paths/invoke?api-version=1',
+  'Approved Without Manager': 'https://default3f5356f97f6649efa4a1060191aada.8c.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/370bf0ec4dce4ccc9c80331e6f63859a/triggers/manual/paths/invoke?api-version=1',
+  'Approved With Manager':    'https://default3f5356f97f6649efa4a1060191aada.8c.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/59b98295f871406bacd38b1c19136a09/triggers/manual/paths/invoke?api-version=1',
+  'Waiting for Approval':     'https://default3f5356f97f6649efa4a1060191aada.8c.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/0fe4265795e24fd29d9beb07ecb07052/triggers/manual/paths/invoke?api-version=1',
+  'Declined':                 'https://default3f5356f97f6649efa4a1060191aada.8c.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/3052e4a8b53e42419d462f89cf7ca480/triggers/manual/paths/invoke?api-version=1',
+  'In Progress':              'https://default3f5356f97f6649efa4a1060191aada.8c.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/448a6353615d4fb2a3240ae8160ebe1d/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=O9GuRGVcEzPa-Cm74c_zl9E95VKiUnIrYuD6rB7H15s',
+  'No Response':              'https://default3f5356f97f6649efa4a1060191aada.8c.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/448a6353615d4fb2a3240ae8160ebe1d/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=O9GuRGVcEzPa-Cm74c_zl9E95VKiUnIrYuD6rB7H15s',
+};
+
+const STATUS_HEADERS = {
+  'In Progress':              { bg:'linear-gradient(135deg,rgb(109,24,241),rgb(70,10,160))',   title:'Service Order — In Progress',           desc:'Update job details and notify the team that work is in progress.' },
+  'Sent Extras':              { bg:'linear-gradient(135deg,#1355C2,#082B6E)',                  title:'Extras Submitted for Approval',          desc:'Fill in customer details to send the extras email.' },
+  'Waiting for Approval':     { bg:'linear-gradient(135deg,rgb(56,149,255),rgb(20,90,180))',   title:'Waiting for Customer Approval',          desc:'Notifies team that we are waiting on customer response for the extras.' },
+  'Approved Without Manager': { bg:'linear-gradient(135deg,#1B8C5A,#0D5C3A)',                 title:'Extras Approved — No Manager Required',  desc:'Customer approved the extras. Board updated and team notified.' },
+  'Approved With Manager':    { bg:'linear-gradient(135deg,rgb(21,209,59),rgb(12,140,38))',    title:'Extras Approved — With Manager',         desc:'Customer approved with manager sign-off. Board updated and team notified.' },
+  'Declined':                 { bg:'linear-gradient(135deg,#C0392B,#7B1D1D)',                  title:'Extras Declined by Customer',            desc:'Customer declined the extras. Board updated and team notified.' },
+  'No Response':              { bg:'linear-gradient(135deg,rgb(255,93,242),rgb(160,30,160))',  title:'No Customer Response',                   desc:'Customer has not responded. Team will follow up.' },
+};
+
+// ─── STATE ────────────────────────────────────
+let currentStatus = 'In Progress';
+let photos = { before:[], after:[] };
+let sigCanvas, sigCtx, sigDrawing = false;
+let mondayItemId = null;   // null = no item yet; set after first create
+
+// ─── STATUS TAB ───────────────────────────────
+function setStatus(btn) {
+  document.querySelectorAll('.stab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  currentStatus = btn.dataset.status;
+  updateHeader();
+  updateCustomerSection();
+  updateSubmitButton();
+}
+
+function updateHeader() {
+  const h = STATUS_HEADERS[currentStatus];
+  const hdr = document.getElementById('cardHeader');
+  const badge = document.getElementById('headerBadge');
+  const title = document.getElementById('headerTitle');
+  const desc = document.getElementById('headerDesc');
+  if (hdr) hdr.style.background = h.bg;
+  if (badge) badge.textContent = currentStatus;
+  if (title) title.textContent = h.title;
+  if (desc) desc.textContent = h.desc;
+}
+
+function updateCustomerSection() {
+  const cs = document.getElementById('customerSection');
+  currentStatus === 'Sent Extras' ? cs.classList.add('show') : cs.classList.remove('show');
+  const note = document.getElementById('inProgressNote');
+  if (note) note.style.display = currentStatus === 'In Progress' ? 'flex' : 'none';
+}
+
+function updateSubmitButton() {
+  const label = document.getElementById('sf-submit-label');
+  const btn   = document.getElementById('sf-submit-btn');
+
+  if (currentStatus === 'In Progress') {
+    label.textContent = 'Create Item';
+    btn.style.background = 'linear-gradient(135deg,rgb(109,24,241),rgb(70,10,160))';
+  } else if (currentStatus === 'Sent Extras') {
+    label.textContent = 'Update Board & Send to Customer';
+    btn.style.background = 'linear-gradient(135deg,#1355C2,#1A6FE8)';
+  } else if (currentStatus === 'Waiting for Approval') {
+    label.textContent = 'Send Notification';
+    btn.style.background = 'linear-gradient(135deg,rgb(56,149,255),rgb(20,90,180))';
+  } else if (currentStatus === 'Approved Without Manager' || currentStatus === 'Approved With Manager') {
+    label.textContent = 'Update Board — Approved';
+    btn.style.background = 'linear-gradient(135deg,#1B8C5A,#0D5C3A)';
+  } else if (currentStatus === 'Declined') {
+    label.textContent = 'Update Board — Declined';
+    btn.style.background = 'linear-gradient(135deg,#C0392B,#7B1D1D)';
+  } else if (currentStatus === 'No Response') {
+    label.textContent = 'Send Notification';
+    btn.style.background = 'linear-gradient(135deg,rgb(255,93,242),rgb(160,30,160))';
+  }
+}
+
+// ─── LINE ITEMS ───────────────────────────────
+function calcLine(input) {
+  const row = input.closest('.line-row');
+  const qty   = parseFloat(row.querySelector('.sf-qty').value)   || 0;
+  const price = parseFloat(row.querySelector('.sf-price').value) || 0;
+  row.querySelector('.sf-sub').value = '$' + (qty * price).toFixed(2);
+  calcGrand();
+}
+
+function calcGrand() {
+  let sub = 0;
+  document.querySelectorAll('.sf-sub').forEach(el => sub += parseFloat(el.value.replace('$','')) || 0);
+  const taxPct = parseFloat(document.getElementById('sf-tax').value) || 0;
+  const total  = sub + sub * (taxPct / 100);
+  document.getElementById('sf-subtotal').textContent = '$' + sub.toFixed(2);
+  document.getElementById('sf-grand').textContent    = '$' + total.toFixed(2);
+  calcProfit();
+}
+
+function addLine() {
+  const row = document.createElement('div');
+  row.className = 'line-row';
+  row.innerHTML = `
+    <input type="text"   class="line-input sf-desc"  placeholder="Description"  oninput="calcLine(this)">
+    <input type="number" class="line-input sf-qty"   value="1" min="0" style="text-align:center" oninput="calcLine(this)">
+    <input type="number" class="line-input sf-price" placeholder="0.00" min="0" step="0.01" style="text-align:right" oninput="calcLine(this)">
+    <input type="text"   class="line-total sf-sub"   readonly value="$0.00">
+    <button class="line-remove" onclick="removeLine(this)">✕</button>`;
+  document.getElementById('sf-line-items').appendChild(row);
+}
+
+function removeLine(btn) {
+  if (document.querySelectorAll('.line-row').length > 1) { btn.closest('.line-row').remove(); calcGrand(); }
+}
+
+// ─── PROFIT ───────────────────────────────────
+function calcProfit() {
+  const total  = parseFloat(document.getElementById('sf-grand').textContent.replace('$','')) || 0;
+  const cost   = parseFloat(document.getElementById('sf-cost').value)  || 0;
+  const profit = total - cost;
+  const pct    = total > 0 ? (profit / total * 100) : 0;
+  const color  = profit >= 0 ? 'var(--green)' : 'var(--red)';
+  const pd = document.getElementById('sf-profit-display');
+  const pp = document.getElementById('sf-profit-pct-display');
+  if (pd) { pd.textContent = '$' + profit.toFixed(2); pd.style.color = color; }
+  if (pp) { pp.textContent = pct.toFixed(2) + '%'; pp.style.color = color; }
+}
+
+// ─── PHOTOS ───────────────────────────────────
+function addPhotos(e, type) {
+  Array.from(e.target.files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = ev => { photos[type].push({ name: file.name, dataUrl: ev.target.result }); renderPhotos(type); };
+    reader.readAsDataURL(file);
+  });
+}
+function renderPhotos(type) {
+  const c = document.getElementById(type + '-previews');
+  c.innerHTML = '';
+  photos[type].forEach((p, i) => {
+    const d = document.createElement('div');
+    d.className = 'photo-thumb';
+    d.innerHTML = `<img src="${p.dataUrl}"><button class="photo-rm" onclick="removePhoto('${type}',${i})">✕</button>`;
+    c.appendChild(d);
+  });
+}
+function removePhoto(type, i) { photos[type].splice(i,1); renderPhotos(type); }
+
+// ─── SIGNATURE ────────────────────────────────
+window.addEventListener('load', () => {
+  sigCanvas = document.getElementById('sf-sig');
+  if (!sigCanvas) return;
+  sigCtx = sigCanvas.getContext('2d');
+  sigCtx.strokeStyle = '#112240'; sigCtx.lineWidth = 2; sigCtx.lineCap = 'round';
+  const pos = e => {
+    const r = sigCanvas.getBoundingClientRect();
+    return {
+      x: ((e.touches ? e.touches[0].clientX : e.clientX) - r.left) * (sigCanvas.width  / r.width),
+      y: ((e.touches ? e.touches[0].clientY : e.clientY) - r.top)  * (sigCanvas.height / r.height)
+    };
+  };
+  sigCanvas.addEventListener('mousedown',  e => { sigDrawing=true; const p=pos(e); sigCtx.beginPath(); sigCtx.moveTo(p.x,p.y); });
+  sigCanvas.addEventListener('mousemove',  e => { if (!sigDrawing) return; const p=pos(e); sigCtx.lineTo(p.x,p.y); sigCtx.stroke(); });
+  sigCanvas.addEventListener('mouseup',    () => sigDrawing=false);
+  sigCanvas.addEventListener('touchstart', e => { e.preventDefault(); sigDrawing=true; const p=pos(e); sigCtx.beginPath(); sigCtx.moveTo(p.x,p.y); }, {passive:false});
+  sigCanvas.addEventListener('touchmove',  e => { e.preventDefault(); if (!sigDrawing) return; const p=pos(e); sigCtx.lineTo(p.x,p.y); sigCtx.stroke(); }, {passive:false});
+  sigCanvas.addEventListener('touchend',   () => sigDrawing=false);
+  document.getElementById('sf-date').value = new Date().toISOString().split('T')[0];
+});
+function clearSig() { if (sigCtx) sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height); }
+
+// ─── GET FORM VALUES ──────────────────────────
+function getVals() {
+  const lines = [];
+  document.querySelectorAll('.line-row').forEach(row => {
+    const desc = row.querySelector('.sf-desc').value.trim();
+    if (desc) lines.push({
+      desc, qty: row.querySelector('.sf-qty').value,
+      price: row.querySelector('.sf-price').value,
+      sub:   row.querySelector('.sf-sub').value
+    });
+  });
+  return {
+    property:    document.getElementById('sf-property').value.trim(),
+    unit:        document.getElementById('sf-unit').value.trim(),
+    jobType:     document.getElementById('sf-job-type').value,
+    assigned:    document.getElementById('sf-assigned').value.trim(),
+    date:        document.getElementById('sf-date').value,
+    priority:    document.getElementById('sf-priority').value,
+    description: (() => {
+      const manual = document.getElementById('sf-description').value.trim();
+      if (manual) return manual;
+      // Auto-build from line items if description field is empty
+      const filled = lines.filter(l => l.desc);
+      if (!filled.length) return '';
+      const lineText = filled.map(l =>
+        `${l.desc} x${l.qty} @ $${parseFloat(l.price||0).toFixed(2)} = ${l.sub}`
+      ).join('\n');
+      return lineText + '\nTOTAL: ' + document.getElementById('sf-grand').textContent;
+    })(),
+    notes:       document.getElementById('sf-notes').value.trim(),
+    total:       document.getElementById('sf-grand').textContent,
+    cost:        document.getElementById('sf-cost').value,
+    profit:      document.getElementById('sf-profit-display').textContent,
+    profitPct:   document.getElementById('sf-profit-pct-display').textContent,
+    status:      currentStatus,
+    custName:    document.getElementById('sf-cust-name').value.trim(),
+    custEmail:   document.getElementById('sf-cust-email').value.trim(),
+    custMsg:     document.getElementById('sf-cust-msg').value.trim(),
+    lines,
+    sentAt: new Date().toLocaleString('en-US', {dateStyle:'medium', timeStyle:'short'}),
+  };
+}
+
+// ─── BANNER ───────────────────────────────────
+function showBanner(type, msg) {
+  const b = document.getElementById('smartBanner');
+  b.className = 'banner show ' + type;
+  b.innerHTML = msg;
+}
+function hideBanner() { document.getElementById('smartBanner').classList.remove('show'); }
+
+// ─── POWER AUTOMATE — single entry point ─────
+// All monday.com creates/updates happen inside Power Automate.
+// The form sends one payload to the PA webhook per submission.
+async function triggerPowerAutomate(vals) {
+  const url = PA_WEBHOOKS[vals.status];
+  if (!url) throw new Error('No Power Automate webhook configured for: ' + vals.status);
+  const res = await fetch(url, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      formType:      vals.status,
+      propertyName:  vals.property,
+      unitNumber:    vals.unit,
+      jobType:       vals.jobType,
+      status:        vals.status,
+      description:   vals.description,
+      totalAmount:   vals.total,
+      costAmount:    vals.cost,
+      profit:        vals.profit,
+      profitPct:     vals.profitPct,
+      notes:         vals.notes,
+      sentAt:        vals.sentAt,
+      assigned:      vals.assigned,
+      priority:      vals.priority,
+      customerName:  vals.custName,
+      customerEmail: vals.custEmail,
+      mondayItemId:  mondayItemId || '',
+    }),
+  });
+  if (!res.ok) throw new Error('Power Automate error: HTTP ' + res.status);
+}
+
+// ─── UPDATE ITEM ID BAR ───────────────────────
+function refreshItemIdBar(isNewItem) {
+  if (!mondayItemId) return;
+  const pill = document.getElementById('itemIdPill');
+  const label = document.getElementById('itemModeLabel');
+  const bar = document.getElementById('itemIdBar');
+  if (pill) pill.textContent = mondayItemId;
+  if (label) label.textContent = isNewItem ? 'Item created on monday.com' : 'Item updated on monday.com';
+  if (bar) bar.classList.add('show');
+}
+
+// ─── CUSTOMER EMAIL ───────────────────────────
+function buildCustomerEmail(vals) {
+  const linesHTML = vals.lines.map(l =>
+    `<tr>
+      <td style="padding:8px 12px;border-bottom:1px solid #E8F2FD;">${l.desc}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #E8F2FD;text-align:center;">${l.qty}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #E8F2FD;text-align:right;">$${parseFloat(l.price||0).toFixed(2)}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #E8F2FD;text-align:right;font-weight:500;">${l.sub}</td>
+    </tr>`).join('');
+  let photosHTML = '';
+  if (photos.before.length) photosHTML += `<div style="margin-bottom:14px;"><div style="font-size:10px;font-weight:600;color:#4D6B8A;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;">Before Photos</div><div style="display:flex;flex-wrap:wrap;gap:8px;">${photos.before.map(p=>`<img src="${p.dataUrl}" style="width:170px;height:130px;object-fit:cover;border-radius:8px;border:1px solid #D4E4F4;">`).join('')}</div></div>`;
+  if (photos.after.length)  photosHTML += `<div style="margin-bottom:14px;"><div style="font-size:10px;font-weight:600;color:#4D6B8A;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;">After Photos</div><div style="display:flex;flex-wrap:wrap;gap:8px;">${photos.after.map(p=>`<img src="${p.dataUrl}" style="width:170px;height:130px;object-fit:cover;border-radius:8px;border:1px solid #D4E4F4;">`).join('')}</div></div>`;
+  const approveLink = `mailto:samuel@seamorris.com?subject=APPROVED - Extras ${vals.property} Unit ${vals.unit}&body=I approve the extras. Total: ${vals.total}.%0ACustomer: ${vals.custName}`;
+  const declineLink = `mailto:samuel@seamorris.com?subject=DECLINED - Extras ${vals.property} Unit ${vals.unit}&body=I decline the extras.%0ACustomer: ${vals.custName}`;
+  return `<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;background:#f4f8ff;margin:0;padding:20px;"><div style="max-width:600px;margin:0 auto;background:white;border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.1);">
+<div style="background:linear-gradient(135deg,#1355C2,#0A1E4A);padding:28px 32px;text-align:center;">
+<div style="width:48px;height:48px;background:rgba(255,255,255,.15);border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:white;margin-bottom:10px;">SM</div>
+<h1 style="color:white;font-size:20px;margin:0 0 4px;">SEA MORRIS ENTERPRISES</h1>
+<p style="color:rgba(255,255,255,.7);font-size:12px;margin:0;text-transform:uppercase;letter-spacing:.06em;">Extras Approval Request</p></div>
+<div style="padding:28px 32px;">
+<p style="font-size:16px;color:#112240;margin:0 0 6px;">Dear <strong>${vals.custName||'Customer'}</strong>,</p>
+<p style="font-size:14px;color:#5B7A99;line-height:1.6;margin:0 0 20px;">${vals.custMsg}</p>
+<div style="background:#F0F7FF;border-radius:10px;padding:14px 16px;margin-bottom:20px;border:1px solid #D4E4F4;">
+<div style="font-size:10px;font-weight:600;color:#5B7A99;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;">Job Details</div>
+<table style="width:100%;border-collapse:collapse;font-size:13px;">
+${vals.property?`<tr><td style="color:#5B7A99;width:130px;padding:3px 0;">Property</td><td style="color:#112240;font-weight:500;">${vals.property}</td></tr>`:''}
+${vals.unit?`<tr><td style="color:#5B7A99;padding:3px 0;">Unit</td><td style="color:#112240;font-weight:500;">${vals.unit}</td></tr>`:''}
+${vals.jobType?`<tr><td style="color:#5B7A99;padding:3px 0;">Job Type</td><td style="color:#112240;font-weight:500;">${vals.jobType}</td></tr>`:''}
+<tr><td style="color:#5B7A99;padding:3px 0;">Date</td><td style="color:#112240;font-weight:500;">${vals.date||new Date().toLocaleDateString()}</td></tr>
+</table></div>
+<div style="margin-bottom:20px;">
+<div style="font-size:10px;font-weight:600;color:#5B7A99;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;">Extras Requested</div>
+<table style="width:100%;border-collapse:collapse;font-size:13px;border:1px solid #D4E4F4;border-radius:10px;overflow:hidden;">
+<thead><tr style="background:#F0F7FF;"><th style="padding:8px 12px;text-align:left;font-size:10px;font-weight:600;color:#5B7A99;text-transform:uppercase;">Description</th><th style="padding:8px 12px;text-align:center;font-size:10px;font-weight:600;color:#5B7A99;text-transform:uppercase;">Qty</th><th style="padding:8px 12px;text-align:right;font-size:10px;font-weight:600;color:#5B7A99;text-transform:uppercase;">Price</th><th style="padding:8px 12px;text-align:right;font-size:10px;font-weight:600;color:#5B7A99;text-transform:uppercase;">Subtotal</th></tr></thead>
+<tbody>${linesHTML}</tbody>
+<tfoot><tr style="background:#1355C2;"><td colspan="3" style="padding:10px 12px;color:white;font-weight:600;">TOTAL IN EXTRAS</td><td style="padding:10px 12px;color:white;font-weight:700;text-align:right;">${vals.total}</td></tr></tfoot>
+</table></div>
+${photosHTML?`<div style="margin-bottom:20px;">${photosHTML}</div>`:''}
+<div style="background:#F0F7FF;border-radius:12px;padding:20px;text-align:center;margin-bottom:20px;border:1px solid #D4E4F4;">
+<p style="font-size:14px;color:#112240;font-weight:500;margin:0 0 14px;">Please review and respond at your earliest convenience.</p>
+<div style="display:inline-flex;gap:12px;flex-wrap:wrap;justify-content:center;">
+<a href="${approveLink}" style="display:inline-block;padding:12px 28px;background:linear-gradient(135deg,#0D7A4E,#1B8C5A);color:white;text-decoration:none;border-radius:10px;font-size:14px;font-weight:600;box-shadow:0 4px 12px rgba(13,122,78,.3);">✓ &nbsp;Approve Extras</a>
+<a href="${declineLink}" style="display:inline-block;padding:12px 28px;background:linear-gradient(135deg,#B83020,#C0392B);color:white;text-decoration:none;border-radius:10px;font-size:14px;font-weight:600;box-shadow:0 4px 12px rgba(184,48,32,.3);">✗ &nbsp;Decline Extras</a>
+</div>
+<p style="font-size:11px;color:#A8C0D6;margin:10px 0 0;">Clicking a button will open an email reply to samuel@seamorris.com</p>
+</div>
+<div style="text-align:center;padding-top:16px;border-top:1px solid #D4E4F4;">
+<p style="font-size:13px;color:#112240;font-weight:500;margin:0 0 2px;">SEA MORRIS ENTERPRISES</p>
+<p style="font-size:12px;color:#5B7A99;margin:0;">Multifamily Turnkey Services &nbsp;·&nbsp; <a href="mailto:samuel@seamorris.com" style="color:#1355C2;">samuel@seamorris.com</a></p>
+</div></div></div></body></html>`;
+}
+
+function previewCustomerEmail() {
+  const html = buildCustomerEmail(getVals());
+  const area = document.getElementById('sf-preview-area');
+  area.style.display = 'block';
+  area.innerHTML = `<div style="border:1.5px solid var(--border);border-radius:12px;overflow:hidden;margin-top:14px;">
+    <div class="preview-header">Email Preview — Customer will see this
+      <button onclick="document.getElementById('sf-preview-area').style.display='none'" style="border:none;background:transparent;cursor:pointer;color:var(--silver);font-size:16px;">✕</button>
+    </div>
+    <iframe srcdoc="${html.replace(/"/g,'&quot;')}" style="width:100%;height:520px;border:none;"></iframe>
+  </div>`;
+  area.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function copyCustomerEmail() {
+  const html = buildCustomerEmail(getVals());
+  navigator.clipboard.writeText(html)
+    .then(() => alert('HTML copied! Paste into Outlook.'))
+    .catch(() => { const ta=document.createElement('textarea'); ta.value=html; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); alert('Copied!'); });
+}
+
+// ─── MAIN SUBMIT ──────────────────────────────
+async function submitSmartForm() {
+  const vals = getVals();
+  if (!vals.property || !vals.unit) {
+    showBanner('error','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> &nbsp;Property Name and Unit Number are required.');
+    return;
+  }
+  if (currentStatus === 'Sent Extras' && !vals.custEmail) {
+    showBanner('error','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> &nbsp;Customer email is required when sending extras.');
+    return;
+  }
+
+  hideBanner();
+  const btn = document.getElementById('sf-submit-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<svg style="width:16px;height:16px;animation:spin 1s linear infinite" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> &nbsp;Saving…';
+
+  try {
+    const isNewItem = currentStatus === 'In Progress';
+
+    if (!isNewItem && !mondayItemId) {
+      showBanner('error','⚠️ &nbsp;Please submit <strong>In Progress</strong> first to create the item before updating its status.');
+      btn.disabled = false;
+      updateSubmitButton();
+      btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> <span id="sf-submit-label">${document.getElementById('sf-submit-label')?.textContent||'Send Notification'}</span>`;
+      return;
+    }
+
+    const actionMsg = isNewItem ? 'Creating item on monday.com…' : 'Updating monday.com board…';
+    showBanner('loading','<svg style="width:15px;height:15px;animation:spin 1s linear infinite;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> &nbsp;' + actionMsg);
+
+    // Single call to Power Automate — handles both monday.com + email
+    await triggerPowerAutomate(vals);
+
+    // For In Progress, set a placeholder so other tabs know item exists
+    if (isNewItem) mondayItemId = 'pending';
+
+    hideBanner();
+    refreshItemIdBar(isNewItem);
+    updateSubmitButton();
+
+    // Show success banner and reset button
+    showBanner('success', `✅ &nbsp;<strong>${isNewItem ? 'Item Created!' : 'Item Updated!'}</strong> &nbsp;monday.com ${isNewItem ? 'item created' : 'updated'} to "${currentStatus}" · Team notified${currentStatus==='Sent Extras'?' · Use Preview Email or Copy HTML to send to customer':''}`);
+    btn.disabled = false;
+    updateSubmitButton();
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> <span id="sf-submit-label">${isNewItem ? 'Create Item' : document.getElementById('sf-submit-label')?.textContent||'Send Notification'}</span>`;
+    const newEntryBar = document.getElementById('sf-new-entry-bar');
+    if (newEntryBar) newEntryBar.style.display = 'block';
+
+  } catch(err) {
+    showBanner('error', '❌ &nbsp;Error: ' + err.message + ' — Please try again.');
+    btn.disabled = false;
+    updateSubmitButton();
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> <span id="sf-submit-label">${document.getElementById('sf-submit-label')?.textContent||'Send Notification'}</span>`;
+  }
+}
+
+// ─── CLEAR / RESET ────────────────────────────
+function clearSmartForm() {
+  ['sf-property','sf-unit','sf-assigned','sf-description','sf-notes','sf-cost','sf-cust-name','sf-cust-email'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  document.getElementById('sf-job-type').value  = '';
+  document.getElementById('sf-priority').value  = 'Normal';
+  document.getElementById('sf-date').value      = new Date().toISOString().split('T')[0];
+  document.getElementById('sf-tax').value       = '0';
+  document.getElementById('sf-cust-msg').value  = 'While completing your unit, our team identified additional items requiring attention to bring it up to SEA MORRIS quality standards. Please review the extras below and provide your approval to proceed.';
+  document.getElementById('sf-line-items').innerHTML = `<div class="line-row">
+    <input type="text" class="line-input sf-desc" placeholder="e.g. Replace fixture" oninput="calcLine(this)">
+    <input type="number" class="line-input sf-qty" value="1" min="0" style="text-align:center" oninput="calcLine(this)">
+    <input type="number" class="line-input sf-price" placeholder="0.00" min="0" step="0.01" style="text-align:right" oninput="calcLine(this)">
+    <input type="text" class="line-total sf-sub" readonly value="$0.00">
+    <button class="line-remove" onclick="removeLine(this)">✕</button></div>`;
+  calcGrand(); calcProfit();
+  photos = {before:[], after:[]};
+  ['before-previews','after-previews'].forEach(id => document.getElementById(id).innerHTML = '');
+  clearSig();
+  hideBanner();
+  document.getElementById('sf-preview-area').style.display = 'none';
+  document.getElementById('sf-profit-display').textContent     = '$0.00';
+  document.getElementById('sf-profit-pct-display').textContent = '0.00%';
+}
+
+// New Entry: full reset including monday item ID
+function resetSmartForm() {
+  mondayItemId = null;   // ← clear the item ID so next job creates fresh
+  clearSmartForm();
+  document.getElementById('smartFormBody').style.display = 'block';
+  const newEntryBar2 = document.getElementById('sf-new-entry-bar');
+  if (newEntryBar2) newEntryBar2.style.display = 'none';
+  document.getElementById('itemIdBar').classList.remove('show');
+  // Reset status tab to In Progress
+  document.querySelectorAll('.stab').forEach(t => t.classList.remove('active'));
+  document.querySelector('.stab[data-status="In Progress"]').classList.add('active');
+  currentStatus = 'In Progress';
+  updateHeader();
+  updateCustomerSection();
+  const btn = document.getElementById('sf-submit-btn');
+  btn.disabled = false;
+  updateSubmitButton();
+  btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> <span id="sf-submit-label">Create Item</span>`;
+}
+</script>
+</body>
+</html>
