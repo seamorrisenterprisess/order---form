@@ -432,28 +432,21 @@ function updateCustomerSection() {
 }
 
 function updateSubmitButton() {
-  const label = document.getElementById('sf-submit-label');
-  const btn   = document.getElementById('sf-submit-btn');
+  const btn = document.getElementById('sf-submit-btn');
+  if (!btn) return;
 
-  if (currentStatus === 'In Progress') {
-    label.textContent = 'Create Item';
-    btn.style.background = 'linear-gradient(135deg,rgb(109,24,241),rgb(70,10,160))';
-  } else if (currentStatus === 'Sent Extras') {
-    label.textContent = 'Update Board & Send to Customer';
-    btn.style.background = 'linear-gradient(135deg,#1355C2,#1A6FE8)';
-  } else if (currentStatus === 'Waiting for Approval') {
-    label.textContent = 'Send Notification';
-    btn.style.background = 'linear-gradient(135deg,rgb(56,149,255),rgb(20,90,180))';
-  } else if (currentStatus === 'Approved Without Manager' || currentStatus === 'Approved With Manager') {
-    label.textContent = 'Update Board — Approved';
-    btn.style.background = 'linear-gradient(135deg,#1B8C5A,#0D5C3A)';
-  } else if (currentStatus === 'Declined') {
-    label.textContent = 'Update Board — Declined';
-    btn.style.background = 'linear-gradient(135deg,#C0392B,#7B1D1D)';
-  } else if (currentStatus === 'No Response') {
-    label.textContent = 'Send Notification';
-    btn.style.background = 'linear-gradient(135deg,rgb(255,93,242),rgb(160,30,160))';
-  }
+  const labels = {
+    'In Progress':              { text: 'Create Item',                      bg: 'linear-gradient(135deg,rgb(109,24,241),rgb(70,10,160))' },
+    'Sent Extras':              { text: 'Update Board + Send to Customer',  bg: 'linear-gradient(135deg,#1355C2,#1A6FE8)' },
+    'Waiting for Approval':     { text: 'Send Notification',               bg: 'linear-gradient(135deg,rgb(56,149,255),rgb(20,90,180))' },
+    'Approved Without Manager': { text: 'Update Board - Approved',         bg: 'linear-gradient(135deg,#1B8C5A,#0D5C3A)' },
+    'Approved With Manager':    { text: 'Update Board - Approved',         bg: 'linear-gradient(135deg,#1B8C5A,#0D5C3A)' },
+    'Declined':                 { text: 'Update Board - Declined',         bg: 'linear-gradient(135deg,#C0392B,#7B1D1D)' },
+    'No Response':              { text: 'Send Notification',               bg: 'linear-gradient(135deg,rgb(255,93,242),rgb(160,30,160))' },
+  };
+  const config = labels[currentStatus] || labels['In Progress'];
+  btn.style.background = config.bg;
+  btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> <span id="sf-submit-label">${config.text}</span>`;
 }
 
 // ─── LINE ITEMS ───────────────────────────────
@@ -737,7 +730,6 @@ async function submitSmartForm() {
       showBanner('error','⚠️ &nbsp;Please submit <strong>In Progress</strong> first to create the item before updating its status.');
       btn.disabled = false;
       updateSubmitButton();
-      btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> <span id="sf-submit-label">${document.getElementById('sf-submit-label')?.textContent||'Send Notification'}</span>`;
       return;
     }
 
@@ -758,7 +750,6 @@ async function submitSmartForm() {
     showBanner('success', `✅ &nbsp;<strong>${isNewItem ? 'Item Created!' : 'Item Updated!'}</strong> &nbsp;monday.com ${isNewItem ? 'item created' : 'updated'} to "${currentStatus}" · Team notified${currentStatus==='Sent Extras'?' · Use Preview Email or Copy HTML to send to customer':''}`);
     btn.disabled = false;
     updateSubmitButton();
-    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> <span id="sf-submit-label">${isNewItem ? 'Create Item' : document.getElementById('sf-submit-label')?.textContent||'Send Notification'}</span>`;
     const newEntryBar = document.getElementById('sf-new-entry-bar');
     if (newEntryBar) newEntryBar.style.display = 'block';
 
@@ -766,7 +757,6 @@ async function submitSmartForm() {
     showBanner('error', '❌ &nbsp;Error: ' + err.message + ' — Please try again.');
     btn.disabled = false;
     updateSubmitButton();
-    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> <span id="sf-submit-label">${document.getElementById('sf-submit-label')?.textContent||'Send Notification'}</span>`;
   }
 }
 
@@ -813,7 +803,6 @@ function resetSmartForm() {
   const btn = document.getElementById('sf-submit-btn');
   btn.disabled = false;
   updateSubmitButton();
-  btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> <span id="sf-submit-label">Create Item</span>`;
 }
 </script>
 </body>
