@@ -336,9 +336,16 @@ canvas{display:block;touch-action:none;cursor:crosshair}
         <div class="preview-area" id="sf-preview-area"></div>
       </div>
 
+      <!-- TEAM EMAIL PREVIEW (shown on In Progress tab) -->
+      <div id="teamPreviewArea" style="display:none;margin-bottom:20px;"></div>
+
       <!-- BOTTOM BUTTONS -->
       <div class="btn-row">
         <button class="btn-clear" onclick="clearSmartForm()">Clear form</button>
+        <button class="btn-outline" id="sf-preview-team-btn" onclick="previewTeamEmail()" style="display:flex;align-items:center;gap:7px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          Preview Team Email
+        </button>
         <button class="btn-primary" id="sf-submit-btn" style="background:linear-gradient(135deg,#1355C2,#1A6FE8)" onclick="submitSmartForm()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
           <span id="sf-submit-label">Create Item</span>
@@ -430,6 +437,10 @@ function updateCustomerSection() {
   currentStatus === 'Sent Extras' ? cs.classList.add('show') : cs.classList.remove('show');
   const note = document.getElementById('inProgressNote');
   if (note) note.style.display = currentStatus === 'In Progress' ? 'flex' : 'none';
+  const previewBtn = document.getElementById('sf-preview-team-btn');
+  if (previewBtn) previewBtn.style.display = currentStatus === 'In Progress' ? 'flex' : 'none';
+  const teamArea = document.getElementById('teamPreviewArea');
+  if (teamArea && currentStatus !== 'In Progress') teamArea.style.display = 'none';
 }
 
 function updateSubmitButton() {
@@ -741,6 +752,43 @@ ${photosHTML?`<div style="margin-bottom:20px;">${photosHTML}</div>`:''}
 <p style="font-size:13px;color:#112240;font-weight:500;margin:0 0 2px;">SEA MORRIS ENTERPRISES</p>
 <p style="font-size:12px;color:#5B7A99;margin:0;">Multifamily Turnkey Services &nbsp;·&nbsp; <a href="mailto:samuel@seamorris.com" style="color:#1355C2;">samuel@seamorris.com</a></p>
 </div></div></div></body></html>`;
+}
+
+function previewTeamEmail() {
+  const vals = getVals();
+  const photoRows = [
+    ...photos.before.map((p, i) => `<tr><td style="padding:6px 0;color:#5B7A99;font-size:13px;">Before ${i+1}</td><td><img src="${p.dataUrl}" style="max-width:320px;border-radius:8px;border:1px solid #D4E4F4;"></td></tr>`),
+    ...photos.after.map((p,  i) => `<tr><td style="padding:6px 0;color:#5B7A99;font-size:13px;">After ${i+1}</td><td><img src="${p.dataUrl}" style="max-width:320px;border-radius:8px;border:1px solid #D4E4F4;"></td></tr>`),
+  ].join('');
+  const html = `<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;background:#f4f8ff;margin:0;padding:20px;">
+<div style="max-width:600px;margin:0 auto;background:white;border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.1);">
+<div style="background:linear-gradient(135deg,rgb(109,24,241),rgb(70,10,160));padding:24px 32px;">
+<h1 style="color:white;font-size:18px;margin:0 0 4px;">SEA MORRIS — New Extra Job</h1>
+<p style="color:rgba(255,255,255,.7);font-size:12px;margin:0;">Internal Team Notification</p></div>
+<div style="padding:24px 32px;">
+<p style="font-size:14px;color:#112240;margin:0 0 16px;">Hello Team, a new extra job order has been created.</p>
+<table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:20px;">
+${vals.property?`<tr><td style="color:#5B7A99;width:130px;padding:4px 0;">Property</td><td style="color:#112240;font-weight:500;">${vals.property}</td></tr>`:''}
+${vals.unit?`<tr><td style="color:#5B7A99;padding:4px 0;">Unit</td><td style="color:#112240;font-weight:500;">${vals.unit}</td></tr>`:''}
+${vals.jobType?`<tr><td style="color:#5B7A99;padding:4px 0;">Job Type</td><td style="color:#112240;font-weight:500;">${vals.jobType}</td></tr>`:''}
+${vals.assigned?`<tr><td style="color:#5B7A99;padding:4px 0;">Assigned To</td><td style="color:#112240;font-weight:500;">${vals.assigned}</td></tr>`:''}
+${vals.description?`<tr><td style="color:#5B7A99;padding:4px 0;">Description</td><td style="color:#112240;">${vals.description}</td></tr>`:''}
+${vals.total?`<tr><td style="color:#5B7A99;padding:4px 0;">Total</td><td style="color:#112240;font-weight:600;">${vals.total}</td></tr>`:''}
+<tr><td style="color:#5B7A99;padding:4px 0;">Sent</td><td style="color:#112240;">${vals.sentAt}</td></tr>
+</table>
+${photoRows ? `<div style="margin-top:16px;"><div style="font-size:11px;font-weight:600;color:#5B7A99;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;">Photos</div><table>${photoRows}</table></div>` : ''}
+<p style="font-size:13px;color:#5B7A99;margin-top:20px;">Please review the extras and send to the customer for approval — SEA MORRIS ENTERPRISES</p>
+</div></div></body></html>`;
+
+  const area = document.getElementById('teamPreviewArea');
+  area.style.display = 'block';
+  area.innerHTML = `<div style="border:1.5px solid var(--border);border-radius:12px;overflow:hidden;margin-top:4px;">
+    <div class="preview-header">Team Email Preview
+      <button onclick="document.getElementById('teamPreviewArea').style.display='none'" style="border:none;background:transparent;cursor:pointer;color:var(--silver);font-size:16px;">✕</button>
+    </div>
+    <iframe srcdoc="${html.replace(/"/g,'&quot;')}" style="width:100%;height:520px;border:none;"></iframe>
+  </div>`;
+  area.scrollIntoView({behavior:'smooth', block:'nearest'});
 }
 
 function previewCustomerEmail() {
