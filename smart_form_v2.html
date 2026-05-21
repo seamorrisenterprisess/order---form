@@ -355,11 +355,33 @@ canvas{display:block;touch-action:none;cursor:crosshair}
     </div><!-- /form-body -->
 
     <!-- NEW ENTRY BUTTON (shown after success) -->
-    <div id="sf-new-entry-bar" style="display:none;padding:20px 32px;text-align:center;border-top:1px solid var(--border);">
-      <button class="btn-primary" style="margin:0 auto;background:linear-gradient(135deg,#1355C2,#1A6FE8)" onclick="resetSmartForm()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4"/></svg>
-        New Entry
-      </button>
+    <div id="sf-new-entry-bar" style="display:none;padding:20px 32px;border-top:1px solid var(--border);">
+      <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:12px;">
+        <button class="btn-primary" style="background:linear-gradient(135deg,#1355C2,#1A6FE8)" onclick="resetSmartForm()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4"/></svg>
+          New Entry
+        </button>
+        <button class="btn-outline" onclick="showShareOptions()" style="display:flex;align-items:center;gap:7px;border-color:rgb(109,24,241);color:rgb(109,24,241);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+          Share with Manager
+        </button>
+      </div>
+      <div id="sf-share-box" style="display:none;background:var(--frost);border:1.5px solid var(--ice);border-radius:12px;padding:14px 16px;">
+        <div style="font-size:11px;font-weight:600;color:var(--blue);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">📋 Share with Samuel — select which tab to open</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;">
+          <button onclick="shareWithTab('Sent Extras')"           style="padding:6px 12px;border-radius:8px;border:1.5px solid var(--blue);background:transparent;color:var(--blue);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font-body);">Sent Extras</button>
+          <button onclick="shareWithTab('Waiting for Approval')"  style="padding:6px 12px;border-radius:8px;border:1.5px solid rgb(56,149,255);background:transparent;color:rgb(56,149,255);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font-body);">Waiting for Approval</button>
+          <button onclick="shareWithTab('Approved Without Manager')" style="padding:6px 12px;border-radius:8px;border:1.5px solid var(--green);background:transparent;color:var(--green);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font-body);">Approved (No Mgr)</button>
+          <button onclick="shareWithTab('Approved With Manager')"  style="padding:6px 12px;border-radius:8px;border:1.5px solid rgb(21,209,59);background:transparent;color:rgb(21,120,38);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font-body);">Approved (Mgr)</button>
+          <button onclick="shareWithTab('Declined')"              style="padding:6px 12px;border-radius:8px;border:1.5px solid var(--red);background:transparent;color:var(--red);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font-body);">Declined</button>
+          <button onclick="shareWithTab('No Response')"           style="padding:6px 12px;border-radius:8px;border:1.5px solid rgb(255,93,242);background:transparent;color:rgb(180,30,160);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font-body);">No Response</button>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input id="sf-share-url" type="text" readonly placeholder="Select a tab above to generate link…" style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:11px;font-family:monospace;background:white;color:var(--ink);">
+          <button onclick="copyShareLink()" style="padding:8px 14px;border-radius:8px;border:none;background:var(--blue);color:white;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font-body);flex-shrink:0;">Copy</button>
+        </div>
+        <div style="font-size:11px;color:var(--slate);margin-top:8px;">Link opens the form pre-filled on the selected tab — ready for manager to action.</div>
+      </div>
     </div>
 
   </div><!-- /card -->
@@ -565,6 +587,8 @@ window.addEventListener('load', () => {
   sigCanvas.addEventListener('touchmove',  e => { e.preventDefault(); if (!sigDrawing) return; const p=pos(e); sigCtx.lineTo(p.x,p.y); sigCtx.stroke(); }, {passive:false});
   sigCanvas.addEventListener('touchend',   () => sigDrawing=false);
   document.getElementById('sf-date').value = new Date().toISOString().split('T')[0];
+  // Load pre-filled data from URL if present (shared link from team member)
+  loadFromUrlParams();
 });
 function clearSig() { if (sigCtx) sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height); }
 
@@ -896,6 +920,132 @@ function clearSmartForm() {
   document.getElementById('sf-preview-area').style.display = 'none';
   document.getElementById('sf-profit-display').textContent     = '$0.00';
   document.getElementById('sf-profit-pct-display').textContent = '0.00%';
+}
+
+// ─── SHARE WITH MANAGER ──────────────────────
+function showShareOptions() {
+  const box = document.getElementById('sf-share-box');
+  box.style.display = box.style.display === 'none' ? 'block' : 'none';
+}
+
+function shareWithTab(tab) {
+  const vals = getVals();
+  const lines = [];
+  document.querySelectorAll('.line-row').forEach(row => {
+    const desc = row.querySelector('.sf-desc').value.trim();
+    if (desc) lines.push({
+      desc, qty: row.querySelector('.sf-qty').value,
+      price: row.querySelector('.sf-price').value,
+      sub: row.querySelector('.sf-sub').value
+    });
+  });
+  const params = new URLSearchParams({
+    property:    vals.property,
+    unit:        vals.unit,
+    jobType:     vals.jobType,
+    assigned:    vals.assigned,
+    date:        vals.date,
+    priority:    vals.priority,
+    description: vals.description,
+    notes:       vals.notes,
+    total:       vals.total,
+    cost:        vals.cost,
+    itemId:      mondayItemId || '',
+    tab:         tab,
+  });
+  if (lines.length) params.set('lines', JSON.stringify(lines));
+  const tax = document.getElementById('sf-tax').value;
+  if (tax) params.set('tax', tax);
+
+  const url = window.location.origin + window.location.pathname + '?' + params.toString();
+  const input = document.getElementById('sf-share-url');
+  input.value = url;
+  input.select();
+
+  // Highlight the selected tab button
+  document.querySelectorAll('#sf-share-box button[onclick^="shareWithTab"]').forEach(b => b.style.opacity = '0.5');
+  event.target.style.opacity = '1';
+  event.target.style.fontWeight = '700';
+}
+
+function copyShareLink() {
+  const input = document.getElementById('sf-share-url');
+  navigator.clipboard.writeText(input.value)
+    .then(() => { 
+      const btn = input.nextElementSibling;
+      btn.textContent = 'Copied!';
+      btn.style.background = 'var(--green)';
+      setTimeout(() => { btn.textContent = 'Copy'; btn.style.background = 'var(--blue)'; }, 2000);
+    })
+    .catch(() => { input.select(); document.execCommand('copy'); });
+}
+
+// ─── LOAD FROM URL PARAMS (pre-filled link) ───
+function loadFromUrlParams() {
+  const params = new URLSearchParams(window.location.search);
+  if (!params.has('property') && !params.has('unit')) return;
+
+  // Fill fields
+  const set = (id, key) => { const el = document.getElementById(id); if (el && params.get(key)) el.value = params.get(key); };
+  set('sf-property',    'property');
+  set('sf-unit',        'unit');
+  set('sf-job-type',    'jobType');
+  set('sf-assigned',    'assigned');
+  set('sf-date',        'date');
+  set('sf-priority',    'priority');
+  set('sf-description', 'description');
+  set('sf-notes',       'notes');
+  set('sf-cost',        'cost');
+  set('sf-tax',         'tax');
+
+  // Restore line items
+  if (params.get('lines')) {
+    try {
+      const lines = JSON.parse(params.get('lines'));
+      const container = document.getElementById('sf-line-items');
+      container.innerHTML = '';
+      lines.forEach(l => {
+        const row = document.createElement('div');
+        row.className = 'line-row';
+        row.innerHTML = `
+          <input type="text" class="line-input sf-desc" value="${l.desc}" oninput="calcLine(this)">
+          <input type="number" class="line-input sf-qty" value="${l.qty}" min="0" style="text-align:center" oninput="calcLine(this)">
+          <input type="number" class="line-input sf-price" value="${l.price}" min="0" step="0.01" style="text-align:right" oninput="calcLine(this)">
+          <input type="text" class="line-total sf-sub" readonly value="${l.sub}">
+          <button class="line-remove" onclick="removeLine(this)">✕</button>`;
+        container.appendChild(row);
+      });
+    } catch(e) {}
+  }
+
+  // Restore monday item ID
+  if (params.get('itemId')) mondayItemId = params.get('itemId');
+
+  // Switch to the correct tab
+  const tab = params.get('tab') || 'Sent Extras';
+  const tabBtn = document.querySelector(`.stab[data-status="${tab}"]`);
+  if (tabBtn) {
+    document.querySelectorAll('.stab').forEach(t => t.classList.remove('active'));
+    tabBtn.classList.add('active');
+    currentStatus = tab;
+    updateHeader();
+    updateCustomerSection();
+    updateSubmitButton();
+  }
+
+  // Show item ID bar if we have an ID
+  if (mondayItemId && mondayItemId !== 'pending') {
+    refreshItemIdBar(false);
+  }
+
+  calcGrand();
+  calcProfit();
+
+  // Clean URL without reloading
+  window.history.replaceState({}, '', window.location.pathname);
+
+  // Show a welcome banner for the manager
+  const tabLabels = {'Sent Extras':'Add the customer email and click "Update Board + Send to Customer".','Waiting for Approval':'Review and click "Send Notification".','Approved Without Manager':'Review and click "Update Board - Approved".','Approved With Manager':'Review and click "Update Board - Approved".','Declined':'Review and click "Update Board - Declined".','No Response':'Review and click "Send Notification".',}; showBanner('loading', '📋 &nbsp;<strong>Pre-filled from team submission.</strong> &nbsp;' + (tabLabels[tab] || 'Review the details and submit.'));
 }
 
 // New Entry: full reset including monday item ID
