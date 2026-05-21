@@ -669,14 +669,23 @@ async function uploadPhotosToMonday(itemId) {
 // most recently created item in the Extras group. Retries up to
 // 5 times with a 1.5s gap to give PA time to finish.
 async function fetchLatestMondayItemId(property, unit) {
-  const query = `{ boards(ids: ${MONDAY.boardId}) { groups(ids: "topics") { items_page(limit: 5) { items { id name } } } } }`;
   for (let attempt = 0; attempt < 5; attempt++) {
     await new Promise(r => setTimeout(r, 1500));
     try {
+      const payload = {
+        query: `query ($boardId: ID!, $groupId: String!) {
+          boards(ids: [$boardId]) {
+            groups(ids: [$groupId]) {
+              items_page(limit: 5) { items { id name } }
+            }
+          }
+        }`,
+        variables: { boardId: String(MONDAY.boardId), groupId: "topics" }
+      };
       const r = await fetch(MONDAY.apiUrl, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': MONDAY.token },
-        body:    JSON.stringify({ query }),
+        body:    JSON.stringify(payload),
       });
       const json = await r.json();
       const items = json?.data?.boards?.[0]?.groups?.[0]?.items_page?.items || [];
