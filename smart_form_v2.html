@@ -620,86 +620,49 @@ async function triggerPowerAutomate(vals) {
     }),
   });
   if (!res.ok) throw new Error('Power Automate error: HTTP ' + res.status);
+
+  // Try to read the monday item ID from the PA response (In Progress flow only)
+  if (vals.status === 'In Progress') {
+    try {
+      const text = await res.text();
+      console.log('PA response:', text);
+      const data = JSON.parse(text);
+      if (data && data.mondayItemId) return String(data.mondayItemId);
+    } catch(e) {
+      console.log('PA response parse error:', e);
+    }
+  }
+  return null;
 }
 
-// ─── UPLOAD PHOTOS TO MONDAY.COM ─────────────
-// Converts base64 dataUrl to a Blob and uploads each photo to the
-// monday.com Files column using the add_file_to_column mutation.
-async function uploadPhotosToMonday(itemId) {
+// ─── UPLOAD PHOTOS VIA POWER AUTOMATE ────────
+// Sends photos as base64 to the In Progress PA webhook with the
+// real item ID so PA can upload them to monday.com's Files column.
+// (Direct monday.com API calls are blocked by CORS from GitHub Pages)
+async function uploadPhotosViaProxy(itemId) {
   const allPhotos = [
     ...photos.before.map((p, i) => ({ ...p, label: `before_${i + 1}` })),
     ...photos.after.map((p,  i) => ({ ...p, label: `after_${i + 1}`  })),
   ];
   if (!allPhotos.length) return;
-
-  for (const photo of allPhotos) {
-    try {
-      // Convert base64 dataUrl → Blob
-      const parts    = photo.dataUrl.split(',');
-      const mimeType = parts[0].match(/:(.*?);/)[1];
-      const ext      = mimeType.split('/')[1] || 'jpg';
-      const binary   = atob(parts[1]);
-      const bytes    = new Uint8Array(binary.length);
-      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-      const blob = new Blob([bytes], { type: mimeType });
-      const filename = `${photo.label}.${ext}`;
-
-      // Build multipart form for monday.com file upload
-      const form = new FormData();
-      form.append('query',
-        `mutation ($file: File!) {
-           add_file_to_column(item_id: ${itemId}, column_id: "${MONDAY.columns.files}", file: $file) { id }
-         }`
-      );
-      form.append('variables[file]', blob, filename);
-
-      await fetch(MONDAY.apiUrl, {
-        method:  'POST',
-        headers: { 'Authorization': MONDAY.token },
-        body:    form,
-      });
-    } catch (e) {
-      console.warn('Photo upload failed for', photo.label, e);
-    }
+  try {
+    const url = PA_WEBHOOKS['In Progress'];
+    await fetch(url, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        formType:    'UploadPhotos',
+        mondayItemId: itemId,
+        columnId:    MONDAY.columns.files,
+        photos:      allPhotos.map(p => ({ label: p.label, dataUrl: p.dataUrl })),
+      }),
+    });
+  } catch(e) {
+    console.warn('Photo upload via PA failed:', e);
   }
 }
 
-// ─── FETCH REAL ITEM ID FROM MONDAY.COM ───────
-// After PA creates the item, query monday.com directly for the
-// most recently created item in the Extras group. Retries up to
-// 5 times with a 1.5s gap to give PA time to finish.
-async function fetchLatestMondayItemId(property, unit) {
-  for (let attempt = 0; attempt < 5; attempt++) {
-    await new Promise(r => setTimeout(r, 1500));
-    try {
-      const payload = {
-        query: `query ($boardId: ID!, $groupId: String!) {
-          boards(ids: [$boardId]) {
-            groups(ids: [$groupId]) {
-              items_page(limit: 5) { items { id name } }
-            }
-          }
-        }`,
-        variables: { boardId: String(MONDAY.boardId), groupId: "topics" }
-      };
-      const r = await fetch(MONDAY.apiUrl, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': MONDAY.token },
-        body:    JSON.stringify(payload),
-      });
-      const json = await r.json();
-      const items = json?.data?.boards?.[0]?.groups?.[0]?.items_page?.items || [];
-      if (items.length > 0) {
-        const match = items.find(i =>
-          i.name.toLowerCase().includes(property.toLowerCase()) ||
-          i.name.toLowerCase().includes(unit.toLowerCase())
-        ) || items[0];
-        return String(match.id);
-      }
-    } catch (e) { /* retry */ }
-  }
-  return null;
-}
+
 
 // ─── UPDATE ITEM ID BAR ───────────────────────
 function refreshItemIdBar(isNewItem) {
@@ -815,18 +778,15 @@ async function submitSmartForm() {
     showBanner('loading','<svg style="width:15px;height:15px;animation:spin 1s linear infinite;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> &nbsp;' + actionMsg);
 
     // Trigger Power Automate (creates/updates monday.com item + sends emails)
-    await triggerPowerAutomate(vals);
+    // For In Progress, PA returns { mondayItemId: "..." } in the response body
+    const paItemId = await triggerPowerAutomate(vals);
 
-    // For new items, query monday.com directly to get the real item ID
-    // (more reliable than reading it from the PA response body)
     if (isNewItem) {
-      showBanner('loading','<svg style="width:15px;height:15px;animation:spin 1s linear infinite;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> &nbsp;Item created — fetching ID from monday.com…');
-      const fetchedId = await fetchLatestMondayItemId(vals.property, vals.unit);
-      mondayItemId = fetchedId || 'pending';
-      // Upload any before/after photos to the File column
+      mondayItemId = paItemId || 'pending';
+      // If we got a real ID and there are photos, upload them via PA webhook
       if (mondayItemId && mondayItemId !== 'pending' && (photos.before.length || photos.after.length)) {
-        showBanner('loading','<svg style="width:15px;height:15px;animation:spin 1s linear infinite;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> &nbsp;Uploading photos to monday.com…');
-        await uploadPhotosToMonday(mondayItemId);
+        showBanner('loading','<svg style="width:15px;height:15px;animation:spin 1s linear infinite;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> &nbsp;Uploading photos…');
+        await uploadPhotosViaProxy(mondayItemId);
       }
     }
 
