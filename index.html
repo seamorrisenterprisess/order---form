@@ -524,15 +524,6 @@ body {
             <div class="error-msg" id="err-requestorName">Requestor's name is required</div>
           </div>
           <div class="field">
-            <label>Contact Phone <span class="required">*</span></label>
-            <input type="tel" id="contactPhone" placeholder="e.g. (305) 555-0123" oninput="updateProgress()">
-            <div class="error-msg" id="err-contactPhone">Contact phone is required</div>
-          </div>
-          <div class="field">
-            <label>Email Address</label>
-            <input type="email" id="requestorEmail" placeholder="e.g. maria@company.com" oninput="updateProgress()">
-          </div>
-          <div class="field">
             <label>Order Reference #</label>
             <input type="text" id="orderRef" readonly style="background:var(--frost);color:var(--blue);font-weight:500;cursor:default;">
           </div>
@@ -648,8 +639,9 @@ body {
             <div class="error-msg" id="err-dueDate">Due date is required</div>
           </div>
           <div class="field">
-            <label>Submitted By</label>
+            <label>Submitted By <span class="required">*</span></label>
             <input type="text" id="submittedBy" placeholder="Your name" oninput="updateProgress()">
+            <div class="error-msg" id="err-submittedBy">Submitted by is required</div>
           </div>
         </div>
       </div>
@@ -865,7 +857,7 @@ function selectStatus(chip) {
 function updateProgress() {
   const fields = [
     document.getElementById('requestorName').value.trim(),
-    document.getElementById('contactPhone').value.trim(),
+    document.getElementById('submittedBy').value.trim(),
     document.getElementById('propertyName').value.trim(),
     getUnits().length > 0 ? 'ok' : '',
     document.getElementById('occupancy').value,
@@ -883,7 +875,8 @@ function validate() {
   let valid = true;
   const checks = [
     { id: 'requestorName', err: 'err-requestorName', check: () => document.getElementById('requestorName').value.trim() },
-    { id: 'contactPhone',  err: 'err-contactPhone',  check: () => document.getElementById('contactPhone').value.trim() },
+    { id: 'submittedBy',   err: 'err-submittedBy',   check: () => document.getElementById('submittedBy').value.trim() },
+
     { id: 'propertyName',  err: 'err-propertyName',  check: () => document.getElementById('propertyName').value.trim() },
     { id: 'occupancy',     err: 'err-occupancy',     check: () => document.getElementById('occupancy').value },
     { id: 'priority',      err: 'err-priority',      check: () => document.getElementById('priority').value },
@@ -921,8 +914,6 @@ async function submitForm() {
   const data = {
     orderRef:        document.getElementById('orderRef').value,
     requestorName:   document.getElementById('requestorName').value.trim(),
-    contactPhone:    document.getElementById('contactPhone').value.trim(),
-    requestorEmail:  document.getElementById('requestorEmail').value.trim(),
     propertyName:    document.getElementById('propertyName').value.trim(),
     poNumber:        document.getElementById('poNumber').value.trim(),
     units:           getUnits().join(', '),
