@@ -668,13 +668,18 @@ function getVals() {
     priority:    document.getElementById('sf-priority').value,
     description: (() => {
       const manual = document.getElementById('sf-description').value.trim();
-      if (manual) return manual;
+      // Always rebuild the auto-description from live line items so that any
+      // edits made after the form was shared (new lines, updated prices) are
+      // captured. Only fall back to the manual description field if it was
+      // explicitly typed AND the line items are all empty.
       const filled = lines.filter(l => l.desc);
-      if (!filled.length) return '';
+      if (!filled.length) return manual; // no line items — use whatever was typed
+      // Build fresh from live line items, appending manual notes if present
       const lineText = filled.map(l =>
         `${l.desc} x${l.qty} @ $${parseFloat(l.price||0).toFixed(2)} = ${l.sub}`
       ).join('\n');
-      return lineText + '\nTOTAL: ' + document.getElementById('sf-grand').textContent;
+      const autoDesc = lineText + '\nTOTAL: ' + document.getElementById('sf-grand').textContent;
+      return manual ? manual + '\n\n' + autoDesc : autoDesc;
     })(),
     notes:       document.getElementById('sf-notes').value.trim(),
     total:       document.getElementById('sf-grand').textContent,
@@ -712,6 +717,8 @@ async function triggerPowerAutomate(vals) {
       jobType:       vals.jobType,
       status:        vals.status,
       description:   vals.description,
+      lineItems:     vals.lines,
+      lineItemsHtml: buildTeamEmailHtml(vals),  // ← full formatted email body PA can send directly
       totalAmount:   vals.total,
       costAmount:    vals.cost,
       profit:        vals.profit,
@@ -822,31 +829,70 @@ ${photosHTML?`<div style="margin-bottom:20px;">${photosHTML}</div>`:''}
 </div></div></div></body></html>`;
 }
 
-function previewTeamEmail() {
-  const vals = getVals();
+function buildTeamEmailHtml(vals) {
+  // Build live line items table — always reflects current form values
+  const linesHTML = vals.lines.length ? vals.lines.map(l =>
+    `<tr>
+      <td style="padding:8px 12px;border-bottom:1px solid #E8F2FD;font-size:13px;color:#112240;">${l.desc}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #E8F2FD;text-align:center;font-size:13px;color:#112240;">${l.qty}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #E8F2FD;text-align:right;font-size:13px;color:#112240;">$${parseFloat(l.price||0).toFixed(2)}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #E8F2FD;text-align:right;font-size:13px;font-weight:600;color:#1355C2;">${l.sub}</td>
+    </tr>`).join('') : `<tr><td colspan="4" style="padding:10px 12px;color:#5B7A99;font-size:13px;">No line items.</td></tr>`;
+
   const photoRows = [
-    ...photos.before.map((p, i) => `<tr><td style="padding:6px 0;color:#5B7A99;font-size:13px;">Before ${i+1}</td><td><img src="${p.dataUrl}" style="max-width:320px;border-radius:8px;border:1px solid #D4E4F4;"></td></tr>`),
-    ...photos.after.map((p,  i) => `<tr><td style="padding:6px 0;color:#5B7A99;font-size:13px;">After ${i+1}</td><td><img src="${p.dataUrl}" style="max-width:320px;border-radius:8px;border:1px solid #D4E4F4;"></td></tr>`),
+    ...photos.before.map((p, i) => `<tr><td style="padding:6px 0;color:#5B7A99;font-size:13px;width:80px;">Before ${i+1}</td><td><img src="${p.dataUrl}" style="max-width:320px;border-radius:8px;border:1px solid #D4E4F4;"></td></tr>`),
+    ...photos.after.map((p,  i) => `<tr><td style="padding:6px 0;color:#5B7A99;font-size:13px;width:80px;">After ${i+1}</td><td><img src="${p.dataUrl}" style="max-width:320px;border-radius:8px;border:1px solid #D4E4F4;"></td></tr>`),
   ].join('');
-  const html = `<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;background:#f4f8ff;margin:0;padding:20px;">
-<div style="max-width:600px;margin:0 auto;background:white;border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.1);">
+
+  return `<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;background:#f4f8ff;margin:0;padding:20px;">
+<div style="max-width:620px;margin:0 auto;background:white;border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.1);">
 <div style="background:linear-gradient(135deg,rgb(109,24,241),rgb(70,10,160));padding:24px 32px;">
-<h1 style="color:white;font-size:18px;margin:0 0 4px;">SEA MORRIS — New Extra Job</h1>
-<p style="color:rgba(255,255,255,.7);font-size:12px;margin:0;">Internal Team Notification</p></div>
+<h1 style="color:white;font-size:18px;margin:0 0 4px;">SEA MORRIS — Extra Job Update</h1>
+<p style="color:rgba(255,255,255,.7);font-size:12px;margin:0;">Internal Team Notification · Status: ${vals.status}</p></div>
 <div style="padding:24px 32px;">
-<p style="font-size:14px;color:#112240;margin:0 0 16px;">Hello Team, a new extra job order has been created.</p>
-<table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:20px;">
+<p style="font-size:14px;color:#112240;margin:0 0 16px;">Hello Team, here are the <strong>current details</strong> for this extra job — including any updates made since it was first submitted.</p>
+
+<div style="background:#F0F7FF;border-radius:10px;padding:14px 16px;margin-bottom:20px;border:1px solid #D4E4F4;">
+<div style="font-size:10px;font-weight:600;color:#5B7A99;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;">Job Details</div>
+<table style="width:100%;border-collapse:collapse;font-size:13px;">
 ${vals.property?`<tr><td style="color:#5B7A99;width:130px;padding:4px 0;">Property</td><td style="color:#112240;font-weight:500;">${vals.property}</td></tr>`:''}
 ${vals.unit?`<tr><td style="color:#5B7A99;padding:4px 0;">Unit</td><td style="color:#112240;font-weight:500;">${vals.unit}</td></tr>`:''}
 ${vals.jobType?`<tr><td style="color:#5B7A99;padding:4px 0;">Job Type</td><td style="color:#112240;font-weight:500;">${vals.jobType}</td></tr>`:''}
 ${vals.assigned?`<tr><td style="color:#5B7A99;padding:4px 0;">Assigned To</td><td style="color:#112240;font-weight:500;">${vals.assigned}</td></tr>`:''}
-${vals.description?`<tr><td style="color:#5B7A99;padding:4px 0;">Description</td><td style="color:#112240;">${vals.description}</td></tr>`:''}
-${vals.total?`<tr><td style="color:#5B7A99;padding:4px 0;">Total</td><td style="color:#112240;font-weight:600;">${vals.total}</td></tr>`:''}
-<tr><td style="color:#5B7A99;padding:4px 0;">Sent</td><td style="color:#112240;">${vals.sentAt}</td></tr>
-</table>
-${photoRows ? `<div style="margin-top:16px;"><div style="font-size:11px;font-weight:600;color:#5B7A99;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;">Photos</div><table>${photoRows}</table></div>` : ''}
-<p style="font-size:13px;color:#5B7A99;margin-top:20px;">Please review the extras and send to the customer for approval — SEA MORRIS ENTERPRISES</p>
-</div></div></body></html>`;
+${vals.priority?`<tr><td style="color:#5B7A99;padding:4px 0;">Priority</td><td style="color:#112240;font-weight:500;">${vals.priority}</td></tr>`:''}
+<tr><td style="color:#5B7A99;padding:4px 0;">Date</td><td style="color:#112240;font-weight:500;">${vals.date||new Date().toLocaleDateString()}</td></tr>
+<tr><td style="color:#5B7A99;padding:4px 0;">Submitted</td><td style="color:#112240;">${vals.sentAt}</td></tr>
+</table></div>
+
+<div style="margin-bottom:20px;">
+<div style="font-size:10px;font-weight:600;color:#5B7A99;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;">Extras Line Items</div>
+<table style="width:100%;border-collapse:collapse;border:1px solid #D4E4F4;border-radius:10px;overflow:hidden;">
+<thead><tr style="background:#F0F7FF;">
+  <th style="padding:8px 12px;text-align:left;font-size:10px;font-weight:600;color:#5B7A99;text-transform:uppercase;">Description</th>
+  <th style="padding:8px 12px;text-align:center;font-size:10px;font-weight:600;color:#5B7A99;text-transform:uppercase;">Qty</th>
+  <th style="padding:8px 12px;text-align:right;font-size:10px;font-weight:600;color:#5B7A99;text-transform:uppercase;">Unit Price</th>
+  <th style="padding:8px 12px;text-align:right;font-size:10px;font-weight:600;color:#5B7A99;text-transform:uppercase;">Subtotal</th>
+</tr></thead>
+<tbody>${linesHTML}</tbody>
+<tfoot><tr style="background:rgb(109,24,241);">
+  <td colspan="3" style="padding:10px 12px;color:white;font-weight:600;font-size:13px;">TOTAL IN EXTRAS</td>
+  <td style="padding:10px 12px;color:white;font-weight:700;font-size:14px;text-align:right;">${vals.total}</td>
+</tr></tfoot>
+</table></div>
+
+${vals.notes?`<div style="background:#FFF8EC;border:1px solid #F5D49A;border-radius:10px;padding:12px 16px;margin-bottom:20px;"><div style="font-size:10px;font-weight:600;color:#C97B1A;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;">Job Notes</div><p style="font-size:13px;color:#112240;margin:0;">${vals.notes}</p></div>`:''}
+
+${photoRows ? `<div style="margin-bottom:20px;"><div style="font-size:10px;font-weight:600;color:#5B7A99;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;">Photos</div><table style="border-collapse:collapse;">${photoRows}</table></div>` : ''}
+
+<div style="text-align:center;padding-top:16px;border-top:1px solid #D4E4F4;">
+<p style="font-size:13px;color:#112240;font-weight:500;margin:0 0 2px;">SEA MORRIS ENTERPRISES</p>
+<p style="font-size:12px;color:#5B7A99;margin:0;">Please review and take action on monday.com · <a href="mailto:samuel@seamorris.com" style="color:#1355C2;">samuel@seamorris.com</a></p>
+</div></div></div></body></html>`;
+}
+
+function previewTeamEmail() {
+  const vals = getVals();
+  const html = buildTeamEmailHtml(vals);
 
   const area = document.getElementById('teamPreviewArea');
   area.style.display = 'block';
@@ -1090,6 +1136,14 @@ function loadFromUrlParams() {
           <input type="text" class="line-total sf-sub" readonly value="${l.sub}">
           <button class="line-remove" onclick="removeLine(this)">✕</button>`;
         container.appendChild(row);
+      });
+      // ── FIX: Recalculate all line subtotals and grand total from actual values ──
+      // The stored `sub` values may be stale if prices were edited before sharing.
+      // Re-running calcLine on each row ensures totals always reflect live inputs.
+      document.querySelectorAll('.line-row').forEach(row => {
+        const qty   = parseFloat(row.querySelector('.sf-qty').value)   || 0;
+        const price = parseFloat(row.querySelector('.sf-price').value) || 0;
+        row.querySelector('.sf-sub').value = '$' + (qty * price).toFixed(2);
       });
     } catch(e) {}
   }
