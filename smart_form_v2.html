@@ -43,13 +43,10 @@ body{font-family:var(--font-body);background:linear-gradient(160deg,#0A1628 0%,#
 .stab[data-status="Approved With Manager"].active{color:rgb(21,209,59);border-top:3px solid rgb(21,209,59)}
 .stab[data-status="Declined"].active{color:var(--red);border-top:3px solid var(--red)}
 .stab[data-status="No Response"].active{color:rgb(255,93,242);border-top:3px solid rgb(255,93,242)}
-
-/* ITEM ID BAR */
 .item-id-bar{display:none;align-items:center;gap:10px;background:var(--green-bg);border-bottom:1px solid #A7F3D0;padding:10px 32px;font-size:12px;color:var(--green);flex-wrap:wrap}
 .item-id-bar.show{display:flex}
 .item-id-pill{background:var(--green);color:white;border-radius:20px;padding:2px 12px;font-size:11px;font-weight:700;font-family:monospace;letter-spacing:0.04em}
 .item-id-mode-badge{background:var(--green);color:white;border-radius:20px;padding:2px 10px;font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase}
-
 .card-header{padding:24px 32px 20px;position:relative;overflow:hidden;transition:background 0.3s}
 .card-header::before{content:'';position:absolute;right:-50px;top:-50px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,0.06)}
 .card-header-inner{position:relative;z-index:2}
@@ -377,6 +374,9 @@ canvas{display:block;touch-action:none;cursor:crosshair}
           <button onclick="shareWithTab('No Response')"           style="padding:6px 12px;border-radius:8px;border:1.5px solid rgb(255,93,242);background:transparent;color:rgb(180,30,160);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font-body);">No Response</button>
         </div>
         <input id="sf-share-url" type="text" readonly placeholder="Select a tab above to generate link…" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:11px;font-family:monospace;background:white;color:var(--ink);margin-bottom:8px;">
+        <div id="sf-share-photo-notice" style="display:none;background:#FFF8EC;border:1px solid #F5D49A;border-radius:8px;padding:8px 12px;font-size:12px;color:#C97B1A;margin-bottom:8px;">
+          📷 Photos saved to share link — manager will see them when they open it.
+        </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
           <button onclick="copyShareLink()" style="flex:1;min-width:80px;padding:9px 14px;border-radius:8px;border:none;background:var(--blue);color:white;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font-body);">📋 Copy Link</button>
           <button onclick="shareViaWhatsApp()" style="flex:1;min-width:120px;padding:9px 14px;border-radius:8px;border:none;background:#25D366;color:white;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font-body);display:flex;align-items:center;justify-content:center;gap:6px;">
@@ -434,7 +434,58 @@ const STATUS_HEADERS = {
 let currentStatus = 'In Progress';
 let photos = { before:[], after:[] };
 let sigCanvas, sigCtx, sigDrawing = false;
-let mondayItemId = null;   // null = no item yet; set after first create
+let mondayItemId = null;
+
+// ─── PHOTO STORAGE KEY ────────────────────────
+// We store photos in localStorage keyed by a share ID so the
+// manager sees them when they open the shared link.
+const PHOTO_STORE_PREFIX = 'smf_photos_';
+
+function savePhotosToStorage(shareId) {
+  try {
+    const data = JSON.stringify({ before: photos.before, after: photos.after });
+    localStorage.setItem(PHOTO_STORE_PREFIX + shareId, data);
+    return true;
+  } catch(e) {
+    // localStorage might be full (photos are large) — fail gracefully
+    console.warn('Could not save photos to localStorage:', e);
+    return false;
+  }
+}
+
+function loadPhotosFromStorage(shareId) {
+  try {
+    const raw = localStorage.getItem(PHOTO_STORE_PREFIX + shareId);
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+    if (data && data.before && data.after) {
+      photos.before = data.before;
+      photos.after  = data.after;
+      renderPhotos('before');
+      renderPhotos('after');
+      return true;
+    }
+  } catch(e) {
+    console.warn('Could not load photos from localStorage:', e);
+  }
+  return false;
+}
+
+function cleanupOldPhotoStorage() {
+  // Remove stored photos older than 7 days to avoid filling localStorage
+  try {
+    const keys = Object.keys(localStorage).filter(k => k.startsWith(PHOTO_STORE_PREFIX));
+    keys.forEach(k => {
+      try {
+        const data = JSON.parse(localStorage.getItem(k));
+        if (data && data.savedAt) {
+          const age = Date.now() - data.savedAt;
+          if (age > 7 * 24 * 60 * 60 * 1000) localStorage.removeItem(k);
+        }
+      } catch(e) {}
+    });
+  } catch(e) {}
+}
 
 // ─── STATUS TAB ───────────────────────────────
 function setStatus(btn) {
@@ -472,7 +523,6 @@ function updateCustomerSection() {
 function updateSubmitButton() {
   const btn = document.getElementById('sf-submit-btn');
   if (!btn) return;
-
   const labels = {
     'In Progress':              { text: 'Create Item',                      bg: 'linear-gradient(135deg,rgb(109,24,241),rgb(70,10,160))' },
     'Sent Extras':              { text: 'Update Board + Send to Customer',  bg: 'linear-gradient(135deg,#1355C2,#1A6FE8)' },
@@ -540,7 +590,6 @@ function addPhotos(e, type) {
   Array.from(e.target.files).forEach(file => {
     const reader = new FileReader();
     reader.onload = ev => {
-      // Compress image to max 800px and 60% quality to keep payload small
       const img = new Image();
       img.onload = () => {
         const MAX = 800;
@@ -559,6 +608,7 @@ function addPhotos(e, type) {
     reader.readAsDataURL(file);
   });
 }
+
 function renderPhotos(type) {
   const c = document.getElementById(type + '-previews');
   c.innerHTML = '';
@@ -569,10 +619,12 @@ function renderPhotos(type) {
     c.appendChild(d);
   });
 }
+
 function removePhoto(type, i) { photos[type].splice(i,1); renderPhotos(type); }
 
 // ─── SIGNATURE ────────────────────────────────
 window.addEventListener('load', () => {
+  cleanupOldPhotoStorage();
   sigCanvas = document.getElementById('sf-sig');
   if (!sigCanvas) return;
   sigCtx = sigCanvas.getContext('2d');
@@ -591,9 +643,9 @@ window.addEventListener('load', () => {
   sigCanvas.addEventListener('touchmove',  e => { e.preventDefault(); if (!sigDrawing) return; const p=pos(e); sigCtx.lineTo(p.x,p.y); sigCtx.stroke(); }, {passive:false});
   sigCanvas.addEventListener('touchend',   () => sigDrawing=false);
   document.getElementById('sf-date').value = new Date().toISOString().split('T')[0];
-  // Load pre-filled data from URL if present (shared link from team member)
   loadFromUrlParams();
 });
+
 function clearSig() { if (sigCtx) sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height); }
 
 // ─── GET FORM VALUES ──────────────────────────
@@ -617,7 +669,6 @@ function getVals() {
     description: (() => {
       const manual = document.getElementById('sf-description').value.trim();
       if (manual) return manual;
-      // Auto-build from line items if description field is empty
       const filled = lines.filter(l => l.desc);
       if (!filled.length) return '';
       const lineText = filled.map(l =>
@@ -647,7 +698,7 @@ function showBanner(type, msg) {
 }
 function hideBanner() { document.getElementById('smartBanner').classList.remove('show'); }
 
-// ─── POWER AUTOMATE — single entry point ─────
+// ─── POWER AUTOMATE ───────────────────────────
 async function triggerPowerAutomate(vals) {
   const url = PA_WEBHOOKS[vals.status];
   if (!url) throw new Error('No Power Automate webhook configured for: ' + vals.status);
@@ -675,25 +726,16 @@ async function triggerPowerAutomate(vals) {
     }),
   });
   if (!res.ok) throw new Error('Power Automate error: HTTP ' + res.status);
-
-  // Try to read the monday item ID from the PA response (In Progress flow only)
   if (vals.status === 'In Progress') {
     try {
       const text = await res.text();
-      console.log('PA response:', text);
       const data = JSON.parse(text);
       if (data && data.mondayItemId) return String(data.mondayItemId);
-    } catch(e) {
-      console.log('PA response parse error:', e);
-    }
+    } catch(e) {}
   }
   return null;
 }
 
-// ─── UPLOAD PHOTOS VIA POWER AUTOMATE ────────
-// Sends photos as base64 to the In Progress PA webhook with the
-// real item ID so PA can upload them to monday.com's Files column.
-// (Direct monday.com API calls are blocked by CORS from GitHub Pages)
 async function uploadPhotosViaProxy(itemId) {
   const allPhotos = [
     ...photos.before.map((p, i) => ({ ...p, label: `before_${i + 1}` })),
@@ -717,17 +759,15 @@ async function uploadPhotosViaProxy(itemId) {
   }
 }
 
-
-
 // ─── UPDATE ITEM ID BAR ───────────────────────
 function refreshItemIdBar(isNewItem) {
   if (!mondayItemId) return;
-  const pill = document.getElementById('itemIdPill');
+  const pill  = document.getElementById('itemIdPill');
   const label = document.getElementById('itemModeLabel');
-  const bar = document.getElementById('itemIdBar');
-  if (pill) pill.textContent = mondayItemId;
+  const bar   = document.getElementById('itemIdBar');
+  if (pill)  pill.textContent  = mondayItemId;
   if (label) label.textContent = isNewItem ? 'Item created on monday.com' : 'Item updated on monday.com';
-  if (bar) bar.classList.add('show');
+  if (bar)   bar.classList.add('show');
 }
 
 // ─── CUSTOMER EMAIL ───────────────────────────
@@ -858,7 +898,6 @@ async function submitSmartForm() {
 
   try {
     const isNewItem = currentStatus === 'In Progress';
-
     if (!isNewItem && !mondayItemId) {
       showBanner('error','⚠️ &nbsp;Please submit <strong>In Progress</strong> first to create the item before updating its status.');
       btn.disabled = false;
@@ -869,13 +908,10 @@ async function submitSmartForm() {
     const actionMsg = isNewItem ? 'Creating item on monday.com…' : 'Updating monday.com board…';
     showBanner('loading','<svg style="width:15px;height:15px;animation:spin 1s linear infinite;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> &nbsp;' + actionMsg);
 
-    // Trigger Power Automate (creates/updates monday.com item + sends emails)
-    // For In Progress, PA returns { mondayItemId: "..." } in the response body
     const paItemId = await triggerPowerAutomate(vals);
 
     if (isNewItem) {
       mondayItemId = paItemId || 'pending';
-      // If we got a real ID and there are photos, upload them via PA webhook
       if (mondayItemId && mondayItemId !== 'pending' && (photos.before.length || photos.after.length)) {
         showBanner('loading','<svg style="width:15px;height:15px;animation:spin 1s linear infinite;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> &nbsp;Uploading photos…');
         await uploadPhotosViaProxy(mondayItemId);
@@ -885,8 +921,6 @@ async function submitSmartForm() {
     hideBanner();
     refreshItemIdBar(isNewItem);
     updateSubmitButton();
-
-    // Show success banner and reset button
     showBanner('success', `✅ &nbsp;<strong>${isNewItem ? 'Item Created!' : 'Item Updated!'}</strong> &nbsp;monday.com ${isNewItem ? 'item created' : 'updated'} to "${currentStatus}" · Team notified${currentStatus==='Sent Extras'?' · Use Preview Email or Copy HTML to send to customer':''}`);
     btn.disabled = false;
     updateSubmitButton();
@@ -926,7 +960,7 @@ function clearSmartForm() {
   document.getElementById('sf-profit-pct-display').textContent = '0.00%';
 }
 
-// ─── SHARE WITH MANAGER ──────────────────────
+// ─── SHARE WITH MANAGER (FIXED: photos via localStorage) ──────────────
 function showShareOptions() {
   const box = document.getElementById('sf-share-box');
   box.style.display = box.style.display === 'none' ? 'block' : 'none';
@@ -943,6 +977,10 @@ function shareWithTab(tab) {
       sub: row.querySelector('.sf-sub').value
     });
   });
+
+  // Generate a unique share ID so photos can be stored and retrieved
+  const shareId = 'share_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
+
   const params = new URLSearchParams({
     property:    vals.property,
     unit:        vals.unit,
@@ -956,18 +994,38 @@ function shareWithTab(tab) {
     cost:        vals.cost,
     itemId:      mondayItemId || '',
     tab:         tab,
+    shareId:     shareId,   // ← key for photo lookup
   });
   if (lines.length) params.set('lines', JSON.stringify(lines));
   const tax = document.getElementById('sf-tax').value;
   if (tax) params.set('tax', tax);
+
+  // Save photos to localStorage under this shareId
+  const hasPhotos = photos.before.length > 0 || photos.after.length > 0;
+  const notice = document.getElementById('sf-share-photo-notice');
+  if (hasPhotos) {
+    const saved = savePhotosToStorage(shareId);
+    if (notice) notice.style.display = saved ? 'block' : 'none';
+    if (!saved && notice) {
+      notice.style.background = '#FDECEA';
+      notice.style.borderColor = '#FECACA';
+      notice.style.color = '#C0392B';
+      notice.textContent = '⚠️ Photos could not be saved — storage may be full. Photos will not appear in the shared link.';
+      notice.style.display = 'block';
+    }
+  } else {
+    if (notice) notice.style.display = 'none';
+  }
 
   const url = window.location.origin + window.location.pathname + '?' + params.toString();
   const input = document.getElementById('sf-share-url');
   input.value = url;
   input.select();
 
-  // Highlight the selected tab button
-  document.querySelectorAll('#sf-share-box button[onclick^="shareWithTab"]').forEach(b => b.style.opacity = '0.5');
+  // Highlight selected tab button
+  document.querySelectorAll('#sf-share-box button[onclick^="shareWithTab"]').forEach(b => {
+    b.style.opacity = '0.5'; b.style.fontWeight = '500';
+  });
   event.target.style.opacity = '1';
   event.target.style.fontWeight = '700';
 }
@@ -976,7 +1034,7 @@ function copyShareLink() {
   const input = document.getElementById('sf-share-url');
   const copyBtn = document.querySelector('button[onclick="copyShareLink()"]');
   navigator.clipboard.writeText(input.value)
-    .then(() => { 
+    .then(() => {
       if (copyBtn) { copyBtn.textContent = '✅ Copied!'; copyBtn.style.background = 'var(--green)'; }
       setTimeout(() => { if (copyBtn) { copyBtn.textContent = '📋 Copy Link'; copyBtn.style.background = 'var(--blue)'; }}, 2000);
     })
@@ -986,30 +1044,17 @@ function copyShareLink() {
 function shareViaWhatsApp() {
   const input = document.getElementById('sf-share-url');
   const url = input.value;
-  if (!url || url === '') {
-    alert('Please select a tab first to generate the link.');
-    return;
-  }
+  if (!url || url === '') { alert('Please select a tab first to generate the link.'); return; }
   const vals = getVals();
   const tab = new URLSearchParams(input.value.split('?')[1] || '').get('tab') || 'Sent Extras';
-  const msg = `Hi Samuel! 👋 I've submitted a new extras job that needs your review.
-
-` +
-    `📍 *Property:* ${vals.property}
-` +
-    `🏠 *Unit:* ${vals.unit}
-` +
-    `🔧 *Job Type:* ${vals.jobType || 'N/A'}
-` +
-    `💰 *Total:* ${vals.total}
-` +
-    `📋 *Next step:* ${tab}
-
-` +
-    `Click the link to open the pre-filled form:
-${url}`;
-  const waUrl = 'https://wa.me/?text=' + encodeURIComponent(msg);
-  window.open(waUrl, '_blank');
+  const msg = `Hi Samuel! 👋 I've submitted a new extras job that needs your review.\n\n` +
+    `📍 *Property:* ${vals.property}\n` +
+    `🏠 *Unit:* ${vals.unit}\n` +
+    `🔧 *Job Type:* ${vals.jobType || 'N/A'}\n` +
+    `💰 *Total:* ${vals.total}\n` +
+    `📋 *Next step:* ${tab}\n\n` +
+    `Click the link to open the pre-filled form:\n${url}`;
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
 }
 
 // ─── LOAD FROM URL PARAMS (pre-filled link) ───
@@ -1017,7 +1062,6 @@ function loadFromUrlParams() {
   const params = new URLSearchParams(window.location.search);
   if (!params.has('property') && !params.has('unit')) return;
 
-  // Fill fields
   const set = (id, key) => { const el = document.getElementById(id); if (el && params.get(key)) el.value = params.get(key); };
   set('sf-property',    'property');
   set('sf-unit',        'unit');
@@ -1050,10 +1094,16 @@ function loadFromUrlParams() {
     } catch(e) {}
   }
 
-  // Restore monday item ID
   if (params.get('itemId')) mondayItemId = params.get('itemId');
 
-  // Switch to the correct tab
+  // ── FIX: Load photos from localStorage using the shareId ──
+  const shareId = params.get('shareId');
+  let photosLoaded = false;
+  if (shareId) {
+    photosLoaded = loadPhotosFromStorage(shareId);
+  }
+
+  // Switch to correct tab
   const tab = params.get('tab') || 'Sent Extras';
   const tabBtn = document.querySelector(`.stab[data-status="${tab}"]`);
   if (tabBtn) {
@@ -1065,30 +1115,38 @@ function loadFromUrlParams() {
     updateSubmitButton();
   }
 
-  // Show item ID bar if we have an ID
-  if (mondayItemId && mondayItemId !== 'pending') {
-    refreshItemIdBar(false);
-  }
+  if (mondayItemId && mondayItemId !== 'pending') refreshItemIdBar(false);
 
   calcGrand();
   calcProfit();
 
-  // Clean URL without reloading
   window.history.replaceState({}, '', window.location.pathname);
 
-  // Show a welcome banner for the manager
-  const tabLabels = {'Sent Extras':'Add the customer email and click "Update Board + Send to Customer".','Waiting for Approval':'Review and click "Send Notification".','Approved Without Manager':'Review and click "Update Board - Approved".','Approved With Manager':'Review and click "Update Board - Approved".','Declined':'Review and click "Update Board - Declined".','No Response':'Review and click "Send Notification".',}; showBanner('loading', '📋 &nbsp;<strong>Pre-filled from team submission.</strong> &nbsp;' + (tabLabels[tab] || 'Review the details and submit.'));
+  const tabLabels = {
+    'Sent Extras':              'Add the customer email and click "Update Board + Send to Customer".',
+    'Waiting for Approval':     'Review and click "Send Notification".',
+    'Approved Without Manager': 'Review and click "Update Board - Approved".',
+    'Approved With Manager':    'Review and click "Update Board - Approved".',
+    'Declined':                 'Review and click "Update Board - Declined".',
+    'No Response':              'Review and click "Send Notification".',
+  };
+
+  const photoNote = photosLoaded
+    ? ` &nbsp;· &nbsp;📷 ${photos.before.length + photos.after.length} photo(s) loaded.`
+    : '';
+
+  showBanner('loading', '📋 &nbsp;<strong>Pre-filled from team submission.</strong> &nbsp;' +
+    (tabLabels[tab] || 'Review the details and submit.') + photoNote);
 }
 
-// New Entry: full reset including monday item ID
+// ─── NEW ENTRY ────────────────────────────────
 function resetSmartForm() {
-  mondayItemId = null;   // ← clear the item ID so next job creates fresh
+  mondayItemId = null;
   clearSmartForm();
   document.getElementById('smartFormBody').style.display = 'block';
   const newEntryBar2 = document.getElementById('sf-new-entry-bar');
   if (newEntryBar2) newEntryBar2.style.display = 'none';
   document.getElementById('itemIdBar').classList.remove('show');
-  // Reset status tab to In Progress
   document.querySelectorAll('.stab').forEach(t => t.classList.remove('active'));
   document.querySelector('.stab[data-status="In Progress"]').classList.add('active');
   currentStatus = 'In Progress';
