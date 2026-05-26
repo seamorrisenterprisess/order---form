@@ -667,19 +667,19 @@ function getVals() {
     date:        document.getElementById('sf-date').value,
     priority:    document.getElementById('sf-priority').value,
     description: (() => {
-      const manual = document.getElementById('sf-description').value.trim();
-      // Always rebuild the auto-description from live line items so that any
-      // edits made after the form was shared (new lines, updated prices) are
-      // captured. Only fall back to the manual description field if it was
-      // explicitly typed AND the line items are all empty.
       const filled = lines.filter(l => l.desc);
-      if (!filled.length) return manual; // no line items — use whatever was typed
-      // Build fresh from live line items, appending manual notes if present
-      const lineText = filled.map(l =>
-        `${l.desc} x${l.qty} @ $${parseFloat(l.price||0).toFixed(2)} = ${l.sub}`
-      ).join('\n');
-      const autoDesc = lineText + '\nTOTAL: ' + document.getElementById('sf-grand').textContent;
-      return manual ? manual + '\n\n' + autoDesc : autoDesc;
+      // Always rebuild entirely from live line items — this ensures any price
+      // changes, new lines, or removals made after sharing are captured in
+      // monday.com. The textarea is for display only and is intentionally
+      // excluded here so stale pre-filled text never overwrites live data.
+      if (filled.length) {
+        const lineText = filled.map(l =>
+          `${l.desc} x${l.qty} @ $${parseFloat(l.price||0).toFixed(2)} = ${l.sub}`
+        ).join('\n');
+        return lineText + '\nTOTAL: ' + document.getElementById('sf-grand').textContent;
+      }
+      // No line items — fall back to whatever is in the description textarea
+      return document.getElementById('sf-description').value.trim();
     })(),
     notes:       document.getElementById('sf-notes').value.trim(),
     total:       document.getElementById('sf-grand').textContent,
@@ -1115,10 +1115,14 @@ function loadFromUrlParams() {
   set('sf-assigned',    'assigned');
   set('sf-date',        'date');
   set('sf-priority',    'priority');
-  set('sf-description', 'description');
   set('sf-notes',       'notes');
   set('sf-cost',        'cost');
   set('sf-tax',         'tax');
+  // ── Do NOT pre-fill sf-description from URL — it is always rebuilt live
+  // from line items on submit so monday.com always gets current data.
+  // We clear it here in case a stale value was somehow set.
+  const descEl = document.getElementById('sf-description');
+  if (descEl) descEl.value = '';
 
   // Restore line items
   if (params.get('lines')) {
@@ -1145,6 +1149,7 @@ function loadFromUrlParams() {
         const price = parseFloat(row.querySelector('.sf-price').value) || 0;
         row.querySelector('.sf-sub').value = '$' + (qty * price).toFixed(2);
       });
+      calcGrand(); // update sf-grand and sf-subtotal immediately
     } catch(e) {}
   }
 
