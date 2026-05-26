@@ -433,6 +433,7 @@ const STATUS_HEADERS = {
 // ─── STATE ────────────────────────────────────
 let currentStatus = 'In Progress';
 let photos = { before:[], after:[] };
+let photoUrls = [];   // ← OneDrive URLs returned by PA after upload
 let sigCanvas, sigCtx, sigDrawing = false;
 let mondayItemId = null;
 
@@ -738,8 +739,13 @@ async function triggerPowerAutomate(vals) {
     try {
       const text = await res.text();
       const data = JSON.parse(text);
+      // Capture photo URLs returned by PA (saved to OneDrive)
+      if (data && data.photoUrls && Array.isArray(data.photoUrls)) {
+        photoUrls = data.photoUrls;
+        console.log('Photo URLs received from PA:', photoUrls);
+      }
       if (data && data.mondayItemId) return String(data.mondayItemId);
-    } catch(e) {}
+    } catch(e) { console.log('PA response parse:', e); }
   }
   return null;
 }
@@ -788,8 +794,16 @@ function buildCustomerEmail(vals) {
       <td style="padding:8px 12px;border-bottom:1px solid #E8F2FD;text-align:right;font-weight:500;">${l.sub}</td>
     </tr>`).join('');
   let photosHTML = '';
-  if (photos.before.length) photosHTML += `<div style="margin-bottom:14px;"><div style="font-size:10px;font-weight:600;color:#4D6B8A;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;">Before Photos</div><div style="display:flex;flex-wrap:wrap;gap:8px;">${photos.before.map(p=>`<img src="${p.dataUrl}" style="width:170px;height:130px;object-fit:cover;border-radius:8px;border:1px solid #D4E4F4;">`).join('')}</div></div>`;
-  if (photos.after.length)  photosHTML += `<div style="margin-bottom:14px;"><div style="font-size:10px;font-weight:600;color:#4D6B8A;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;">After Photos</div><div style="display:flex;flex-wrap:wrap;gap:8px;">${photos.after.map(p=>`<img src="${p.dataUrl}" style="width:170px;height:130px;object-fit:cover;border-radius:8px;border:1px solid #D4E4F4;">`).join('')}</div></div>`;
+  // Use OneDrive URLs if available (cross-device sharing), else fall back to base64
+  if (photoUrls.length > 0) {
+    const beforeUrls = photoUrls.filter((_, i) => i < photos.before.length);
+    const afterUrls  = photoUrls.filter((_, i) => i >= photos.before.length);
+    if (beforeUrls.length) photosHTML += `<div style="margin-bottom:14px;"><div style="font-size:10px;font-weight:600;color:#4D6B8A;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;">Before Photos</div><div style="display:flex;flex-wrap:wrap;gap:8px;">${beforeUrls.map(u=>`<img src="${u}" style="width:170px;height:130px;object-fit:cover;border-radius:8px;border:1px solid #D4E4F4;">`).join('')}</div></div>`;
+    if (afterUrls.length)  photosHTML += `<div style="margin-bottom:14px;"><div style="font-size:10px;font-weight:600;color:#4D6B8A;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;">After Photos</div><div style="display:flex;flex-wrap:wrap;gap:8px;">${afterUrls.map(u=>`<img src="${u}" style="width:170px;height:130px;object-fit:cover;border-radius:8px;border:1px solid #D4E4F4;">`).join('')}</div></div>`;
+  } else {
+    if (photos.before.length) photosHTML += `<div style="margin-bottom:14px;"><div style="font-size:10px;font-weight:600;color:#4D6B8A;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;">Before Photos</div><div style="display:flex;flex-wrap:wrap;gap:8px;">${photos.before.map(p=>`<img src="${p.dataUrl}" style="width:170px;height:130px;object-fit:cover;border-radius:8px;border:1px solid #D4E4F4;">`).join('')}</div></div>`;
+    if (photos.after.length)  photosHTML += `<div style="margin-bottom:14px;"><div style="font-size:10px;font-weight:600;color:#4D6B8A;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;">After Photos</div><div style="display:flex;flex-wrap:wrap;gap:8px;">${photos.after.map(p=>`<img src="${p.dataUrl}" style="width:170px;height:130px;object-fit:cover;border-radius:8px;border:1px solid #D4E4F4;">`).join('')}</div></div>`;
+  }
   const approveLink = `mailto:samuel@seamorris.com?subject=APPROVED - Extras ${vals.property} Unit ${vals.unit}&body=I approve the extras. Total: ${vals.total}.%0ACustomer: ${vals.custName}`;
   const declineLink = `mailto:samuel@seamorris.com?subject=DECLINED - Extras ${vals.property} Unit ${vals.unit}&body=I decline the extras.%0ACustomer: ${vals.custName}`;
   return `<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;background:#f4f8ff;margin:0;padding:20px;"><div style="max-width:600px;margin:0 auto;background:white;border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.1);">
@@ -840,18 +854,44 @@ function buildTeamEmailHtml(vals) {
       <td style="padding:8px 12px;border-bottom:1px solid #E8F2FD;text-align:right;font-size:13px;font-weight:600;color:#1355C2;">${l.sub}</td>
     </tr>`).join('') : `<tr><td colspan="4" style="padding:10px 12px;color:#5B7A99;font-size:13px;">No line items.</td></tr>`;
 
-  const photoRows = [
-    ...photos.before.map((p, i) => `<tr><td style="padding:6px 0;color:#5B7A99;font-size:13px;width:80px;">Before ${i+1}</td><td><img src="${p.dataUrl}" style="max-width:320px;border-radius:8px;border:1px solid #D4E4F4;"></td></tr>`),
-    ...photos.after.map((p,  i) => `<tr><td style="padding:6px 0;color:#5B7A99;font-size:13px;width:80px;">After ${i+1}</td><td><img src="${p.dataUrl}" style="max-width:320px;border-radius:8px;border:1px solid #D4E4F4;"></td></tr>`),
-  ].join('');
+  // Use OneDrive URLs if available (cross-device), else fall back to base64
+  const photoRows = photoUrls.length > 0
+    ? photoUrls.map((u, i) => `<tr><td style="padding:6px 0;color:#5B7A99;font-size:13px;width:80px;">${i < photos.before.length ? 'Before ' + (i+1) : 'After ' + (i - photos.before.length + 1)}</td><td><img src="${u}" style="max-width:320px;border-radius:8px;border:1px solid #D4E4F4;"></td></tr>`).join('')
+    : [
+        ...photos.before.map((p, i) => `<tr><td style="padding:6px 0;color:#5B7A99;font-size:13px;width:80px;">Before ${i+1}</td><td><img src="${p.dataUrl}" style="max-width:320px;border-radius:8px;border:1px solid #D4E4F4;"></td></tr>`),
+        ...photos.after.map((p,  i) => `<tr><td style="padding:6px 0;color:#5B7A99;font-size:13px;width:80px;">After ${i+1}</td><td><img src="${p.dataUrl}" style="max-width:320px;border-radius:8px;border:1px solid #D4E4F4;"></td></tr>`),
+      ].join('');
+
+  const headerBg = vals.status === 'Sent Extras'
+    ? 'linear-gradient(135deg,#1355C2,#0A1E4A)'
+    : vals.status === 'Approved Without Manager' || vals.status === 'Approved With Manager'
+      ? 'linear-gradient(135deg,#1B8C5A,#0D5C3A)'
+      : vals.status === 'Declined'
+        ? 'linear-gradient(135deg,#C0392B,#7B1D1D)'
+        : vals.status === 'Waiting for Approval'
+          ? 'linear-gradient(135deg,rgb(56,149,255),rgb(20,90,180))'
+          : vals.status === 'No Response'
+            ? 'linear-gradient(135deg,rgb(255,93,242),rgb(160,30,160))'
+            : 'linear-gradient(135deg,rgb(109,24,241),rgb(70,10,160))';
+
+  const statusLabels = {
+    'In Progress':              '🔵 New Extra Job Created',
+    'Sent Extras':              '📧 Extras Sent to Customer',
+    'Waiting for Approval':     '⏳ Waiting for Customer Approval',
+    'Approved Without Manager': '✅ Extras Approved — No Manager Required',
+    'Approved With Manager':    '✅ Extras Approved — With Manager',
+    'Declined':                 '❌ Extras Declined by Customer',
+    'No Response':              '📵 No Customer Response',
+  };
 
   return `<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;background:#f4f8ff;margin:0;padding:20px;">
 <div style="max-width:620px;margin:0 auto;background:white;border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.1);">
-<div style="background:linear-gradient(135deg,rgb(109,24,241),rgb(70,10,160));padding:24px 32px;">
-<h1 style="color:white;font-size:18px;margin:0 0 4px;">SEA MORRIS — Extra Job Update</h1>
-<p style="color:rgba(255,255,255,.7);font-size:12px;margin:0;">Internal Team Notification · Status: ${vals.status}</p></div>
-<div style="padding:24px 32px;">
-<p style="font-size:14px;color:#112240;margin:0 0 16px;">Hello Team, here are the <strong>current details</strong> for this extra job — including any updates made since it was first submitted.</p>
+<div style="background:${headerBg};padding:28px 32px;text-align:center;">
+<div style="width:48px;height:48px;background:rgba(255,255,255,.15);border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:white;margin-bottom:10px;">SM</div>
+<h1 style="color:white;font-size:20px;margin:0 0 4px;">SEA MORRIS ENTERPRISES</h1>
+<p style="color:rgba(255,255,255,.7);font-size:12px;margin:0;text-transform:uppercase;letter-spacing:.06em;">${statusLabels[vals.status] || 'Internal Team Notification'}</p></div>
+<div style="padding:28px 32px;">
+<p style="font-size:14px;color:#112240;margin:0 0 20px;line-height:1.6;">Hello Team, here are the <strong>current details</strong> for this extra job — including any updates made since it was first submitted.</p>
 
 <div style="background:#F0F7FF;border-radius:10px;padding:14px 16px;margin-bottom:20px;border:1px solid #D4E4F4;">
 <div style="font-size:10px;font-weight:600;color:#5B7A99;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;">Job Details</div>
@@ -875,7 +915,7 @@ ${vals.priority?`<tr><td style="color:#5B7A99;padding:4px 0;">Priority</td><td s
   <th style="padding:8px 12px;text-align:right;font-size:10px;font-weight:600;color:#5B7A99;text-transform:uppercase;">Subtotal</th>
 </tr></thead>
 <tbody>${linesHTML}</tbody>
-<tfoot><tr style="background:rgb(109,24,241);">
+<tfoot><tr style="background:#1355C2;">
   <td colspan="3" style="padding:10px 12px;color:white;font-weight:600;font-size:13px;">TOTAL IN EXTRAS</td>
   <td style="padding:10px 12px;color:white;font-weight:700;font-size:14px;text-align:right;">${vals.total}</td>
 </tr></tfoot>
@@ -999,6 +1039,7 @@ function clearSmartForm() {
     <button class="line-remove" onclick="removeLine(this)">✕</button></div>`;
   calcGrand(); calcProfit();
   photos = {before:[], after:[]};
+  photoUrls = [];
   ['before-previews','after-previews'].forEach(id => document.getElementById(id).innerHTML = '');
   clearSig();
   hideBanner();
@@ -1041,24 +1082,37 @@ function shareWithTab(tab) {
     cost:        vals.cost,
     itemId:      mondayItemId || '',
     tab:         tab,
-    shareId:     shareId,   // ← key for photo lookup
+    shareId:     shareId,
   });
   if (lines.length) params.set('lines', JSON.stringify(lines));
+  if (photoUrls.length) params.set('photoUrls', JSON.stringify(photoUrls)); // ← OneDrive URLs
   const tax = document.getElementById('sf-tax').value;
   if (tax) params.set('tax', tax);
 
-  // Save photos to localStorage under this shareId
-  const hasPhotos = photos.before.length > 0 || photos.after.length > 0;
+  // Save photos — prefer OneDrive URLs (cross-device), fall back to localStorage
+  const hasPhotos = photos.before.length > 0 || photos.after.length > 0 || photoUrls.length > 0;
   const notice = document.getElementById('sf-share-photo-notice');
   if (hasPhotos) {
-    const saved = savePhotosToStorage(shareId);
-    if (notice) notice.style.display = saved ? 'block' : 'none';
-    if (!saved && notice) {
-      notice.style.background = '#FDECEA';
-      notice.style.borderColor = '#FECACA';
-      notice.style.color = '#C0392B';
-      notice.textContent = '⚠️ Photos could not be saved — storage may be full. Photos will not appear in the shared link.';
-      notice.style.display = 'block';
+    if (photoUrls.length > 0) {
+      // Photos are in OneDrive — URLs travel in the link, work on any device
+      if (notice) {
+        notice.style.background = '#E6F5EE';
+        notice.style.borderColor = '#A7F3D0';
+        notice.style.color = '#1B8C5A';
+        notice.textContent = '✅ Photos saved to OneDrive — will appear on any device when manager opens the link.';
+        notice.style.display = 'block';
+      }
+    } else {
+      // No OneDrive URLs yet — fall back to localStorage (same device only)
+      const saved = savePhotosToStorage(shareId);
+      if (notice) notice.style.display = saved ? 'block' : 'none';
+      if (!saved && notice) {
+        notice.style.background = '#FDECEA';
+        notice.style.borderColor = '#FECACA';
+        notice.style.color = '#C0392B';
+        notice.textContent = '⚠️ Photos could not be saved — storage may be full.';
+        notice.style.display = 'block';
+      }
     }
   } else {
     if (notice) notice.style.display = 'none';
@@ -1156,10 +1210,18 @@ function loadFromUrlParams() {
 
   if (params.get('itemId')) mondayItemId = params.get('itemId');
 
-  // ── FIX: Load photos from localStorage using the shareId ──
+  // ── Restore OneDrive photo URLs from share link (cross-device) ──
+  if (params.get('photoUrls')) {
+    try {
+      photoUrls = JSON.parse(params.get('photoUrls'));
+      console.log('Photo URLs restored from share link:', photoUrls.length);
+    } catch(e) { photoUrls = []; }
+  }
+
+  // ── Fall back to localStorage photos if no OneDrive URLs ──
   const shareId = params.get('shareId');
-  let photosLoaded = false;
-  if (shareId) {
+  let photosLoaded = photoUrls.length > 0;
+  if (!photosLoaded && shareId) {
     photosLoaded = loadPhotosFromStorage(shareId);
   }
 
@@ -1191,9 +1253,11 @@ function loadFromUrlParams() {
     'No Response':              'Review and click "Send Notification".',
   };
 
-  const photoNote = photosLoaded
-    ? ` &nbsp;· &nbsp;📷 ${photos.before.length + photos.after.length} photo(s) loaded.`
-    : '';
+  const photoNote = photoUrls.length > 0
+    ? ` &nbsp;· &nbsp;📷 ${photoUrls.length} photo(s) loaded from OneDrive.`
+    : photosLoaded
+      ? ` &nbsp;· &nbsp;📷 ${photos.before.length + photos.after.length} photo(s) loaded.`
+      : '';
 
   showBanner('loading', '📋 &nbsp;<strong>Pre-filled from team submission.</strong> &nbsp;' +
     (tabLabels[tab] || 'Review the details and submit.') + photoNote);
