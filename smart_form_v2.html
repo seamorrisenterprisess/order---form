@@ -711,15 +711,16 @@ async function triggerPowerAutomate(vals) {
     method:  'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      formType:      vals.status,
-      propertyName:  vals.property,
-      unitNumber:    vals.unit,
-      jobType:       vals.jobType,
-      status:        vals.status,
-      description:   vals.description,
-      lineItems:     vals.lines,
-      lineItemsHtml: buildTeamEmailHtml(vals),  // ← full formatted email body PA can send directly
-      totalAmount:   vals.total,
+      formType:          vals.status,
+      propertyName:      vals.property,
+      unitNumber:        vals.unit,
+      jobType:           vals.jobType,
+      status:            vals.status,
+      description:       vals.description,
+      lineItems:         vals.lines,
+      lineItemsHtml:     buildTeamEmailHtml(vals),     // ← formatted team notification email
+      customerEmailHtml: buildCustomerEmail(vals),     // ← formatted customer approval email
+      totalAmount:       vals.total,
       costAmount:    vals.cost,
       profit:        vals.profit,
       profitPct:     vals.profitPct,
