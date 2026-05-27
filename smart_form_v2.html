@@ -719,19 +719,25 @@ async function triggerPowerAutomate(vals) {
       status:            vals.status,
       description:       vals.description,
       lineItems:         vals.lines,
-      lineItemsHtml:     buildTeamEmailHtml(vals),     // ← formatted team notification email
-      customerEmailHtml: buildCustomerEmail(vals),     // ← formatted customer approval email
+      lineItemsHtml:     buildTeamEmailHtml(vals),
+      customerEmailHtml: buildCustomerEmail(vals),
       totalAmount:       vals.total,
-      costAmount:    vals.cost,
-      profit:        vals.profit,
-      profitPct:     vals.profitPct,
-      notes:         vals.notes,
-      sentAt:        vals.sentAt,
-      assigned:      vals.assigned,
-      priority:      vals.priority,
-      customerName:  vals.custName,
-      customerEmail: vals.custEmail,
-      mondayItemId:  mondayItemId || '',
+      costAmount:        vals.cost,
+      profit:            vals.profit,
+      profitPct:         vals.profitPct,
+      notes:             vals.notes,
+      sentAt:            vals.sentAt,
+      assigned:          vals.assigned,
+      priority:          vals.priority,
+      customerName:      vals.custName,
+      customerEmail:     vals.custEmail,
+      mondayItemId:      mondayItemId || '',
+      // ← Send photos directly in main payload so PA can upload to OneDrive
+      photos: [
+        ...photos.before.map((p, i) => ({ label: `before_${i+1}`, dataUrl: p.dataUrl })),
+        ...photos.after.map((p,  i) => ({ label: `after_${i+1}`,  dataUrl: p.dataUrl })),
+      ],
+      beforeCount: photos.before.length,  // so form knows how to split URLs back
     }),
   });
   if (!res.ok) throw new Error('Power Automate error: HTTP ' + res.status);
@@ -999,10 +1005,6 @@ async function submitSmartForm() {
 
     if (isNewItem) {
       mondayItemId = paItemId || 'pending';
-      if (mondayItemId && mondayItemId !== 'pending' && (photos.before.length || photos.after.length)) {
-        showBanner('loading','<svg style="width:15px;height:15px;animation:spin 1s linear infinite;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> &nbsp;Uploading photos…');
-        await uploadPhotosViaProxy(mondayItemId);
-      }
     }
 
     hideBanner();
