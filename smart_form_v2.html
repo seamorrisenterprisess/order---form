@@ -586,6 +586,47 @@ function calcProfit() {
   if (pp) { pp.textContent = pct.toFixed(2) + '%'; pp.style.color = color; }
 }
 
+// ─── IMGUR PHOTO UPLOAD ───────────────────────
+// Upload photos to Imgur to get public URLs that work on any device.
+// Uses Imgur's anonymous upload API (free, no account needed for uploads).
+const IMGUR_CLIENT_ID = '546c25a59c58ad7'; // Public anonymous client ID
+
+async function uploadPhotoToImgur(dataUrl) {
+  try {
+    // Strip the data:image/jpeg;base64, prefix
+    const base64 = dataUrl.split(',')[1];
+    const res = await fetch('https://api.imgur.com/3/image', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Client-ID ${IMGUR_CLIENT_ID}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ image: base64, type: 'base64' }),
+    });
+    const data = await res.json();
+    if (data.success) return data.data.link;
+    return null;
+  } catch(e) {
+    console.warn('Imgur upload failed:', e);
+    return null;
+  }
+}
+
+async function uploadAllPhotosToImgur() {
+  const allPhotos = [
+    ...photos.before.map((p, i) => ({ ...p, type: 'before', index: i })),
+    ...photos.after.map((p,  i) => ({ ...p, type: 'after',  index: i })),
+  ];
+  if (!allPhotos.length) return [];
+  showBanner('loading', '<svg style="width:15px;height:15px;animation:spin 1s linear infinite;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> &nbsp;Uploading photos for sharing…');
+  const urls = [];
+  for (const photo of allPhotos) {
+    const url = await uploadPhotoToImgur(photo.dataUrl);
+    urls.push({ url: url || '', type: photo.type, index: photo.index });
+  }
+  return urls;
+}
+
 // ─── PHOTOS ───────────────────────────────────
 function addPhotos(e, type) {
   Array.from(e.target.files).forEach(file => {
@@ -593,14 +634,14 @@ function addPhotos(e, type) {
     reader.onload = ev => {
       const img = new Image();
       img.onload = () => {
-        const MAX = 800;
+        const MAX = 600;
         let w = img.width, h = img.height;
         if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
         else if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
         const canvas = document.createElement('canvas');
         canvas.width = w; canvas.height = h;
         canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-        const compressed = canvas.toDataURL('image/jpeg', 0.6);
+        const compressed = canvas.toDataURL('image/jpeg', 0.4); // lower quality = smaller payload
         photos[type].push({ name: file.name, dataUrl: compressed });
         renderPhotos(type);
       };
@@ -732,12 +773,25 @@ async function triggerPowerAutomate(vals) {
       customerName:      vals.custName,
       customerEmail:     vals.custEmail,
       mondayItemId:      mondayItemId || '',
-      // ← Send photos directly in main payload so PA can upload to OneDrive
-      photos: [
-        ...photos.before.map((p, i) => ({ label: `before_${i+1}`, dataUrl: p.dataUrl })),
-        ...photos.after.map((p,  i) => ({ label: `after_${i+1}`,  dataUrl: p.dataUrl })),
-      ],
-      beforeCount: photos.before.length,  // so form knows how to split URLs back
+      // Send photo count and individual photos as flat fields so PA doesn't need to parse arrays
+      photoCount:        photos.before.length + photos.after.length,
+      beforeCount:       photos.before.length,
+      photo0:  photos.before[0]  ? photos.before[0].dataUrl  : '',
+      photo1:  photos.before[1]  ? photos.before[1].dataUrl  : '',
+      photo2:  photos.before[2]  ? photos.before[2].dataUrl  : '',
+      photo3:  photos.before[3]  ? photos.before[3].dataUrl  : '',
+      photo4:  photos.after[0]   ? photos.after[0].dataUrl   : '',
+      photo5:  photos.after[1]   ? photos.after[1].dataUrl   : '',
+      photo6:  photos.after[2]   ? photos.after[2].dataUrl   : '',
+      photo7:  photos.after[3]   ? photos.after[3].dataUrl   : '',
+      label0:  photos.before[0]  ? 'before_1' : '',
+      label1:  photos.before[1]  ? 'before_2' : '',
+      label2:  photos.before[2]  ? 'before_3' : '',
+      label3:  photos.before[3]  ? 'before_4' : '',
+      label4:  photos.after[0]   ? 'after_1'  : '',
+      label5:  photos.after[1]   ? 'after_2'  : '',
+      label6:  photos.after[2]   ? 'after_3'  : '',
+      label7:  photos.after[3]   ? 'after_4'  : '',
     }),
   });
   if (!res.ok) throw new Error('Power Automate error: HTTP ' + res.status);
@@ -800,16 +854,9 @@ function buildCustomerEmail(vals) {
       <td style="padding:8px 12px;border-bottom:1px solid #E8F2FD;text-align:right;font-weight:500;">${l.sub}</td>
     </tr>`).join('');
   let photosHTML = '';
-  // Use OneDrive URLs if available (cross-device sharing), else fall back to base64
-  if (photoUrls.length > 0) {
-    const beforeUrls = photoUrls.filter((_, i) => i < photos.before.length);
-    const afterUrls  = photoUrls.filter((_, i) => i >= photos.before.length);
-    if (beforeUrls.length) photosHTML += `<div style="margin-bottom:14px;"><div style="font-size:10px;font-weight:600;color:#4D6B8A;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;">Before Photos</div><div style="display:flex;flex-wrap:wrap;gap:8px;">${beforeUrls.map(u=>`<img src="${u}" style="width:170px;height:130px;object-fit:cover;border-radius:8px;border:1px solid #D4E4F4;">`).join('')}</div></div>`;
-    if (afterUrls.length)  photosHTML += `<div style="margin-bottom:14px;"><div style="font-size:10px;font-weight:600;color:#4D6B8A;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;">After Photos</div><div style="display:flex;flex-wrap:wrap;gap:8px;">${afterUrls.map(u=>`<img src="${u}" style="width:170px;height:130px;object-fit:cover;border-radius:8px;border:1px solid #D4E4F4;">`).join('')}</div></div>`;
-  } else {
-    if (photos.before.length) photosHTML += `<div style="margin-bottom:14px;"><div style="font-size:10px;font-weight:600;color:#4D6B8A;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;">Before Photos</div><div style="display:flex;flex-wrap:wrap;gap:8px;">${photos.before.map(p=>`<img src="${p.dataUrl}" style="width:170px;height:130px;object-fit:cover;border-radius:8px;border:1px solid #D4E4F4;">`).join('')}</div></div>`;
-    if (photos.after.length)  photosHTML += `<div style="margin-bottom:14px;"><div style="font-size:10px;font-weight:600;color:#4D6B8A;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;">After Photos</div><div style="display:flex;flex-wrap:wrap;gap:8px;">${photos.after.map(p=>`<img src="${p.dataUrl}" style="width:170px;height:130px;object-fit:cover;border-radius:8px;border:1px solid #D4E4F4;">`).join('')}</div></div>`;
-  }
+  // Photos can be Imgur URLs (isUrl=true) or base64 dataUrls — both work as img src
+  if (photos.before.length) photosHTML += `<div style="margin-bottom:14px;"><div style="font-size:10px;font-weight:600;color:#4D6B8A;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;">Before Photos</div><div style="display:flex;flex-wrap:wrap;gap:8px;">${photos.before.map(p=>`<img src="${p.dataUrl}" style="width:170px;height:130px;object-fit:cover;border-radius:8px;border:1px solid #D4E4F4;">`).join('')}</div></div>`;
+  if (photos.after.length)  photosHTML += `<div style="margin-bottom:14px;"><div style="font-size:10px;font-weight:600;color:#4D6B8A;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;">After Photos</div><div style="display:flex;flex-wrap:wrap;gap:8px;">${photos.after.map(p=>`<img src="${p.dataUrl}" style="width:170px;height:130px;object-fit:cover;border-radius:8px;border:1px solid #D4E4F4;">`).join('')}</div></div>`;
   const approveLink = `mailto:samuel@seamorris.com?subject=APPROVED - Extras ${vals.property} Unit ${vals.unit}&body=I approve the extras. Total: ${vals.total}.%0ACustomer: ${vals.custName}`;
   const declineLink = `mailto:samuel@seamorris.com?subject=DECLINED - Extras ${vals.property} Unit ${vals.unit}&body=I decline the extras.%0ACustomer: ${vals.custName}`;
   return `<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;background:#f4f8ff;margin:0;padding:20px;"><div style="max-width:600px;margin:0 auto;background:white;border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.1);">
@@ -860,13 +907,11 @@ function buildTeamEmailHtml(vals) {
       <td style="padding:8px 12px;border-bottom:1px solid #E8F2FD;text-align:right;font-size:13px;font-weight:600;color:#1355C2;">${l.sub}</td>
     </tr>`).join('') : `<tr><td colspan="4" style="padding:10px 12px;color:#5B7A99;font-size:13px;">No line items.</td></tr>`;
 
-  // Use OneDrive URLs if available (cross-device), else fall back to base64
-  const photoRows = photoUrls.length > 0
-    ? photoUrls.map((u, i) => `<tr><td style="padding:6px 0;color:#5B7A99;font-size:13px;width:80px;">${i < photos.before.length ? 'Before ' + (i+1) : 'After ' + (i - photos.before.length + 1)}</td><td><img src="${u}" style="max-width:320px;border-radius:8px;border:1px solid #D4E4F4;"></td></tr>`).join('')
-    : [
-        ...photos.before.map((p, i) => `<tr><td style="padding:6px 0;color:#5B7A99;font-size:13px;width:80px;">Before ${i+1}</td><td><img src="${p.dataUrl}" style="max-width:320px;border-radius:8px;border:1px solid #D4E4F4;"></td></tr>`),
-        ...photos.after.map((p,  i) => `<tr><td style="padding:6px 0;color:#5B7A99;font-size:13px;width:80px;">After ${i+1}</td><td><img src="${p.dataUrl}" style="max-width:320px;border-radius:8px;border:1px solid #D4E4F4;"></td></tr>`),
-      ].join('');
+  // Photos can be Imgur URLs or base64 — both work as img src
+  const photoRows = [
+    ...photos.before.map((p, i) => `<tr><td style="padding:6px 0;color:#5B7A99;font-size:13px;width:80px;">Before ${i+1}</td><td><img src="${p.dataUrl}" style="max-width:320px;border-radius:8px;border:1px solid #D4E4F4;"></td></tr>`),
+    ...photos.after.map((p,  i) => `<tr><td style="padding:6px 0;color:#5B7A99;font-size:13px;width:80px;">After ${i+1}</td><td><img src="${p.dataUrl}" style="max-width:320px;border-radius:8px;border:1px solid #D4E4F4;"></td></tr>`),
+  ].join('');
 
   const headerBg = vals.status === 'Sent Extras'
     ? 'linear-gradient(135deg,#1355C2,#0A1E4A)'
@@ -1056,7 +1101,7 @@ function showShareOptions() {
   box.style.display = box.style.display === 'none' ? 'block' : 'none';
 }
 
-function shareWithTab(tab) {
+async function shareWithTab(tab) {
   const vals = getVals();
   const lines = [];
   document.querySelectorAll('.line-row').forEach(row => {
@@ -1068,8 +1113,45 @@ function shareWithTab(tab) {
     });
   });
 
-  // Generate a unique share ID so photos can be stored and retrieved
   const shareId = 'share_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
+  const notice = document.getElementById('sf-share-photo-notice');
+  const input = document.getElementById('sf-share-url');
+
+  // Highlight selected tab button
+  document.querySelectorAll('#sf-share-box button[onclick^="shareWithTab"]').forEach(b => {
+    b.style.opacity = '0.5'; b.style.fontWeight = '500';
+  });
+  event.target.style.opacity = '1';
+  event.target.style.fontWeight = '700';
+
+  const hasPhotos = photos.before.length > 0 || photos.after.length > 0;
+  let imgurUrls = [];
+
+  if (hasPhotos) {
+    // Upload to Imgur for cross-device sharing
+    imgurUrls = await uploadAllPhotosToImgur();
+    const successUrls = imgurUrls.filter(u => u.url);
+    if (notice) {
+      if (successUrls.length > 0) {
+        notice.style.background = '#E6F5EE';
+        notice.style.borderColor = '#A7F3D0';
+        notice.style.color = '#1B8C5A';
+        notice.textContent = `✅ ${successUrls.length} photo(s) uploaded — will appear on any device when manager opens the link.`;
+        notice.style.display = 'block';
+      } else {
+        // Imgur failed — fall back to localStorage
+        savePhotosToStorage(shareId);
+        notice.style.background = '#FFF8EC';
+        notice.style.borderColor = '#F5D49A';
+        notice.style.color = '#C97B1A';
+        notice.textContent = '📷 Photos saved locally — manager must open link on same device.';
+        notice.style.display = 'block';
+      }
+    }
+    hideBanner();
+  } else {
+    if (notice) notice.style.display = 'none';
+  }
 
   const params = new URLSearchParams({
     property:    vals.property,
@@ -1087,50 +1169,13 @@ function shareWithTab(tab) {
     shareId:     shareId,
   });
   if (lines.length) params.set('lines', JSON.stringify(lines));
-  if (photoUrls.length) params.set('photoUrls', JSON.stringify(photoUrls)); // ← OneDrive URLs
+  if (imgurUrls.length) params.set('imgurUrls', JSON.stringify(imgurUrls));
   const tax = document.getElementById('sf-tax').value;
   if (tax) params.set('tax', tax);
 
-  // Save photos — prefer OneDrive URLs (cross-device), fall back to localStorage
-  const hasPhotos = photos.before.length > 0 || photos.after.length > 0 || photoUrls.length > 0;
-  const notice = document.getElementById('sf-share-photo-notice');
-  if (hasPhotos) {
-    if (photoUrls.length > 0) {
-      // Photos are in OneDrive — URLs travel in the link, work on any device
-      if (notice) {
-        notice.style.background = '#E6F5EE';
-        notice.style.borderColor = '#A7F3D0';
-        notice.style.color = '#1B8C5A';
-        notice.textContent = '✅ Photos saved to OneDrive — will appear on any device when manager opens the link.';
-        notice.style.display = 'block';
-      }
-    } else {
-      // No OneDrive URLs yet — fall back to localStorage (same device only)
-      const saved = savePhotosToStorage(shareId);
-      if (notice) notice.style.display = saved ? 'block' : 'none';
-      if (!saved && notice) {
-        notice.style.background = '#FDECEA';
-        notice.style.borderColor = '#FECACA';
-        notice.style.color = '#C0392B';
-        notice.textContent = '⚠️ Photos could not be saved — storage may be full.';
-        notice.style.display = 'block';
-      }
-    }
-  } else {
-    if (notice) notice.style.display = 'none';
-  }
-
   const url = window.location.origin + window.location.pathname + '?' + params.toString();
-  const input = document.getElementById('sf-share-url');
   input.value = url;
   input.select();
-
-  // Highlight selected tab button
-  document.querySelectorAll('#sf-share-box button[onclick^="shareWithTab"]').forEach(b => {
-    b.style.opacity = '0.5'; b.style.fontWeight = '500';
-  });
-  event.target.style.opacity = '1';
-  event.target.style.fontWeight = '700';
 }
 
 function copyShareLink() {
@@ -1212,17 +1257,33 @@ function loadFromUrlParams() {
 
   if (params.get('itemId')) mondayItemId = params.get('itemId');
 
-  // ── Restore OneDrive photo URLs from share link (cross-device) ──
-  if (params.get('photoUrls')) {
+  // ── Restore photos from Imgur URLs (cross-device) ──
+  let photosLoaded = false;
+  if (params.get('imgurUrls')) {
     try {
-      photoUrls = JSON.parse(params.get('photoUrls'));
-      console.log('Photo URLs restored from share link:', photoUrls.length);
-    } catch(e) { photoUrls = []; }
+      const imgurData = JSON.parse(params.get('imgurUrls'));
+      photos.before = imgurData
+        .filter(u => u.type === 'before' && u.url)
+        .map(u => ({ name: `before_${u.index+1}.jpg`, dataUrl: u.url, isUrl: true }));
+      photos.after = imgurData
+        .filter(u => u.type === 'after' && u.url)
+        .map(u => ({ name: `after_${u.index+1}.jpg`, dataUrl: u.url, isUrl: true }));
+      ['before','after'].forEach(type => {
+        const c = document.getElementById(type + '-previews');
+        c.innerHTML = '';
+        photos[type].forEach((p, i) => {
+          const d = document.createElement('div');
+          d.className = 'photo-thumb';
+          d.innerHTML = `<img src="${p.dataUrl}"><button class="photo-rm" onclick="removePhoto('${type}',${i})">✕</button>`;
+          c.appendChild(d);
+        });
+      });
+      photosLoaded = photos.before.length + photos.after.length > 0;
+    } catch(e) { console.warn('Could not restore Imgur URLs:', e); }
   }
 
-  // ── Fall back to localStorage photos if no OneDrive URLs ──
+  // Fall back to localStorage if no Imgur URLs
   const shareId = params.get('shareId');
-  let photosLoaded = photoUrls.length > 0;
   if (!photosLoaded && shareId) {
     photosLoaded = loadPhotosFromStorage(shareId);
   }
@@ -1255,11 +1316,9 @@ function loadFromUrlParams() {
     'No Response':              'Review and click "Send Notification".',
   };
 
-  const photoNote = photoUrls.length > 0
-    ? ` &nbsp;· &nbsp;📷 ${photoUrls.length} photo(s) loaded from OneDrive.`
-    : photosLoaded
-      ? ` &nbsp;· &nbsp;📷 ${photos.before.length + photos.after.length} photo(s) loaded.`
-      : '';
+  const photoNote = photosLoaded
+    ? ` &nbsp;· &nbsp;📷 ${photos.before.length + photos.after.length} photo(s) loaded.`
+    : '';
 
   showBanner('loading', '📋 &nbsp;<strong>Pre-filled from team submission.</strong> &nbsp;' +
     (tabLabels[tab] || 'Review the details and submit.') + photoNote);
