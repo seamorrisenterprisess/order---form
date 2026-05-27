@@ -128,8 +128,10 @@ canvas{display:block;touch-action:none;cursor:crosshair}
   .form-body,.card-header,.item-id-bar{padding-left:20px;padding-right:20px}
   .fields-grid,.internal-fields,.photo-grid{grid-template-columns:1fr}
   .field-full{grid-column:span 1}
-  .line-header,.line-row{grid-template-columns:2fr 1fr 1fr 28px}
-  .line-header span:nth-child(3),.line-row .line-input:nth-child(3){display:none}
+  .line-header,.line-row{grid-template-columns:2fr 1fr 1fr 1fr 28px;font-size:11px}
+  .line-header span:nth-child(3),.line-row .line-input:nth-child(3){display:block}
+  .line-input{padding:4px 5px;font-size:12px}
+  .line-total{padding:4px 5px;font-size:12px}
   .status-tabs{gap:4px}
   .stab{padding:7px 10px;font-size:11px}
   .btn-row{flex-wrap:wrap}
