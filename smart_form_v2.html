@@ -366,12 +366,12 @@ canvas{display:block;touch-action:none;cursor:crosshair}
       <div id="sf-share-box" style="display:none;background:var(--frost);border:1.5px solid var(--ice);border-radius:12px;padding:14px 16px;">
         <div style="font-size:11px;font-weight:600;color:var(--blue);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">📋 Share with Samuel — select which tab to open</div>
         <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;">
-          <button onclick="shareWithTab('Sent Extras')"           style="padding:6px 12px;border-radius:8px;border:1.5px solid var(--blue);background:transparent;color:var(--blue);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font-body);">Sent Extras</button>
-          <button onclick="shareWithTab('Waiting for Approval')"  style="padding:6px 12px;border-radius:8px;border:1.5px solid rgb(56,149,255);background:transparent;color:rgb(56,149,255);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font-body);">Waiting for Approval</button>
-          <button onclick="shareWithTab('Approved Without Manager')" style="padding:6px 12px;border-radius:8px;border:1.5px solid var(--green);background:transparent;color:var(--green);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font-body);">Approved (No Mgr)</button>
-          <button onclick="shareWithTab('Approved With Manager')"  style="padding:6px 12px;border-radius:8px;border:1.5px solid rgb(21,209,59);background:transparent;color:rgb(21,120,38);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font-body);">Approved (Mgr)</button>
-          <button onclick="shareWithTab('Declined')"              style="padding:6px 12px;border-radius:8px;border:1.5px solid var(--red);background:transparent;color:var(--red);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font-body);">Declined</button>
-          <button onclick="shareWithTab('No Response')"           style="padding:6px 12px;border-radius:8px;border:1.5px solid rgb(255,93,242);background:transparent;color:rgb(180,30,160);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font-body);">No Response</button>
+          <button onclick="shareWithTab('Sent Extras',this)"           style="padding:6px 12px;border-radius:8px;border:1.5px solid var(--blue);background:transparent;color:var(--blue);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font-body);">Sent Extras</button>
+          <button onclick="shareWithTab('Waiting for Approval',this)"  style="padding:6px 12px;border-radius:8px;border:1.5px solid rgb(56,149,255);background:transparent;color:rgb(56,149,255);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font-body);">Waiting for Approval</button>
+          <button onclick="shareWithTab('Approved Without Manager',this)" style="padding:6px 12px;border-radius:8px;border:1.5px solid var(--green);background:transparent;color:var(--green);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font-body);">Approved (No Mgr)</button>
+          <button onclick="shareWithTab('Approved With Manager',this)"  style="padding:6px 12px;border-radius:8px;border:1.5px solid rgb(21,209,59);background:transparent;color:rgb(21,120,38);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font-body);">Approved (Mgr)</button>
+          <button onclick="shareWithTab('Declined',this)"              style="padding:6px 12px;border-radius:8px;border:1.5px solid var(--red);background:transparent;color:var(--red);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font-body);">Declined</button>
+          <button onclick="shareWithTab('No Response',this)"           style="padding:6px 12px;border-radius:8px;border:1.5px solid rgb(255,93,242);background:transparent;color:rgb(180,30,160);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font-body);">No Response</button>
         </div>
         <input id="sf-share-url" type="text" readonly placeholder="Select a tab above to generate link…" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:11px;font-family:monospace;background:white;color:var(--ink);margin-bottom:8px;">
         <div id="sf-share-photo-notice" style="display:none;background:#FFF8EC;border:1px solid #F5D49A;border-radius:8px;padding:8px 12px;font-size:12px;color:#C97B1A;margin-bottom:8px;">
@@ -1101,7 +1101,7 @@ function showShareOptions() {
   box.style.display = box.style.display === 'none' ? 'block' : 'none';
 }
 
-async function shareWithTab(tab) {
+async function shareWithTab(tab, btn) {
   const vals = getVals();
   const lines = [];
   document.querySelectorAll('.line-row').forEach(row => {
@@ -1117,12 +1117,11 @@ async function shareWithTab(tab) {
   const notice = document.getElementById('sf-share-photo-notice');
   const input = document.getElementById('sf-share-url');
 
-  // Highlight selected tab button
+  // Highlight selected tab button — capture before async
   document.querySelectorAll('#sf-share-box button[onclick^="shareWithTab"]').forEach(b => {
     b.style.opacity = '0.5'; b.style.fontWeight = '500';
   });
-  event.target.style.opacity = '1';
-  event.target.style.fontWeight = '700';
+  if (btn) { btn.style.opacity = '1'; btn.style.fontWeight = '700'; }
 
   const hasPhotos = photos.before.length > 0 || photos.after.length > 0;
   let imgurUrls = [];
