@@ -125,7 +125,6 @@ body { font-family: var(--font-body); background: linear-gradient(160deg, #0B182
       <p>Sales Order Request Form</p>
     </div>
   </div>
-
   <div class="card">
     <div class="card-header">
       <div class="card-header-inner">
@@ -134,9 +133,7 @@ body { font-family: var(--font-body); background: linear-gradient(160deg, #0B182
         <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
       </div>
     </div>
-
     <div class="form-body" id="formBody">
-
       <div class="form-section">
         <div class="section-label"><span class="section-icon" style="background:#EBF4FF;">👤</span> Requestor Information</div>
         <div class="grid grid-2">
@@ -151,7 +148,6 @@ body { font-family: var(--font-body); background: linear-gradient(160deg, #0B182
           </div>
         </div>
       </div>
-
       <div class="form-section">
         <div class="section-label"><span class="section-icon" style="background:#EBF4FF;">🏢</span> Property Information</div>
         <div class="grid grid-2">
@@ -166,7 +162,6 @@ body { font-family: var(--font-body); background: linear-gradient(160deg, #0B182
           </div>
         </div>
       </div>
-
       <div class="form-section">
         <div class="section-label"><span class="section-icon" style="background:#EBF4FF;">🔢</span> Unit Numbers <span class="unit-count-badge" id="unitCountBadge">1</span></div>
         <div class="unit-list" id="unitList">
@@ -180,12 +175,11 @@ body { font-family: var(--font-body); background: linear-gradient(160deg, #0B182
           Add another unit
         </button>
       </div>
-
       <div class="form-section">
         <div class="section-label"><span class="section-icon" style="background:#EBF4FF;">👤</span> Occupancy</div>
         <div class="field">
           <label>Is the unit currently occupied? <span class="required">*</span></label>
-          <div class="toggle-wrap" id="occupancyToggle">
+          <div class="toggle-wrap">
             <div class="toggle-opt" data-val="Yes" onclick="selectOccupancy(this)">✓ &nbsp; Yes — Occupied</div>
             <div class="toggle-opt" data-val="No" onclick="selectOccupancy(this)">✗ &nbsp; No — Vacant</div>
           </div>
@@ -193,7 +187,6 @@ body { font-family: var(--font-body); background: linear-gradient(160deg, #0B182
           <div class="error-msg" id="err-occupancy">Please select occupancy status</div>
         </div>
       </div>
-
       <div class="form-section">
         <div class="section-label"><span class="section-icon" style="background:#EBF4FF;">🚦</span> Priority Level <span class="required">*</span></div>
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
@@ -208,7 +201,6 @@ body { font-family: var(--font-body); background: linear-gradient(160deg, #0B182
           ⚠️ <strong>Urgent orders</strong> require manager approval. Please contact Samuel Hoyos at <strong>samuel@seamorris.com</strong> immediately after submitting.
         </div>
       </div>
-
       <div class="form-section">
         <div class="section-label"><span class="section-icon" style="background:#EBF4FF;">🛠️</span> Type of Service <span class="required">*</span></div>
         <div class="service-grid">
@@ -227,7 +219,6 @@ body { font-family: var(--font-body); background: linear-gradient(160deg, #0B182
         <input type="hidden" id="serviceType">
         <div class="error-msg" id="err-serviceType">Please select at least one service type</div>
       </div>
-
       <div class="form-section">
         <div class="section-label"><span class="section-icon" style="background:#EBF4FF;">📊</span> Status & Timeline</div>
         <div class="field" style="margin-bottom:14px;">
@@ -253,7 +244,6 @@ body { font-family: var(--font-body); background: linear-gradient(160deg, #0B182
           </div>
         </div>
       </div>
-
       <div class="form-section">
         <div class="section-label"><span class="section-icon" style="background:#EBF4FF;">🔑</span> Access Instructions</div>
         <div class="grid grid-2">
@@ -267,7 +257,6 @@ body { font-family: var(--font-body); background: linear-gradient(160deg, #0B182
           </div>
         </div>
       </div>
-
       <div class="form-section">
         <div class="section-label"><span class="section-icon" style="background:#EBF4FF;">📞</span> Contact Information</div>
         <div class="grid grid-2">
@@ -281,7 +270,6 @@ body { font-family: var(--font-body); background: linear-gradient(160deg, #0B182
           </div>
         </div>
       </div>
-
       <div class="form-section">
         <div class="section-label"><span class="section-icon" style="background:#EBF4FF;">📝</span> Notes</div>
         <div class="field">
@@ -289,7 +277,6 @@ body { font-family: var(--font-body); background: linear-gradient(160deg, #0B182
           <textarea id="notes" placeholder="Any special instructions or additional details…" oninput="updateProgress()"></textarea>
         </div>
       </div>
-
       <div class="form-section">
         <div class="section-label"><span class="section-icon" style="background:#EBF4FF;">📷</span> Attachments & Photos</div>
         <div class="photo-drop" id="photoDrop"
@@ -302,7 +289,6 @@ body { font-family: var(--font-body); background: linear-gradient(160deg, #0B182
         <div class="upload-status" id="uploadStatus"></div>
         <div class="photo-previews" id="photoPreviews"></div>
       </div>
-
       <div class="submit-row">
         <button class="btn-clear" type="button" onclick="clearForm()">Clear form</button>
         <button class="btn-submit" type="button" id="submitBtn" onclick="submitForm()">
@@ -311,7 +297,6 @@ body { font-family: var(--font-body); background: linear-gradient(160deg, #0B182
         </button>
       </div>
     </div>
-
     <div class="success-overlay" id="successOverlay">
       <div class="success-icon">✓</div>
       <h3>Order Submitted!</h3>
@@ -326,15 +311,8 @@ body { font-family: var(--font-body); background: linear-gradient(160deg, #0B182
     </div>
   </div>
 </div>
-
 <script>
-// ── TWO FLOW URLS ──
-// Flow 1: creates the SharePoint list item (your existing flow, no changes needed)
-const MAIN_FLOW_URL = 'https://default3f5356f97f6649efa4a1060191aada.8c.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/4435b7e149d04ac6a245a0aaed2fd9d8/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=_UwboqvBtFyphvazth9KGhnwltg1F_ev892PUAkgIVo';
-
-// Flow 2: NEW flow — receives one file at a time and attaches it to SharePoint + emails it
-// *** REPLACE THIS with your new flow URL after you create it (see instructions below) ***
-const FILE_FLOW_URL = 'https://default3f5356f97f6649efa4a1060191aada.8c.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/4435b7e149d04ac6a245a0aaed2fd9d8/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=_UwboqvBtFyphvazth9KGhnwltg1F_ev892PUAkgIVo';
+const FLOW_URL = 'https://default3f5356f97f6649efa4a1060191aada.8c.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/4435b7e149d04ac6a245a0aaed2fd9d8/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=_UwboqvBtFyphvazth9KGhnwltg1F_ev892PUAkgIVo';
 
 function generateOrderRef() {
   const now = new Date();
@@ -344,7 +322,6 @@ function generateOrderRef() {
   const rand = Math.floor(1000 + Math.random() * 9000);
   return `SME-${yy}${mm}${dd}-${rand}`;
 }
-
 function selectPriority(chip) {
   document.querySelectorAll('.priority-chip').forEach(c => { c.style.opacity='0.5'; c.style.transform='scale(0.97)'; });
   chip.style.opacity='1'; chip.style.transform='scale(1.03)'; chip.style.boxShadow='0 4px 12px rgba(0,0,0,0.12)';
@@ -353,9 +330,7 @@ function selectPriority(chip) {
   document.getElementById('urgentWarning').style.display = chip.dataset.val === 'Urgent' ? 'block' : 'none';
   updateProgress();
 }
-
 let photos = [];
-
 function photoDragOver(e) { e.preventDefault(); document.getElementById('photoDrop').classList.add('drag-over'); }
 function photoDragLeave() { document.getElementById('photoDrop').classList.remove('drag-over'); }
 function photoDropHandler(e) { e.preventDefault(); document.getElementById('photoDrop').classList.remove('drag-over'); handleFiles(Array.from(e.dataTransfer.files)); }
@@ -387,12 +362,9 @@ function renderPreviews() {
   if (photos.length > 0) {
     s.className = 'upload-status show uploading';
     s.textContent = `📎 ${photos.length} file${photos.length>1?'s':''} ready — will upload to SharePoint on submit`;
-  } else {
-    s.className = 'upload-status';
-  }
+  } else { s.className = 'upload-status'; }
 }
 function removePhoto(i) { photos.splice(i,1); renderPreviews(); }
-
 function addUnit() {
   const list = document.getElementById('unitList');
   const count = list.children.length + 1;
@@ -446,14 +418,13 @@ function updateProgress() {
 }
 function validate() {
   let valid = true;
-  [
-    {id:'requestorName',err:'err-requestorName',check:()=>document.getElementById('requestorName').value.trim()},
-    {id:'submittedBy',err:'err-submittedBy',check:()=>document.getElementById('submittedBy').value.trim()},
-    {id:'propertyName',err:'err-propertyName',check:()=>document.getElementById('propertyName').value.trim()},
-    {id:'occupancy',err:'err-occupancy',check:()=>document.getElementById('occupancy').value},
-    {id:'priority',err:'err-priority',check:()=>document.getElementById('priority').value},
-    {id:'serviceType',err:'err-serviceType',check:()=>document.getElementById('serviceType').value},
-    {id:'dueDate',err:'err-dueDate',check:()=>document.getElementById('dueDate').value},
+  [{id:'requestorName',err:'err-requestorName',check:()=>document.getElementById('requestorName').value.trim()},
+   {id:'submittedBy',err:'err-submittedBy',check:()=>document.getElementById('submittedBy').value.trim()},
+   {id:'propertyName',err:'err-propertyName',check:()=>document.getElementById('propertyName').value.trim()},
+   {id:'occupancy',err:'err-occupancy',check:()=>document.getElementById('occupancy').value},
+   {id:'priority',err:'err-priority',check:()=>document.getElementById('priority').value},
+   {id:'serviceType',err:'err-serviceType',check:()=>document.getElementById('serviceType').value},
+   {id:'dueDate',err:'err-dueDate',check:()=>document.getElementById('dueDate').value},
   ].forEach(({id,err,check})=>{
     const el=document.getElementById(id), errEl=document.getElementById(err);
     if(!check()){if(el)el.classList.add('error');if(errEl)errEl.classList.add('show');valid=false;}
@@ -467,7 +438,6 @@ async function submitForm() {
     document.querySelector('.error-msg.show')?.closest('.field,.form-section')?.scrollIntoView({behavior:'smooth',block:'center'});
     return;
   }
-
   const btn = document.getElementById('submitBtn');
   const status = document.getElementById('uploadStatus');
   btn.disabled = true;
@@ -476,90 +446,103 @@ async function submitForm() {
   const units = getUnits();
   const orderRef = document.getElementById('orderRef').value;
 
-  // ── STEP 1: Send form data (no files) ──
-  const formData = {
+  // Send form data — same field names as original working flow
+  const payload = {
     orderRef,
-    requestorName:  document.getElementById('requestorName').value.trim(),
-    contactPhone:   document.getElementById('contactPhone').value.trim(),
-    requestorEmail: document.getElementById('requestorEmail').value.trim(),
-    propertyName:   document.getElementById('propertyName').value.trim(),
-    poNumber:       document.getElementById('poNumber').value.trim(),
-    units:          units.join(', '),
-    occupancy:      document.getElementById('occupancy').value,
-    priority:       document.getElementById('priority').value,
-    serviceType:    document.getElementById('serviceType').value,
-    status:         document.getElementById('status').value,
-    dueDate:        document.getElementById('dueDate').value,
-    submittedBy:    document.getElementById('submittedBy').value.trim(),
-    notes:          document.getElementById('notes').value.trim(),
-    accessCode:     document.getElementById('accessCode').value.trim(),
-    siteContact:    document.getElementById('siteContact').value.trim(),
-    photoCount:     photos.length,
-    submittedAt:    new Date().toLocaleString('en-US',{dateStyle:'medium',timeStyle:'short'}),
+    requestorName:   document.getElementById('requestorName').value.trim(),
+    contactPhone:    document.getElementById('contactPhone').value.trim(),
+    requestorEmail:  document.getElementById('requestorEmail').value.trim(),
+    propertyName:    document.getElementById('propertyName').value.trim(),
+    poNumber:        document.getElementById('poNumber').value.trim(),
+    units:           units.join(', '),
+    occupancy:       document.getElementById('occupancy').value,
+    priority:        document.getElementById('priority').value,
+    serviceType:     document.getElementById('serviceType').value,
+    status:          document.getElementById('status').value,
+    dueDate:         document.getElementById('dueDate').value,
+    submittedBy:     document.getElementById('submittedBy').value.trim(),
+    notes:           document.getElementById('notes').value.trim(),
+    accessCode:      document.getElementById('accessCode').value.trim(),
+    siteContact:     document.getElementById('siteContact').value.trim(),
+    photoCount:      photos.length,
+    submittedAt:     new Date().toLocaleString('en-US',{dateStyle:'medium',timeStyle:'short'}),
+    // File data — only populated if a file was attached
+    fileName:        photos.length > 0 ? photos[0].name : '',
+    fileType:        photos.length > 0 ? photos[0].type : '',
+    fileContentBase64: photos.length > 0 ? photos[0].base64 : '',
   };
 
   try {
-    const res = await fetch(MAIN_FLOW_URL, {
+    const res = await fetch(FLOW_URL, {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify(formData)
+      body: JSON.stringify(payload)
     });
-    if (!res.ok && res.status !== 202) throw new Error(`Form submit failed: ${res.status}`);
+    if (!res.ok && res.status !== 202) throw new Error(`Submit failed: ${res.status}`);
+
+    // If more than 1 photo, send remaining files
+    if (photos.length > 1) {
+      if (photos.length > 0) {
+        status.className='upload-status show uploading';
+      }
+      for (let i = 1; i < photos.length; i++) {
+        const p = photos[i];
+        status.textContent=`⏳ Uploading file ${i+1} of ${photos.length}: ${p.name}…`;
+        try {
+          await fetch(FLOW_URL, {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({
+              orderRef,
+              requestorName: payload.requestorName,
+              propertyName: payload.propertyName,
+              units: payload.units,
+              occupancy: payload.occupancy,
+              priority: payload.priority,
+              serviceType: payload.serviceType,
+              status: payload.status,
+              dueDate: payload.dueDate,
+              submittedBy: payload.submittedBy,
+              notes: payload.notes,
+              accessCode: payload.accessCode,
+              siteContact: payload.siteContact,
+              contactPhone: payload.contactPhone,
+              requestorEmail: payload.requestorEmail,
+              poNumber: payload.poNumber,
+              photoCount: photos.length,
+              submittedAt: payload.submittedAt,
+              fileName: p.name,
+              fileType: p.type,
+              fileContentBase64: p.base64,
+            })
+          });
+        } catch(e) { console.warn('Extra file failed:', p.name, e); }
+      }
+    }
+
+    status.className = photos.length > 0 ? 'upload-status show done' : 'upload-status';
+    if (photos.length > 0) status.textContent = `✅ ${photos.length} file${photos.length>1?'s':''} submitted`;
+
+    btn.disabled=false;
+    btn.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Submit Order Request';
+    document.getElementById('formBody').style.display='none';
+    document.getElementById('successOverlay').classList.add('show');
+    document.getElementById('successUnits').textContent=`${units.length} unit${units.length>1?'s':''} submitted: ${units.join(', ')}`;
+    if(photos.length>0) document.getElementById('successPhotos').textContent=`📎 ${photos.length} file${photos.length>1?'s':''} saved to SharePoint`;
+    document.getElementById('successChips').innerHTML=[
+      orderRef, payload.requestorName, payload.propertyName,
+      payload.serviceType, `Priority: ${payload.priority}`, payload.status,
+      `Due: ${payload.dueDate}`,
+      photos.length>0?`📎 ${photos.length} file${photos.length>1?'s':''}`:'No attachments',
+    ].map(t=>`<span class="summary-chip">${t}</span>`).join('');
+
   } catch(err) {
     btn.disabled=false;
     btn.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Submit Order Request';
     status.className='upload-status show error';
     status.textContent='❌ Submission failed — please try again';
     alert('Submission failed: '+err.message);
-    return;
   }
-
-  // ── STEP 2: Send each file one at a time ──
-  if (photos.length > 0) {
-    const fileFlowConfigured = FILE_FLOW_URL !== 'PASTE_YOUR_NEW_FILE_FLOW_URL_HERE';
-
-    if (fileFlowConfigured) {
-      for (let i = 0; i < photos.length; i++) {
-        const p = photos[i];
-        status.className='upload-status show uploading';
-        status.textContent=`⏳ Uploading file ${i+1} of ${photos.length}: ${p.name}…`;
-        try {
-          await fetch(FILE_FLOW_URL, {
-            method: 'POST',
-            headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({
-              orderRef,
-              fileName:          p.name,
-              fileType:          p.type,
-              fileContentBase64: p.base64
-            })
-          });
-        } catch(e) {
-          console.warn('File upload failed for', p.name, e);
-        }
-      }
-      status.className='upload-status show done';
-      status.textContent=`✅ ${photos.length} file${photos.length>1?'s':''} uploaded to SharePoint`;
-    } else {
-      // File flow not configured yet — skip silently
-      status.className='upload-status show done';
-      status.textContent=`⚠️ ${photos.length} file${photos.length>1?'s':''} attached but file flow not configured yet`;
-    }
-  }
-
-  // ── SHOW SUCCESS ──
-  btn.disabled=false;
-  btn.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Submit Order Request';
-  document.getElementById('formBody').style.display='none';
-  document.getElementById('successOverlay').classList.add('show');
-  document.getElementById('successUnits').textContent=`${units.length} unit${units.length>1?'s':''} submitted: ${units.join(', ')}`;
-  if(photos.length>0) document.getElementById('successPhotos').textContent=`📎 ${photos.length} file${photos.length>1?'s':''} saved to SharePoint`;
-  document.getElementById('successChips').innerHTML=[
-    orderRef, formData.requestorName, formData.propertyName,
-    formData.serviceType, `Priority: ${formData.priority}`, formData.status,
-    `Due: ${formData.dueDate}`,
-    photos.length>0?`📎 ${photos.length} file${photos.length>1?'s':''}`:'No attachments',
-  ].map(t=>`<span class="summary-chip">${t}</span>`).join('');
 }
 
 function clearForm() {
@@ -584,7 +567,6 @@ function resetForm() {
   document.getElementById('formBody').style.display='block';
   document.getElementById('successOverlay').classList.remove('show');
 }
-
 updateProgress();
 document.getElementById('dueDate').min=new Date().toISOString().split('T')[0];
 document.getElementById('orderRef').value=generateOrderRef();
