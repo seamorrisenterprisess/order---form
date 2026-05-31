@@ -337,12 +337,35 @@ function photoDropHandler(e) { e.preventDefault(); document.getElementById('phot
 function photoSelected(e) { handleFiles(Array.from(e.target.files)); document.getElementById('fileInput').value=''; }
 function handleFiles(files) {
   files.forEach(file => {
-    const reader = new FileReader();
-    reader.onload = e => {
-      photos.push({ name: file.name, dataUrl: e.target.result, base64: e.target.result.split(',')[1], type: file.type });
-      renderPreviews();
-    };
-    reader.readAsDataURL(file);
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX = 1200;
+          let w = img.width, h = img.height;
+          if (w > MAX || h > MAX) {
+            if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+            else { w = Math.round(w * MAX / h); h = MAX; }
+          }
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+          photos.push({ name: file.name.replace(/\.[^.]+$/, '.jpg'), dataUrl, base64: dataUrl.split(',')[1], type: 'image/jpeg' });
+          renderPreviews();
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    } else {
+      const reader = new FileReader();
+      reader.onload = e => {
+        photos.push({ name: file.name, dataUrl: e.target.result, base64: e.target.result.split(',')[1], type: file.type });
+        renderPreviews();
+      };
+      reader.readAsDataURL(file);
+    }
   });
 }
 function renderPreviews() {
