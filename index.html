@@ -37,17 +37,8 @@ body {
   padding: 32px 16px 80px;
   color: var(--ink);
 }
-
-/* ── WRAPPER ── */
 .wrapper { max-width: 780px; margin: 0 auto; }
-
-/* ── HEADER ── */
-.header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 28px;
-}
+.header { display: flex; align-items: center; gap: 16px; margin-bottom: 28px; }
 .logo-wrap {
   width: 56px; height: 56px;
   background: var(--blue);
@@ -59,299 +50,58 @@ body {
   flex-shrink: 0;
   box-shadow: 0 8px 24px rgba(19,85,194,0.4);
 }
-.header-text h1 {
-  font-family: var(--font-display);
-  font-size: 22px;
-  color: white;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
-}
-.header-text p {
-  font-size: 12px;
-  color: rgba(255,255,255,0.5);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  margin-top: 3px;
-}
-
-/* ── CARD ── */
-.card {
-  background: var(--white);
-  border-radius: 24px;
-  overflow: hidden;
-  box-shadow: 0 40px 100px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
-}
-
-/* ── CARD HEADER ── */
-.card-header {
-  background: linear-gradient(135deg, #1355C2 0%, #0A1E4A 100%);
-  padding: 28px 36px 24px;
-  position: relative;
-  overflow: hidden;
-}
-.card-header::before {
-  content: '';
-  position: absolute;
-  right: -60px; top: -60px;
-  width: 240px; height: 240px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.04);
-}
-.card-header::after {
-  content: '';
-  position: absolute;
-  left: -30px; bottom: -80px;
-  width: 200px; height: 200px;
-  border-radius: 50%;
-  background: rgba(41,144,255,0.08);
-}
+.header-text h1 { font-family: var(--font-display); font-size: 22px; color: white; letter-spacing: -0.02em; line-height: 1.1; }
+.header-text p { font-size: 12px; color: rgba(255,255,255,0.5); letter-spacing: 0.06em; text-transform: uppercase; margin-top: 3px; }
+.card { background: var(--white); border-radius: 24px; overflow: hidden; box-shadow: 0 40px 100px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05); }
+.card-header { background: linear-gradient(135deg, #1355C2 0%, #0A1E4A 100%); padding: 28px 36px 24px; position: relative; overflow: hidden; }
+.card-header::before { content: ''; position: absolute; right: -60px; top: -60px; width: 240px; height: 240px; border-radius: 50%; background: rgba(255,255,255,0.04); }
+.card-header::after { content: ''; position: absolute; left: -30px; bottom: -80px; width: 200px; height: 200px; border-radius: 50%; background: rgba(41,144,255,0.08); }
 .card-header-inner { position: relative; z-index: 2; }
-.card-header h2 {
-  font-family: var(--font-display);
-  font-size: 26px;
-  color: white;
-  letter-spacing: -0.02em;
-  margin-bottom: 6px;
-}
+.card-header h2 { font-family: var(--font-display); font-size: 26px; color: white; letter-spacing: -0.02em; margin-bottom: 6px; }
 .card-header p { font-size: 13px; color: rgba(255,255,255,0.6); }
-.progress-bar {
-  margin-top: 18px;
-  height: 4px;
-  background: rgba(255,255,255,0.15);
-  border-radius: 2px;
-  overflow: hidden;
-}
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #3B9EFF, #29D9C2);
-  border-radius: 2px;
-  transition: width 0.4s ease;
-  width: 0%;
-}
-
-/* ── FORM BODY ── */
+.progress-bar { margin-top: 18px; height: 4px; background: rgba(255,255,255,0.15); border-radius: 2px; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, #3B9EFF, #29D9C2); border-radius: 2px; transition: width 0.4s ease; width: 0%; }
 .form-body { padding: 32px 36px 36px; }
-
-/* ── SECTION ── */
 .form-section { margin-bottom: 32px; }
-.section-label {
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--slate);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  margin-bottom: 16px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+.section-label { font-size: 10px; font-weight: 600; color: var(--slate); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
 .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-.section-icon {
-  width: 22px; height: 22px;
-  border-radius: 6px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 11px;
-  flex-shrink: 0;
-}
-
-/* ── GRID ── */
+.section-icon { width: 22px; height: 22px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; }
 .grid { display: grid; gap: 14px; }
 .grid-2 { grid-template-columns: 1fr 1fr; }
 .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
 .col-span-2 { grid-column: span 2; }
 .col-span-3 { grid-column: span 3; }
-
-/* ── FIELD ── */
 .field { display: flex; flex-direction: column; gap: 5px; }
-.field label {
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--slate);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
+.field label { font-size: 11px; font-weight: 500; color: var(--slate); letter-spacing: 0.04em; text-transform: uppercase; display: flex; align-items: center; gap: 5px; }
 .required { color: var(--red); font-size: 13px; }
-.field input,
-.field select,
-.field textarea {
-  width: 100%;
-  padding: 10px 13px;
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  font-family: var(--font-body);
-  font-size: 14px;
-  color: var(--ink);
-  background: var(--mist);
-  transition: all 0.15s;
-  outline: none;
-  appearance: none;
-}
-.field input:focus,
-.field select:focus,
-.field textarea:focus {
-  border-color: var(--blue-mid);
-  background: var(--white);
-  box-shadow: 0 0 0 4px rgba(19,85,194,0.08);
-}
-.field input.error,
-.field select.error { border-color: var(--red); background: var(--red-bg); }
+.field input, .field select, .field textarea { width: 100%; padding: 10px 13px; border: 1.5px solid var(--border); border-radius: 10px; font-family: var(--font-body); font-size: 14px; color: var(--ink); background: var(--mist); transition: all 0.15s; outline: none; appearance: none; }
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--blue-mid); background: var(--white); box-shadow: 0 0 0 4px rgba(19,85,194,0.08); }
+.field input.error, .field select.error { border-color: var(--red); background: var(--red-bg); }
 .field textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
-.field select {
-  cursor: pointer;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%234D6B8A' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  padding-right: 36px;
-}
+.field select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%234D6B8A' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
 .error-msg { font-size: 11px; color: var(--red); margin-top: 2px; display: none; }
 .error-msg.show { display: block; }
-
-/* ── TOGGLE (Occupancy) ── */
-.toggle-wrap {
-  display: flex;
-  gap: 8px;
-}
-.toggle-opt {
-  flex: 1;
-  padding: 10px;
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  text-align: center;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--slate);
-  background: var(--mist);
-  transition: all 0.15s;
-  user-select: none;
-}
+.toggle-wrap { display: flex; gap: 8px; }
+.toggle-opt { flex: 1; padding: 10px; border: 1.5px solid var(--border); border-radius: 10px; text-align: center; cursor: pointer; font-size: 14px; font-weight: 500; color: var(--slate); background: var(--mist); transition: all 0.15s; user-select: none; }
 .toggle-opt:hover { border-color: var(--blue); color: var(--blue); }
 .toggle-opt.selected-yes { background: var(--green-bg); border-color: var(--green); color: var(--green); }
 .toggle-opt.selected-no { background: var(--red-bg); border-color: var(--red); color: var(--red); }
-
-/* ── MULTI-UNIT ── */
 .unit-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
-.unit-row {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-.unit-row input {
-  flex: 1;
-  padding: 10px 13px;
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  font-family: var(--font-body);
-  font-size: 14px;
-  color: var(--ink);
-  background: var(--mist);
-  outline: none;
-  transition: all 0.15s;
-}
-.unit-row input:focus {
-  border-color: var(--blue-mid);
-  background: var(--white);
-  box-shadow: 0 0 0 4px rgba(19,85,194,0.08);
-}
-.unit-badge {
-  width: 28px; height: 28px;
-  border-radius: 8px;
-  background: var(--frost);
-  color: var(--blue);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 11px;
-  font-weight: 600;
-  flex-shrink: 0;
-  border: 1px solid var(--ice);
-}
-.remove-unit {
-  width: 28px; height: 28px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: transparent;
-  color: var(--silver);
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 16px;
-  transition: all 0.15s;
-  flex-shrink: 0;
-  line-height: 1;
-}
+.unit-row { display: flex; gap: 8px; align-items: center; }
+.unit-row input { flex: 1; padding: 10px 13px; border: 1.5px solid var(--border); border-radius: 10px; font-family: var(--font-body); font-size: 14px; color: var(--ink); background: var(--mist); outline: none; transition: all 0.15s; }
+.unit-row input:focus { border-color: var(--blue-mid); background: var(--white); box-shadow: 0 0 0 4px rgba(19,85,194,0.08); }
+.unit-badge { width: 28px; height: 28px; border-radius: 8px; background: var(--frost); color: var(--blue); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex-shrink: 0; border: 1px solid var(--ice); }
+.remove-unit { width: 28px; height: 28px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--silver); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; transition: all 0.15s; flex-shrink: 0; line-height: 1; }
 .remove-unit:hover { background: var(--red-bg); border-color: var(--red); color: var(--red); }
-.add-unit-btn {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--blue);
-  background: var(--frost);
-  border: 1.5px dashed var(--ice);
-  border-radius: 10px;
-  padding: 9px 14px;
-  cursor: pointer;
-  transition: all 0.15s;
-  font-family: var(--font-body);
-  width: 100%;
-  justify-content: center;
-}
+.add-unit-btn { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 500; color: var(--blue); background: var(--frost); border: 1.5px dashed var(--ice); border-radius: 10px; padding: 9px 14px; cursor: pointer; transition: all 0.15s; font-family: var(--font-body); width: 100%; justify-content: center; }
 .add-unit-btn:hover { background: var(--ice); border-color: var(--sky); }
-.unit-count-badge {
-  font-size: 11px;
-  background: var(--blue);
-  color: white;
-  border-radius: 20px;
-  padding: 1px 7px;
-  font-weight: 600;
-}
-
-/* ── SERVICE TYPE GRID ── */
-.service-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 8px;
-}
-.service-chip {
-  padding: 9px 12px;
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  font-size: 13px;
-  color: var(--slate);
-  background: var(--mist);
-  cursor: pointer;
-  text-align: center;
-  transition: all 0.15s;
-  user-select: none;
-  font-weight: 400;
-}
+.unit-count-badge { font-size: 11px; background: var(--blue); color: white; border-radius: 20px; padding: 1px 7px; font-weight: 600; }
+.service-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+.service-chip { padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 13px; color: var(--slate); background: var(--mist); cursor: pointer; text-align: center; transition: all 0.15s; user-select: none; font-weight: 400; }
 .service-chip:hover { border-color: var(--blue); color: var(--blue); background: var(--frost); }
-.service-chip.selected {
-  background: var(--blue);
-  border-color: var(--blue);
-  color: white;
-  font-weight: 500;
-}
-
-/* ── STATUS ── */
-.status-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-}
-.status-chip {
-  padding: 10px 8px;
-  border-radius: 10px;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  text-align: center;
-  border: 1.5px solid transparent;
-  transition: all 0.15s;
-  user-select: none;
-}
+.service-chip.selected { background: var(--blue); border-color: var(--blue); color: white; font-weight: 500; }
+.status-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.status-chip { padding: 10px 8px; border-radius: 10px; font-size: 12px; font-weight: 500; cursor: pointer; text-align: center; border: 1.5px solid transparent; transition: all 0.15s; user-select: none; }
 .status-chip[data-val="Not Started"] { background: #F3F4F6; color: #6B7280; border-color: #E5E7EB; }
 .status-chip[data-val="Not Started"].selected { background: #374151; border-color: #374151; color: white; }
 .status-chip[data-val="In Progress"] { background: #EFF6FF; color: #1D4ED8; border-color: #BFDBFE; }
@@ -360,125 +110,44 @@ body {
 .status-chip[data-val="Completed"].selected { background: var(--green); border-color: var(--green); color: white; }
 .status-chip[data-val="Pending"] { background: var(--amber-bg); color: var(--amber); border-color: #FED7AA; }
 .status-chip[data-val="Pending"].selected { background: var(--amber); border-color: var(--amber); color: white; }
-
-/* ── PHOTO UPLOAD ── */
-.photo-drop {
-  border: 2px dashed var(--border);
-  border-radius: 12px;
-  padding: 24px 20px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.18s;
-  background: var(--mist);
-  position: relative;
-}
+.photo-drop { border: 2px dashed var(--border); border-radius: 12px; padding: 24px 20px; text-align: center; cursor: pointer; transition: all 0.18s; background: var(--mist); position: relative; }
 .photo-drop:hover, .photo-drop.drag-over { border-color: var(--sky); background: var(--frost); }
 .photo-drop input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
 .photo-icon { font-size: 28px; margin-bottom: 8px; }
 .photo-drop p { font-size: 13px; color: var(--slate); margin-bottom: 3px; }
 .photo-drop span { font-size: 11px; color: var(--silver); }
 .photo-previews { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-.photo-thumb {
-  position: relative;
-  width: 76px; height: 76px;
-  border-radius: 8px;
-  overflow: hidden;
-  border: 1px solid var(--border);
-}
+.photo-thumb { position: relative; width: 76px; height: 76px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
 .photo-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.photo-thumb .rm {
-  position: absolute; top: 3px; right: 3px;
-  width: 18px; height: 18px;
-  border-radius: 50%;
-  background: rgba(0,0,0,0.6);
-  color: white; border: none; cursor: pointer;
-  font-size: 10px; line-height: 1;
-  display: flex; align-items: center; justify-content: center;
-}
-.photo-thumb .pname {
-  position: absolute; bottom: 0; left: 0; right: 0;
-  background: rgba(0,0,0,0.5);
-  color: white; font-size: 9px;
-  padding: 2px 4px;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
+.photo-thumb .rm { position: absolute; top: 3px; right: 3px; width: 18px; height: 18px; border-radius: 50%; background: rgba(0,0,0,0.6); color: white; border: none; cursor: pointer; font-size: 10px; line-height: 1; display: flex; align-items: center; justify-content: center; }
+.photo-thumb .pname { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.5); color: white; font-size: 9px; padding: 2px 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-/* ── SUBMIT ── */
-.submit-row {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  justify-content: flex-end;
-  padding-top: 24px;
-  border-top: 1px solid var(--border);
-  margin-top: 8px;
-}
-.btn-clear {
-  padding: 12px 24px;
+/* Upload progress banner */
+.upload-banner {
+  margin-top: 10px;
+  padding: 10px 14px;
   border-radius: 10px;
-  font-family: var(--font-body);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
-  cursor: pointer;
-  border: 1.5px solid var(--border);
-  background: transparent;
-  color: var(--slate);
-  transition: all 0.15s;
+  display: none;
 }
+.upload-banner.uploading { display: block; background: var(--frost); color: var(--blue); border: 1px solid var(--ice); }
+.upload-banner.done { display: block; background: var(--green-bg); color: var(--green); border: 1px solid #A7F3D0; }
+.upload-banner.error { display: block; background: var(--red-bg); color: var(--red); border: 1px solid #FECACA; }
+
+.submit-row { display: flex; gap: 12px; align-items: center; justify-content: flex-end; padding-top: 24px; border-top: 1px solid var(--border); margin-top: 8px; }
+.btn-clear { padding: 12px 24px; border-radius: 10px; font-family: var(--font-body); font-size: 14px; font-weight: 500; cursor: pointer; border: 1.5px solid var(--border); background: transparent; color: var(--slate); transition: all 0.15s; }
 .btn-clear:hover { border-color: var(--blue); color: var(--blue); }
-.btn-submit {
-  padding: 12px 32px;
-  border-radius: 10px;
-  font-family: var(--font-body);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  border: none;
-  background: linear-gradient(135deg, #1355C2, #1A6FE8);
-  color: white;
-  box-shadow: 0 4px 16px rgba(19,85,194,0.35);
-  transition: all 0.15s;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+.btn-submit { padding: 12px 32px; border-radius: 10px; font-family: var(--font-body); font-size: 14px; font-weight: 600; cursor: pointer; border: none; background: linear-gradient(135deg, #1355C2, #1A6FE8); color: white; box-shadow: 0 4px 16px rgba(19,85,194,0.35); transition: all 0.15s; display: flex; align-items: center; gap: 8px; }
 .btn-submit:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(19,85,194,0.4); }
 .btn-submit:disabled { opacity: 0.6; cursor: default; transform: none; }
-
-/* ── SUCCESS ── */
-.success-overlay {
-  display: none;
-  padding: 60px 36px;
-  text-align: center;
-}
+.success-overlay { display: none; padding: 60px 36px; text-align: center; }
 .success-overlay.show { display: block; }
-.success-icon {
-  width: 80px; height: 80px;
-  background: linear-gradient(135deg, var(--blue), var(--sky));
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  margin: 0 auto 24px;
-  box-shadow: 0 16px 40px rgba(19,85,194,0.3);
-  font-size: 32px;
-}
-.success-overlay h3 {
-  font-family: var(--font-display);
-  font-size: 28px;
-  color: var(--ink);
-  margin-bottom: 10px;
-}
+.success-icon { width: 80px; height: 80px; background: linear-gradient(135deg, var(--blue), var(--sky)); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; box-shadow: 0 16px 40px rgba(19,85,194,0.3); font-size: 32px; }
+.success-overlay h3 { font-family: var(--font-display); font-size: 28px; color: var(--ink); margin-bottom: 10px; }
 .success-overlay p { font-size: 14px; color: var(--slate); line-height: 1.6; margin-bottom: 8px; }
 .summary-chips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 16px 0 24px; }
-.summary-chip {
-  font-size: 12px; font-weight: 500;
-  padding: 4px 12px;
-  border-radius: 20px;
-  background: var(--frost);
-  color: var(--blue);
-  border: 1px solid var(--ice);
-}
-
-/* ── RESPONSIVE ── */
+.summary-chip { font-size: 12px; font-weight: 500; padding: 4px 12px; border-radius: 20px; background: var(--frost); color: var(--blue); border: 1px solid var(--ice); }
 @media (max-width: 600px) {
   .form-body { padding: 24px 20px 28px; }
   .card-header { padding: 22px 20px 18px; }
@@ -487,14 +156,12 @@ body {
   .status-grid { grid-template-columns: 1fr 1fr; }
   .service-grid { grid-template-columns: repeat(auto-fill, minmax(120px,1fr)); }
 }
-
 @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
 
 <div class="wrapper">
-
   <div class="header">
     <div class="logo-wrap">SM</div>
     <div class="header-text">
@@ -579,18 +246,10 @@ body {
       <div class="form-section">
         <div class="section-label"><span class="section-icon" style="background:#EBF4FF;">🚦</span> Priority Level <span class="required">*</span></div>
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
-          <div class="priority-chip" data-val="Low" onclick="selectPriority(this)" style="border-radius:10px;padding:10px 8px;text-align:center;font-size:12px;font-weight:500;cursor:pointer;border:1.5px solid #D1FAE5;background:#ECFDF5;color:#065F46;transition:all 0.15s;user-select:none;">
-            🟢 Low
-          </div>
-          <div class="priority-chip" data-val="Normal" onclick="selectPriority(this)" style="border-radius:10px;padding:10px 8px;text-align:center;font-size:12px;font-weight:500;cursor:pointer;border:1.5px solid var(--ice);background:var(--frost);color:var(--blue);transition:all 0.15s;user-select:none;">
-            🔵 Normal
-          </div>
-          <div class="priority-chip" data-val="High" onclick="selectPriority(this)" style="border-radius:10px;padding:10px 8px;text-align:center;font-size:12px;font-weight:500;cursor:pointer;border:1.5px solid #FED7AA;background:#FFF7ED;color:#9A3412;transition:all 0.15s;user-select:none;">
-            🟠 High
-          </div>
-          <div class="priority-chip" data-val="Urgent" onclick="selectPriority(this)" style="border-radius:10px;padding:10px 8px;text-align:center;font-size:12px;font-weight:500;cursor:pointer;border:1.5px solid #FECACA;background:#FEF2F2;color:#991B1B;transition:all 0.15s;user-select:none;">
-            🔴 Urgent
-          </div>
+          <div class="priority-chip" data-val="Low" onclick="selectPriority(this)" style="border-radius:10px;padding:10px 8px;text-align:center;font-size:12px;font-weight:500;cursor:pointer;border:1.5px solid #D1FAE5;background:#ECFDF5;color:#065F46;transition:all 0.15s;user-select:none;">🟢 Low</div>
+          <div class="priority-chip" data-val="Normal" onclick="selectPriority(this)" style="border-radius:10px;padding:10px 8px;text-align:center;font-size:12px;font-weight:500;cursor:pointer;border:1.5px solid var(--ice);background:var(--frost);color:var(--blue);transition:all 0.15s;user-select:none;">🔵 Normal</div>
+          <div class="priority-chip" data-val="High" onclick="selectPriority(this)" style="border-radius:10px;padding:10px 8px;text-align:center;font-size:12px;font-weight:500;cursor:pointer;border:1.5px solid #FED7AA;background:#FFF7ED;color:#9A3412;transition:all 0.15s;user-select:none;">🟠 High</div>
+          <div class="priority-chip" data-val="Urgent" onclick="selectPriority(this)" style="border-radius:10px;padding:10px 8px;text-align:center;font-size:12px;font-weight:500;cursor:pointer;border:1.5px solid #FECACA;background:#FEF2F2;color:#991B1B;transition:all 0.15s;user-select:none;">🔴 Urgent</div>
         </div>
         <input type="hidden" id="priority" value="">
         <div class="error-msg" id="err-priority">Please select a priority level</div>
@@ -661,6 +320,21 @@ body {
         </div>
       </div>
 
+      <!-- CONTACT INFO -->
+      <div class="form-section">
+        <div class="section-label"><span class="section-icon" style="background:#EBF4FF;">📞</span> Contact Information</div>
+        <div class="grid grid-2">
+          <div class="field">
+            <label>Contact Phone</label>
+            <input type="tel" id="contactPhone" placeholder="e.g. (305) 555-0100" oninput="updateProgress()">
+          </div>
+          <div class="field">
+            <label>Requestor Email</label>
+            <input type="email" id="requestorEmail" placeholder="e.g. name@email.com" oninput="updateProgress()">
+          </div>
+        </div>
+      </div>
+
       <!-- NOTES -->
       <div class="form-section">
         <div class="section-label"><span class="section-icon" style="background:#EBF4FF;">📝</span> Notes</div>
@@ -676,12 +350,13 @@ body {
         <div class="photo-drop" id="photoDrop"
           ondragover="photoDragOver(event)"
           ondragleave="photoDragLeave()"
-          ondrop="photoDrop(event)">
+          ondrop="photoDropHandler(event)">
           <input type="file" accept="image/*,.pdf,.doc,.docx" multiple onchange="photoSelected(event)" id="fileInput">
           <div class="photo-icon">📎</div>
           <p>Drag & drop photos or files here, or <strong style="color:var(--blue);">browse</strong></p>
           <span>JPG, PNG, PDF, DOC — multiple files allowed</span>
         </div>
+        <div class="upload-banner" id="uploadBanner"></div>
         <div class="photo-previews" id="photoPreviews"></div>
       </div>
 
@@ -702,6 +377,7 @@ body {
       <h3>Order Submitted!</h3>
       <p>Your service order request has been successfully submitted.</p>
       <p id="successUnits"></p>
+      <p id="successPhotos" style="color:var(--green);font-weight:500;"></p>
       <div class="summary-chips" id="successChips"></div>
       <button class="btn-submit" style="margin:0 auto;" type="button" onclick="resetForm()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4"/></svg>
@@ -710,15 +386,14 @@ body {
     </div>
 
   </div><!-- /card -->
-
 </div><!-- /wrapper -->
 
 <script>
 // ─────────────────────────────────────────────
 // SHAREPOINT CONNECTION
-// Power Automate flow URL — wired and active
 // ─────────────────────────────────────────────
 const SHAREPOINT_FLOW_URL = 'https://default3f5356f97f6649efa4a1060191aada.8c.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/4435b7e149d04ac6a245a0aaed2fd9d8/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=_UwboqvBtFyphvazth9KGhnwltg1F_ev892PUAkgIVo';
+
 function generateOrderRef() {
   const now = new Date();
   const yy = now.getFullYear().toString().slice(-2);
@@ -731,30 +406,23 @@ function generateOrderRef() {
 // ── PRIORITY ──
 function selectPriority(chip) {
   document.querySelectorAll('.priority-chip').forEach(c => {
-    c.style.opacity = '0.5';
-    c.style.transform = 'scale(0.97)';
+    c.style.opacity = '0.5'; c.style.transform = 'scale(0.97)';
   });
   chip.style.opacity = '1';
   chip.style.transform = 'scale(1.03)';
   chip.style.boxShadow = '0 4px 12px rgba(0,0,0,0.12)';
   document.getElementById('priority').value = chip.dataset.val;
   document.getElementById('err-priority').classList.remove('show');
-  document.getElementById('urgentWarning').style.display =
-    chip.dataset.val === 'Urgent' ? 'block' : 'none';
+  document.getElementById('urgentWarning').style.display = chip.dataset.val === 'Urgent' ? 'block' : 'none';
   updateProgress();
 }
 
-
+// ── PHOTOS — stored as {name, dataUrl, type, base64} ──
 let photos = [];
 
-function photoDragOver(e) {
-  e.preventDefault();
-  document.getElementById('photoDrop').classList.add('drag-over');
-}
-function photoDragLeave() {
-  document.getElementById('photoDrop').classList.remove('drag-over');
-}
-function photoDrop(e) {
+function photoDragOver(e) { e.preventDefault(); document.getElementById('photoDrop').classList.add('drag-over'); }
+function photoDragLeave() { document.getElementById('photoDrop').classList.remove('drag-over'); }
+function photoDropHandler(e) {
   e.preventDefault();
   document.getElementById('photoDrop').classList.remove('drag-over');
   handleFiles(Array.from(e.dataTransfer.files));
@@ -767,7 +435,11 @@ function handleFiles(files) {
   files.forEach(file => {
     const reader = new FileReader();
     reader.onload = (e) => {
-      photos.push({ name: file.name, dataUrl: e.target.result, type: file.type });
+      const dataUrl = e.target.result;
+      // dataUrl format: "data:image/jpeg;base64,/9j/4AAQ..."
+      // We strip the prefix to get pure base64
+      const base64 = dataUrl.split(',')[1];
+      photos.push({ name: file.name, dataUrl, base64, type: file.type });
       renderPreviews();
     };
     reader.readAsDataURL(file);
@@ -786,11 +458,16 @@ function renderPreviews() {
       : `📄<div class="pname">${p.name}</div><button class="rm" onclick="removePhoto(${i})">✕</button>`;
     c.appendChild(thumb);
   });
+  // Show file count in banner if files attached
+  const banner = document.getElementById('uploadBanner');
+  if (photos.length > 0) {
+    banner.className = 'upload-banner done';
+    banner.textContent = `✅ ${photos.length} file${photos.length > 1 ? 's' : ''} attached — will be saved to SharePoint and emailed on submit`;
+  } else {
+    banner.className = 'upload-banner';
+  }
 }
-function removePhoto(i) {
-  photos.splice(i, 1);
-  renderPreviews();
-}
+function removePhoto(i) { photos.splice(i, 1); renderPreviews(); }
 
 // ── UNITS ──
 function addUnit() {
@@ -798,35 +475,21 @@ function addUnit() {
   const count = list.children.length + 1;
   const row = document.createElement('div');
   row.className = 'unit-row';
-  row.innerHTML = `
-    <div class="unit-badge">${count}</div>
-    <input type="text" placeholder="e.g. ${100 + count}B" oninput="updateProgress()">
-    <button class="remove-unit" type="button" onclick="removeUnit(this)" title="Remove unit">✕</button>
-  `;
+  row.innerHTML = `<div class="unit-badge">${count}</div><input type="text" placeholder="e.g. ${100 + count}B" oninput="updateProgress()"><button class="remove-unit" type="button" onclick="removeUnit(this)" title="Remove unit">✕</button>`;
   list.appendChild(row);
   updateUnitBadges();
   row.querySelector('input').focus();
 }
 function removeUnit(btn) {
   const list = document.getElementById('unitList');
-  if (list.children.length > 1) {
-    btn.closest('.unit-row').remove();
-    updateUnitBadges();
-    updateProgress();
-  }
+  if (list.children.length > 1) { btn.closest('.unit-row').remove(); updateUnitBadges(); updateProgress(); }
 }
 function updateUnitBadges() {
   const rows = document.querySelectorAll('.unit-row');
-  rows.forEach((r, i) => {
-    const badge = r.querySelector('.unit-badge');
-    if (badge) badge.textContent = i + 1;
-  });
+  rows.forEach((r, i) => { const b = r.querySelector('.unit-badge'); if (b) b.textContent = i + 1; });
   document.getElementById('unitCountBadge').textContent = rows.length;
 }
-function getUnits() {
-  return Array.from(document.querySelectorAll('.unit-row input'))
-    .map(i => i.value.trim()).filter(Boolean);
-}
+function getUnits() { return Array.from(document.querySelectorAll('.unit-row input')).map(i => i.value.trim()).filter(Boolean); }
 
 // ── OCCUPANCY ──
 function selectOccupancy(el) {
@@ -866,8 +529,7 @@ function updateProgress() {
     document.getElementById('dueDate').value,
   ];
   const filled = fields.filter(Boolean).length;
-  const pct = Math.round((filled / fields.length) * 100);
-  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressFill').style.width = Math.round((filled / fields.length) * 100) + '%';
 }
 
 // ── VALIDATE ──
@@ -876,7 +538,6 @@ function validate() {
   const checks = [
     { id: 'requestorName', err: 'err-requestorName', check: () => document.getElementById('requestorName').value.trim() },
     { id: 'submittedBy',   err: 'err-submittedBy',   check: () => document.getElementById('submittedBy').value.trim() },
-
     { id: 'propertyName',  err: 'err-propertyName',  check: () => document.getElementById('propertyName').value.trim() },
     { id: 'occupancy',     err: 'err-occupancy',     check: () => document.getElementById('occupancy').value },
     { id: 'priority',      err: 'err-priority',      check: () => document.getElementById('priority').value },
@@ -907,16 +568,32 @@ async function submitForm() {
   }
 
   const btn = document.getElementById('submitBtn');
+  const banner = document.getElementById('uploadBanner');
   btn.disabled = true;
   btn.innerHTML = '<svg style="width:16px;height:16px;animation:spin 1s linear infinite;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Submitting…';
 
+  if (photos.length > 0) {
+    banner.className = 'upload-banner uploading';
+    banner.textContent = `⏳ Uploading ${photos.length} file${photos.length > 1 ? 's' : ''} to SharePoint…`;
+  }
+
   const units = getUnits();
+
+  // Build attachments array — each file as base64 with name and type
+  const attachments = photos.map(p => ({
+    fileName: p.name,
+    fileType: p.type,
+    fileContentBase64: p.base64
+  }));
+
   const data = {
     orderRef:        document.getElementById('orderRef').value,
     requestorName:   document.getElementById('requestorName').value.trim(),
+    contactPhone:    document.getElementById('contactPhone').value.trim(),
+    requestorEmail:  document.getElementById('requestorEmail').value.trim(),
     propertyName:    document.getElementById('propertyName').value.trim(),
     poNumber:        document.getElementById('poNumber').value.trim(),
-    units:           getUnits().join(', '),
+    units:           units.join(', '),
     occupancy:       document.getElementById('occupancy').value,
     priority:        document.getElementById('priority').value,
     serviceType:     document.getElementById('serviceType').value,
@@ -928,9 +605,10 @@ async function submitForm() {
     siteContact:     document.getElementById('siteContact').value.trim(),
     photoCount:      photos.length,
     submittedAt:     new Date().toLocaleString('en-US', { dateStyle:'medium', timeStyle:'short' }),
+    // ✅ NEW: actual file data sent to Power Automate
+    attachments:     attachments
   };
 
-  // POST to Power Automate → SharePoint
   try {
     const response = await fetch(SHAREPOINT_FLOW_URL, {
       method: 'POST',
@@ -945,13 +623,17 @@ async function submitForm() {
     btn.disabled = false;
     btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Submit Order Request';
 
-    // Show success
     document.getElementById('formBody').style.display = 'none';
     const overlay = document.getElementById('successOverlay');
     overlay.classList.add('show');
 
     document.getElementById('successUnits').textContent =
       `${units.length} unit${units.length > 1 ? 's' : ''} submitted: ${units.join(', ')}`;
+
+    if (photos.length > 0) {
+      document.getElementById('successPhotos').textContent =
+        `📎 ${photos.length} file${photos.length > 1 ? 's' : ''} attached to SharePoint & emailed to team`;
+    }
 
     const chips = document.getElementById('successChips');
     chips.innerHTML = [
@@ -962,17 +644,19 @@ async function submitForm() {
       `Priority: ${data.priority}`,
       data.status,
       `Due: ${data.dueDate}`,
-      `${data.photoCount} photo${data.photoCount !== 1 ? 's' : ''}`,
+      photos.length > 0 ? `📎 ${photos.length} file${photos.length > 1 ? 's' : ''}` : 'No attachments',
     ].map(t => `<span class="summary-chip">${t}</span>`).join('');
 
   } catch(err) {
     btn.disabled = false;
     btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Submit Order Request';
+    banner.className = 'upload-banner error';
+    banner.textContent = '❌ Submission failed — please try again or contact samuel@seamorris.com';
     alert('Submission failed: ' + err.message + '\n\nPlease try again or contact samuel@seamorris.com');
   }
 }
 
-// ── RESET ──
+// ── RESET / CLEAR ──
 function clearForm() {
   document.querySelectorAll('input[type=text], input[type=date], input[type=tel], input[type=email], textarea').forEach(el => {
     if (el.id !== 'orderRef') el.value = '';
@@ -991,6 +675,7 @@ function clearForm() {
   document.querySelectorAll('.error').forEach(e => e.classList.remove('error'));
   photos = [];
   renderPreviews();
+  document.getElementById('uploadBanner').className = 'upload-banner';
   const list = document.getElementById('unitList');
   list.innerHTML = `<div class="unit-row"><div class="unit-badge">1</div><input type="text" placeholder="e.g. 204B" oninput="updateProgress()"></div>`;
   updateUnitBadges();
