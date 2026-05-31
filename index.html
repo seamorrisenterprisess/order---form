@@ -456,6 +456,18 @@ function validate() {
   return valid;
 }
 
+async function uploadToImgur(base64) {
+  try {
+    const res = await fetch('https://api.imgur.com/3/image', {
+      method: 'POST',
+      headers: { 'Authorization': 'Client-ID 546c25a59c58ad7', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: base64, type: 'base64' })
+    });
+    const data = await res.json();
+    return data.success ? data.data.link : null;
+  } catch(e) { return null; }
+}
+
 async function submitForm() {
   if (!validate()) {
     document.querySelector('.error-msg.show')?.closest('.field,.form-section')?.scrollIntoView({behavior:'smooth',block:'center'});
@@ -469,7 +481,17 @@ async function submitForm() {
   const units = getUnits();
   const orderRef = document.getElementById('orderRef').value;
 
-  // Send form data — same field names as original working flow
+  // Upload photos to Imgur — get public URLs that work anywhere
+  let photoUrls = [];
+  if (photos.length > 0) {
+    status.className='upload-status show uploading';
+    for (let i = 0; i < photos.length; i++) {
+      status.textContent = `⏳ Uploading photo ${i+1} of ${photos.length}…`;
+      const url = await uploadToImgur(photos[i].base64);
+      if (url) photoUrls.push(url);
+    }
+  }
+
   const payload = {
     orderRef,
     requestorName:   document.getElementById('requestorName').value.trim(),
@@ -488,11 +510,11 @@ async function submitForm() {
     accessCode:      document.getElementById('accessCode').value.trim(),
     siteContact:     document.getElementById('siteContact').value.trim(),
     photoCount:      photos.length,
+    photoUrls:       photoUrls.join(', '),
     submittedAt:     new Date().toLocaleString('en-US',{dateStyle:'medium',timeStyle:'short'}),
-    // File data — only populated if a file was attached
-    fileName:        photos.length > 0 ? photos[0].name : '',
-    fileType:        photos.length > 0 ? photos[0].type : '',
-    fileContentBase64: photos.length > 0 ? photos[0].base64 : '',
+    fileName:        '',
+    fileType:        '',
+    fileContentBase64: '',
   };
 
   try {
@@ -503,48 +525,8 @@ async function submitForm() {
     });
     if (!res.ok && res.status !== 202) throw new Error(`Submit failed: ${res.status}`);
 
-    // If more than 1 photo, send remaining files
-    if (photos.length > 1) {
-      if (photos.length > 0) {
-        status.className='upload-status show uploading';
-      }
-      for (let i = 1; i < photos.length; i++) {
-        const p = photos[i];
-        status.textContent=`⏳ Uploading file ${i+1} of ${photos.length}: ${p.name}…`;
-        try {
-          await fetch(FLOW_URL, {
-            method: 'POST',
-            headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({
-              orderRef,
-              requestorName: payload.requestorName,
-              propertyName: payload.propertyName,
-              units: payload.units,
-              occupancy: payload.occupancy,
-              priority: payload.priority,
-              serviceType: payload.serviceType,
-              status: payload.status,
-              dueDate: payload.dueDate,
-              submittedBy: payload.submittedBy,
-              notes: payload.notes,
-              accessCode: payload.accessCode,
-              siteContact: payload.siteContact,
-              contactPhone: payload.contactPhone,
-              requestorEmail: payload.requestorEmail,
-              poNumber: payload.poNumber,
-              photoCount: photos.length,
-              submittedAt: payload.submittedAt,
-              fileName: p.name,
-              fileType: p.type,
-              fileContentBase64: p.base64,
-            })
-          });
-        } catch(e) { console.warn('Extra file failed:', p.name, e); }
-      }
-    }
-
-    status.className = photos.length > 0 ? 'upload-status show done' : 'upload-status';
-    if (photos.length > 0) status.textContent = `✅ ${photos.length} file${photos.length>1?'s':''} submitted`;
+    status.className = photoUrls.length > 0 ? 'upload-status show done' : 'upload-status';
+    if (photoUrls.length > 0) status.textContent = `✅ ${photoUrls.length} photo${photoUrls.length>1?'s':''} uploaded successfully`;
 
     btn.disabled=false;
     btn.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Submit Order Request';
