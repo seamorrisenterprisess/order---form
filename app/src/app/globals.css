@@ -1,26 +1,69 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --navy:      #0B1829;
+  --ink:       #0F2137;
+  --blue:      #1355C2;
+  --blue-mid:  #1A6FE8;
+  --sky:       #2990FF;
+  --ice:       #C8DFF8;
+  --frost:     #E8F2FD;
+  --mist:      #F4F8FF;
+  --white:     #FFFFFF;
+  --slate:     #4D6B8A;
+  --silver:    #8BAAC4;
+  --border:    #D4E4F4;
+  --green:     #0D7A4E;
+  --green-bg:  #E6F5EE;
+  --red:       #C0392B;
+  --red-bg:    #FDECEA;
+  --amber:     #B85C00;
+  --amber-bg:  #FFF3E6;
+  --purple:    #6B21A8;
+  --purple-bg: #F5F0FF;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-display: 'DM Serif Display', Georgia, serif;
+  --font-body:    'DM Sans', system-ui, sans-serif;
+  --color-navy:      #0B1829;
+  --color-ink:       #0F2137;
+  --color-blue:      #1355C2;
+  --color-sky:       #2990FF;
+  --color-ice:       #C8DFF8;
+  --color-frost:     #E8F2FD;
+  --color-mist:      #F4F8FF;
+  --color-slate:     #4D6B8A;
+  --color-silver:    #8BAAC4;
+  --color-border:    #D4E4F4;
+  --color-green:     #0D7A4E;
+  --color-green-bg:  #E6F5EE;
+  --color-red:       #C0392B;
+  --color-red-bg:    #FDECEA;
+  --color-amber:     #B85C00;
+  --color-amber-bg:  #FFF3E6;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+html { font-size: 16px; scroll-behavior: smooth; }
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
+  background: var(--mist);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-display { font-family: var(--font-display) !important; }
+.dot-grid {
+  background-image: radial-gradient(circle, rgba(19,85,194,0.07) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+:focus-visible { outline: 2px solid var(--sky); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
