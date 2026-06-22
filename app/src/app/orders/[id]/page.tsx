@@ -7,6 +7,7 @@ import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ReviewActions } from './ReviewActions'
 import { PhotoUpload } from './PhotoUpload'
+import { CopyLinkButton } from './CopyLinkButton'
 import type { Order, OrderStatus, OrderPhoto } from '@/types'
 
 function fmt(n: number) {
@@ -228,6 +229,28 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             <div style={{ background: '#FFF3E6', borderRadius: '10px', padding: '16px 18px', borderLeft: '3px solid #B85C00', marginBottom: '20px' }}>
               <div style={{ fontSize: '11px', fontWeight: 700, color: '#B85C00', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '8px' }}>🔒 Internal Notes</div>
               <div style={{ fontSize: '14px', lineHeight: 1.6 }}>{order.internal_notes}</div>
+            </div>
+          )}
+
+          {/* Client Portal Link — shown when client_token exists and status is sent_to_client / client_approved / client_declined */}
+          {order.client_token && (order.status === 'sent_to_client' || order.status === 'client_approved' || order.status === 'client_declined') && (
+            <CopyLinkButton
+              url={`${process.env.NEXT_PUBLIC_APP_URL}/client/${order.client_token}`}
+              clientName={order.client_name}
+            />
+          )}
+
+          {/* Preview Client View — for account_managers and admins whenever client_token exists */}
+          {isAM && order.client_token && (
+            <div style={{ marginBottom: '20px' }}>
+              <a
+                href={`/client/${order.client_token}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '7px 14px', border: '1.5px solid #1355C2', borderRadius: '7px', textDecoration: 'none', fontSize: '13px', color: '#1355C2', fontWeight: 600 }}
+              >
+                Preview Client View ↗
+              </a>
             </div>
           )}
 

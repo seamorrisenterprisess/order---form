@@ -20,9 +20,25 @@ export default async function AllOrdersPage({ searchParams }: { searchParams: Pr
   const orders = await listOrders({ search: search || undefined, status: (status as any) || undefined, limit: 100 })
 
   const isAnalyst = user.role === 'operations_analyst'
-  const newBtn = !isAnalyst || user.role === 'admin'
-    ? <Link href="/orders/new" style={{ display: 'inline-flex', padding: '8px 16px', background: '#1355C2', color: 'white', borderRadius: '7px', textDecoration: 'none', fontSize: '13.5px', fontWeight: 600 }}>+ New Scope Order</Link>
-    : null
+  const exportParams = new URLSearchParams()
+  if (search) exportParams.set('search', search)
+  if (status) exportParams.set('status', status)
+  const exportHref = `/api/orders/export${exportParams.toString() ? '?' + exportParams.toString() : ''}`
+
+  const newBtn = (
+    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+      <a
+        href={exportHref}
+        download
+        style={{ display: 'inline-flex', padding: '8px 14px', border: '1.5px solid #D4E4F4', borderRadius: '7px', textDecoration: 'none', fontSize: '13px', fontWeight: 600, color: '#4D6B8A', background: 'white' }}
+      >
+        Export CSV
+      </a>
+      {(!isAnalyst || user.role === 'admin') && (
+        <Link href="/orders/new" style={{ display: 'inline-flex', padding: '8px 16px', background: '#1355C2', color: 'white', borderRadius: '7px', textDecoration: 'none', fontSize: '13.5px', fontWeight: 600 }}>+ New Scope Order</Link>
+      )}
+    </div>
+  )
 
   return (
     <AppShell title="All Orders" actions={newBtn}>
