@@ -8,6 +8,7 @@ import { db, PHOTOS_BUCKET } from './supabase'
 import { signToken, setSessionCookie, clearSessionCookie, getSessionUser, ALLOWED_TRANSITIONS } from './auth'
 import { getOrder, addAudit, nextOrderId, addOrderNote, listTemplates } from './orders'
 import { buildEmailHtml, buildSmsText, sendEmail, sendSms } from './email'
+import { createNotification } from './notifications'
 import type { OrderStatus, AuditEvent } from '@/types'
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
@@ -235,6 +236,92 @@ export async function transitionStatus(orderId: string, newStatus: OrderStatus, 
   }
 
   // ──────────────────────────────────────────────────────────────────────────
+  // In-app notifications
+  const jobName = order.job_name
+  const submitterId = order.submitted_by_id
+
+  if (newStatus === 'needs_changes' && submitterId) {
+    await createNotification(
+      submitterId,
+      'needs_changes',
+      `Changes Requested on ${jobName}`,
+      note,
+      orderId
+    )
+  }
+
+  if (newStatus === 'submitted') {
+    const { data: notifyManagers } = await db
+      .from('users')
+      .select('id')
+      .eq('role', 'account_manager')
+      .eq('is_active', true)
+    if (notifyManagers?.length) {
+      await Promise.all(
+        notifyManagers.map((mgr: { id: string }) =>
+          createNotification(
+            mgr.id,
+            'order_submitted',
+            `New Order Ready for Review: ${jobName}`,
+            undefined,
+            orderId
+          )
+        )
+      )
+    }
+  }
+
+  if (newStatus === 'approved_internally' && submitterId) {
+    await createNotification(
+      submitterId,
+      'approved',
+      `${jobName} Approved Internally`,
+      undefined,
+      orderId
+    )
+  }
+
+  if (newStatus === 'sent_to_client' && submitterId) {
+    await createNotification(
+      submitterId,
+      'sent_to_client',
+      `${jobName} Sent to Client`,
+      undefined,
+      orderId
+    )
+  }
+
+  if (newStatus === 'client_approved') {
+    const notifyIds = new Set<string>()
+    if (submitterId) notifyIds.add(submitterId)
+    const { data: approvedManagers } = await db
+      .from('users')
+      .select('id')
+      .eq('role', 'account_manager')
+      .eq('is_active', true)
+    approvedManagers?.forEach((mgr: { id: string }) => notifyIds.add(mgr.id))
+    await Promise.all(
+      Array.from(notifyIds).map((uid) =>
+        createNotification(uid, 'client_approved', `Client Approved ${jobName}`, undefined, orderId)
+      )
+    )
+  }
+
+  if (newStatus === 'client_declined') {
+    const notifyIds = new Set<string>()
+    if (submitterId) notifyIds.add(submitterId)
+    const { data: declinedManagers } = await db
+      .from('users')
+      .select('id')
+      .eq('role', 'account_manager')
+      .eq('is_active', true)
+    declinedManagers?.forEach((mgr: { id: string }) => notifyIds.add(mgr.id))
+    await Promise.all(
+      Array.from(notifyIds).map((uid) =>
+        createNotification(uid, 'client_declined', `Client Declined ${jobName}`, undefined, orderId)
+      )
+    )
+  }
 
   revalidatePath(`/orders/${orderId}`)
   revalidatePath('/dashboard')
@@ -267,7 +354,14 @@ export async function sendToClient(orderId: string, channel: 'email' | 'sms') {
 
   if (!result.success) return { error: result.error ?? 'Send failed.' }
 
-  await db.from('orders').update({ status: 'sent_to_client' }).eq('id', orderId)
+  // Set token expiry to 30 days from now (refresh on every send)
+  const expiresAt = new Date()
+  expiresAt.setDate(expiresAt.getDate() + 30)
+
+  await db.from('orders').update({
+    status: 'sent_to_client',
+    client_token_expires_at: expiresAt.toISOString(),
+  }).eq('id', orderId)
   await addAudit(orderId, user.id, user.name, channel === 'email' ? 'sent_email' : 'sent_sms',
     undefined, { to: order.client_email, messageId: result.messageId })
 
@@ -416,6 +510,24 @@ export async function addNote(_prev: unknown, formData: FormData) {
   if (!orderId || !body) return { error: 'Note body is required.' }
 
   await addOrderNote(orderId, user.id, body)
+
+  // Notify all OTHER users who have commented on this order (deduplicated)
+  const order = await getOrder(orderId)
+  if (order) {
+    const { data: noteAuthors } = await db
+      .from('order_notes')
+      .select('author_id')
+      .eq('order_id', orderId)
+      .neq('author_id', user.id)
+
+    const otherAuthorIds = [...new Set((noteAuthors ?? []).map((n: { author_id: string }) => n.author_id))]
+    await Promise.all(
+      otherAuthorIds.map((uid: string) =>
+        createNotification(uid, 'note_added', `New note on ${order.job_name}`, body.slice(0, 120), orderId)
+      )
+    )
+  }
+
   revalidatePath(`/orders/${orderId}`)
   return { success: true }
 }

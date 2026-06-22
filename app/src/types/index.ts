@@ -44,6 +44,7 @@ export interface Order {
   status: OrderStatus
   change_request_note?: string
   client_token: string
+  client_token_expires_at?: string
   client_responded_at?: string
   date_submitted?: string
   created_at: string

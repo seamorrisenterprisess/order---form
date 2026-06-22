@@ -127,6 +127,75 @@ supabase db dump --db-url "postgresql://postgres:[password]@db.[ref].supabase.co
 
 ---
 
+## 9 — Running DB Migrations
+
+All migrations live in `app/supabase/migrations/` and must be run **in order** (001 through 007) against your Supabase project.
+
+**Option A — Supabase Dashboard SQL Editor:**
+1. Open your Supabase project → SQL Editor
+2. Paste and run each file in order:
+   - `001_initial_schema.sql`
+   - `002_subcontractors.sql`
+   - `003_order_notes.sql`
+   - `004_templates.sql`
+   - `005_notifications.sql`
+   - `006_*` (if present)
+   - `007_magic_links.sql`
+
+**Option B — Supabase CLI:**
+```bash
+# From the repo root
+supabase db push
+```
+This applies all pending migrations automatically.
+
+---
+
+## 10 — Verifying Deployment
+
+After deploying, confirm the database connection and environment variables are configured correctly by calling the health endpoint:
+
+```bash
+curl https://your-app.vercel.app/api/health
+```
+
+Expected response (HTTP 200):
+```json
+{
+  "status": "ok",
+  "db": "connected",
+  "timestamp": "2024-01-01T00:00:00.000Z",
+  "env": {
+    "supabase": true,
+    "jwt_secret": true,
+    "sendgrid": true,
+    "twilio": true
+  }
+}
+```
+
+- `"db": "error"` → check `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`
+- Any `env` value `false` → the corresponding environment variable is missing
+- HTTP 503 → database is unreachable
+
+---
+
+## 11 — First Login
+
+Seed users are created in `001_initial_schema.sql`. All have the default password `password123` — **change these immediately** via Admin → Users after first login.
+
+| Email | Role |
+|---|---|
+| marcus@seamorris.com | Operations Analyst |
+| priya@seamorris.com | Operations Analyst |
+| claire@seamorris.com | Account Manager |
+| jordan@seamorris.com | Account Manager |
+| admin@seamorris.com | Admin |
+
+To change a password, go to **Admin → Users** in the application and use the password update form.
+
+---
+
 ## Architecture Notes
 
 - **API routes** (`src/app/api/`) use the Supabase service role key — never exposed client-side

@@ -321,6 +321,7 @@ export async function listAllSubcontractors(): Promise<Subcontractor[]> {
 }
 
 // Get order by client token (for client portal — no auth required)
+// Returns null if the token does not exist or has expired.
 export async function getOrderByToken(token: string): Promise<Order | null> {
   const { data: order } = await db
     .from('orders')
@@ -329,6 +330,11 @@ export async function getOrderByToken(token: string): Promise<Order | null> {
     .single()
 
   if (!order) return null
+
+  // Check expiry: if client_token_expires_at is set and is in the past, treat as expired
+  if (order.client_token_expires_at && new Date(order.client_token_expires_at) <= new Date()) {
+    return null
+  }
 
   // Resolve photo public URLs
   if (order.photos?.length) {

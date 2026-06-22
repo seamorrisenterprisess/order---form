@@ -1,13 +1,9 @@
 import { AppShell } from '@/components/AppShell'
-import { StatusBadge } from '@/components/StatusBadge'
 import { getSessionUser } from '@/lib/auth'
 import { listOrders } from '@/lib/orders'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-
-function fmt(n: number) {
-  return '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 0 })
-}
+import { OrdersTable } from './OrdersTable'
 
 export default async function AllOrdersPage({ searchParams }: { searchParams: Promise<Record<string, string>> }) {
   const user = await getSessionUser()
@@ -69,38 +65,7 @@ export default async function AllOrdersPage({ searchParams }: { searchParams: Pr
               )}
             </form>
           </div>
-          <div className="table-scroll-wrap" style={{ overflowX: 'auto', marginTop: '0' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13.5px' }}>
-              <thead>
-                <tr>
-                  {['Order ID', 'Job Name', 'Client', 'Subcontractor', 'Submitted By', 'Status', 'Date', 'Sub Cost', 'Client Price'].map(h => (
-                    <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: '11px', fontWeight: 600, color: '#4D6B8A', textTransform: 'uppercase', letterSpacing: '0.06em', borderBottom: '2px solid #D4E4F4', background: '#F4F8FF', whiteSpace: 'nowrap' }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {orders.length === 0 ? (
-                  <tr><td colSpan={9} style={{ padding: '40px', textAlign: 'center', color: '#8BAAC4' }}>No orders match your filters.</td></tr>
-                ) : orders.map(o => (
-                  <Link key={o.id} href={`/orders/${o.id}`} style={{ display: 'contents', textDecoration: 'none' }}>
-                    <tr style={{ borderBottom: '1px solid #F0F4F8', cursor: 'pointer' }}
-                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#E8F2FD' }}
-                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}>
-                      <td style={{ padding: '12px 14px', fontFamily: 'var(--font-display)', fontSize: '13px', color: '#1355C2' }}>{o.id}</td>
-                      <td style={{ padding: '12px 14px', fontWeight: 500 }}>{o.job_name}</td>
-                      <td style={{ padding: '12px 14px' }}>{o.client_name}</td>
-                      <td style={{ padding: '12px 14px' }}>{o.subcontractor_name || '—'}</td>
-                      <td style={{ padding: '12px 14px', color: '#4D6B8A' }}>{(o.submitted_by as any)?.name ?? '—'}</td>
-                      <td style={{ padding: '12px 14px' }}><StatusBadge status={o.status} /></td>
-                      <td style={{ padding: '12px 14px', color: '#4D6B8A', fontSize: '13px' }}>{o.date_submitted ?? '—'}</td>
-                      <td style={{ padding: '12px 14px', fontWeight: 600 }}>{o.sub_cost ? fmt(o.sub_cost) : '—'}</td>
-                      <td style={{ padding: '12px 14px', fontWeight: 600, color: '#1355C2' }}>{o.client_price ? fmt(o.client_price) : '—'}</td>
-                    </tr>
-                  </Link>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <OrdersTable orders={orders} />
         </div>
       </div>
     </AppShell>

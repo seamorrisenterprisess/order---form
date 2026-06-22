@@ -246,12 +246,40 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           )}
 
           {/* Client Portal Link — shown when client_token exists and status is sent_to_client / client_approved / client_declined */}
-          {order.client_token && (order.status === 'sent_to_client' || order.status === 'client_approved' || order.status === 'client_declined') && (
-            <CopyLinkButton
-              url={`${process.env.NEXT_PUBLIC_APP_URL}/client/${order.client_token}`}
-              clientName={order.client_name}
-            />
-          )}
+          {order.client_token && (order.status === 'sent_to_client' || order.status === 'client_approved' || order.status === 'client_declined') && (() => {
+            const tokenExpired = order.client_token_expires_at
+              ? new Date(order.client_token_expires_at) < new Date()
+              : false
+            return (
+              <>
+                {tokenExpired ? (
+                  <div style={{ background: '#FFF3E6', border: '1px solid #f0c070', borderRadius: '10px', padding: '14px 18px', marginBottom: '20px', borderLeft: '4px solid #B85C00' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 700, color: '#B85C00', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '8px' }}>
+                      Link Expired
+                    </div>
+                    <div style={{ fontSize: '13px', color: '#0F2137', marginBottom: '12px' }}>
+                      The client portal link has expired. Resend to the client to generate a fresh 30-day link.
+                    </div>
+                    <form action={async () => {
+                      'use server'
+                      const { sendToClient } = await import('@/lib/actions')
+                      await sendToClient(id, 'email')
+                    }}>
+                      <button type="submit" style={{ padding: '8px 16px', background: '#B85C00', color: 'white', border: 'none', borderRadius: '7px', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>
+                        Resend to Client
+                      </button>
+                    </form>
+                  </div>
+                ) : (
+                  <CopyLinkButton
+                    url={`${process.env.NEXT_PUBLIC_APP_URL}/client/${order.client_token}`}
+                    clientName={order.client_name}
+                    expiresAt={order.client_token_expires_at}
+                  />
+                )}
+              </>
+            )
+          })()}
 
           {/* Preview Client View — for account_managers and admins whenever client_token exists */}
           {isAM && order.client_token && (

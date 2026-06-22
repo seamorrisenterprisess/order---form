@@ -2,6 +2,8 @@ import { getSessionUser } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { Sidebar } from './Sidebar'
 import { MobileNav } from './MobileNav'
+import { NotificationBell } from './NotificationBell'
+import { getUnreadCount } from '@/lib/notifications'
 
 export async function AppShell({ children, title, actions }: {
   children: React.ReactNode
@@ -10,6 +12,8 @@ export async function AppShell({ children, title, actions }: {
 }) {
   const user = await getSessionUser()
   if (!user) redirect('/login')
+
+  const unreadCount = await getUnreadCount(user.id)
 
   return (
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
@@ -30,7 +34,10 @@ export async function AppShell({ children, title, actions }: {
             <MobileNav user={user} />
             <div style={{ fontFamily: 'var(--font-display)', fontSize: '18px', color: '#0B1829', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</div>
           </div>
-          {actions && <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>{actions}</div>}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+            {actions && <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>{actions}</div>}
+            <NotificationBell initialCount={unreadCount} userId={user.id} />
+          </div>
         </div>
         {/* Content */}
         <div style={{ flex: 1, overflowY: 'auto' }}>

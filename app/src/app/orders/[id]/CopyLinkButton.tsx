@@ -5,9 +5,10 @@ import { useState } from 'react'
 interface CopyLinkButtonProps {
   url: string
   clientName: string
+  expiresAt?: string | null
 }
 
-export function CopyLinkButton({ url, clientName }: CopyLinkButtonProps) {
+export function CopyLinkButton({ url, clientName, expiresAt }: CopyLinkButtonProps) {
   const [copied, setCopied] = useState(false)
 
   function handleCopy() {
@@ -16,6 +17,10 @@ export function CopyLinkButton({ url, clientName }: CopyLinkButtonProps) {
       setTimeout(() => setCopied(false), 2000)
     })
   }
+
+  const expiryLabel = expiresAt
+    ? new Date(expiresAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    : null
 
   return (
     <div style={{ background: '#F4F8FF', borderRadius: '10px', padding: '16px 18px', border: '1px solid #D4E4F4', marginBottom: '20px' }}>
@@ -48,6 +53,11 @@ export function CopyLinkButton({ url, clientName }: CopyLinkButtonProps) {
       <div style={{ fontSize: '12px', color: '#4D6B8A' }}>
         Secure link — share only with <strong style={{ color: '#0F2137' }}>{clientName}</strong>
       </div>
+      {expiryLabel && (
+        <div style={{ marginTop: '6px', fontSize: '12px', color: '#B85C00', fontWeight: 500 }}>
+          Link expires {expiryLabel}
+        </div>
+      )}
     </div>
   )
 }
