@@ -106,7 +106,7 @@ export default function NewOrderForm({ subcontractors }: { subcontractors: Subco
               ) : null
             )}
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '24px', maxWidth: '1000px', margin: '0 auto', alignItems: 'start' }}>
+            <div className="new-order-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '24px', maxWidth: '1000px', margin: '0 auto', alignItems: 'start' }}>
               <div>
                 {/* Job Info */}
                 <div style={{ background: 'white', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.07)', marginBottom: '20px' }}>
@@ -301,7 +301,7 @@ export default function NewOrderForm({ subcontractors }: { subcontractors: Subco
               </div>
 
               {/* Summary */}
-              <div style={{ position: 'sticky', top: '16px' }}>
+              <div className="new-order-summary-sticky" style={{ position: 'sticky', top: '16px' }}>
                 <div style={{ background: 'white', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.07)' }}>
                   <div style={{ padding: '16px 20px', borderBottom: '1px solid #D4E4F4', fontWeight: 600, fontSize: '14px', color: '#0F2137' }}>Order Summary</div>
                   <div style={{ padding: '16px 20px' }}>

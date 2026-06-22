@@ -73,7 +73,10 @@ export function Sidebar({ user, onNavigate }: { user: User; onNavigate?: () => v
         )}
         <NavItem href="/orders" icon="≡" label="All Orders" active={pathname.startsWith('/orders') && !pathname.includes('new')} onClick={onNavigate} />
         {isAdmin && (
-          <NavItem href="/admin/users" icon="◉" label="Admin" active={pathname.startsWith('/admin')} onClick={onNavigate} />
+          <NavItem href="/admin/users" icon="◉" label="Admin" active={pathname.startsWith('/admin') && !pathname.startsWith('/admin/subcontractors')} onClick={onNavigate} />
+        )}
+        {isAdmin && (
+          <NavItem href="/admin/subcontractors" icon="⊞" label="Subcontractors" active={pathname.startsWith('/admin/subcontractors')} onClick={onNavigate} />
         )}
       </nav>
 

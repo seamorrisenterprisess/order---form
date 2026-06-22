@@ -324,6 +324,86 @@ export async function createUser(_prev: unknown, formData: FormData) {
   return { success: true }
 }
 
+// ─── Subcontractors ───────────────────────────────────────────────────────────
+
+export async function createSubcontractor(_prev: unknown, formData: FormData) {
+  const currentUser = await getSessionUser()
+  if (!currentUser || currentUser.role !== 'admin') {
+    return { error: 'Admin access required.' }
+  }
+
+  const name = (formData.get('name') as string)?.trim()
+  if (!name) return { error: 'Name is required.' }
+
+  const { error } = await db.from('subcontractors').insert({
+    name,
+    contact_name: (formData.get('contact_name') as string)?.trim() || null,
+    phone: (formData.get('phone') as string)?.trim() || null,
+    email: (formData.get('email') as string)?.trim() || null,
+    specialty: (formData.get('specialty') as string)?.trim() || null,
+    active: true,
+  })
+
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/subcontractors')
+  return { success: true }
+}
+
+export async function setSubcontractorActive(subId: string, active: boolean) {
+  const currentUser = await getSessionUser()
+  if (!currentUser || currentUser.role !== 'admin') {
+    return { error: 'Admin access required.' }
+  }
+
+  const { error } = await db.from('subcontractors').update({ active }).eq('id', subId)
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/subcontractors')
+  return { success: true }
+}
+
+// ─── Order Duplication ────────────────────────────────────────────────────────
+
+export async function duplicateOrder(orderId: string) {
+  const user = await getSessionUser()
+  if (!user) return { error: 'Not authenticated.' }
+
+  const canCreate = ['operations_analyst', 'account_manager', 'admin'].includes(user.role)
+  if (!canCreate) return { error: 'Not authorized.' }
+
+  const source = await getOrder(orderId)
+  if (!source) return { error: 'Order not found.' }
+
+  const newId = await nextOrderId()
+
+  const { error } = await db.from('orders').insert({
+    id: newId,
+    job_name: source.job_name,
+    client_name: source.client_name,
+    client_phone: source.client_phone ?? null,
+    client_email: source.client_email,
+    property_address: source.property_address ?? null,
+    subcontractor_name: source.subcontractor_name,
+    submitted_by_id: user.id,
+    account_manager_id: source.account_manager_id ?? null,
+    work_description: source.work_description,
+    scope_reason: source.scope_reason ?? null,
+    sub_cost: source.sub_cost,
+    markup_pct: source.markup_pct,
+    internal_notes: source.internal_notes ?? null,
+    status: 'draft',
+    date_submitted: null,
+  })
+
+  if (error) return { error: error.message }
+
+  await addAudit(newId, user.id, user.name, 'created',
+    `Duplicated from order ${orderId}`)
+
+  redirect(`/orders/${newId}`)
+}
+
 export async function setUserActive(userId: string, active: boolean) {
   const currentUser = await getSessionUser()
   if (!currentUser || currentUser.role !== 'admin') {

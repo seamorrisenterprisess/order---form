@@ -100,7 +100,7 @@ export default async function DashboardPage() {
     <AppShell title={isAM ? 'Account Manager Dashboard' : 'My Dashboard'} actions={newOrderAction}>
       <div className="dot-grid" style={{ padding: '28px', minHeight: '100%' }}>
         {/* Status cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6,1fr)', gap: '12px', marginBottom: '24px' }}>
+        <div className="status-cards-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(6,1fr)', gap: '12px', marginBottom: '24px' }}>
           {STATUS_CONFIG.map(s => (
             <div key={s.key} style={{
               background: 'white', borderRadius: '10px', padding: '14px 16px',
@@ -117,7 +117,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* This Month summary */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '12px', marginBottom: '24px' }}>
+        <div className="summary-cards-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '12px', marginBottom: '24px' }}>
           {[
             { label: 'Orders Submitted This Month', value: String(pipeline.thisMonth.submitted), unit: 'orders' },
             { label: 'Sent to Client This Month', value: fmt(pipeline.thisMonth.sentToClientValue), unit: 'value' },
