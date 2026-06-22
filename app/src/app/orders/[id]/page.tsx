@@ -9,6 +9,9 @@ import { ReviewActions } from './ReviewActions'
 import { PhotoUpload } from './PhotoUpload'
 import { CopyLinkButton } from './CopyLinkButton'
 import { DuplicateButton } from './DuplicateButton'
+import { NotesThread } from './NotesThread'
+import { SaveTemplateButton } from './SaveTemplateButton'
+import { getOrderNotes } from '@/lib/orders'
 import type { Order, OrderStatus, OrderPhoto } from '@/types'
 
 function fmt(n: number) {
@@ -108,6 +111,8 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
   const order = await getOrder(id)
   if (!order) notFound()
 
+  const notes = await getOrderNotes(id)
+
   if (user.role === 'operations_analyst' && order.submitted_by_id !== user.id) {
     redirect('/dashboard')
   }
@@ -128,6 +133,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
       title={`${order.id} — ${order.job_name}`}
       actions={
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          {canCreate && <SaveTemplateButton orderId={order.id} />}
           {canCreate && <DuplicateButton orderId={order.id} />}
           <Link href="/dashboard" style={{ padding: '7px 14px', border: '1.5px solid #D4E4F4', borderRadius: '7px', textDecoration: 'none', fontSize: '13px', color: '#4D6B8A', display: 'inline-flex' }}>← Back</Link>
         </div>
@@ -278,6 +284,11 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
               </div>
             </form>
           )}
+
+          {/* Internal Notes Thread */}
+          <div style={{ marginBottom: '20px' }}>
+            <NotesThread notes={notes} orderId={order.id} currentUserId={user.id} />
+          </div>
 
           {/* Audit Trail */}
           <div style={{ background: 'white', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>

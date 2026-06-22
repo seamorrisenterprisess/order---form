@@ -3,7 +3,8 @@
 import { useActionState, useState, useRef } from 'react'
 import { createOrder } from '@/lib/actions'
 import Link from 'next/link'
-import type { Subcontractor } from '@/types'
+import { useRouter } from 'next/navigation'
+import type { Subcontractor, OrderTemplate } from '@/types'
 
 function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
   return (
@@ -36,12 +37,26 @@ function emptySlot(): PhotoSlot {
   return { file: null, previewUrl: null, uploadedUrl: null, uploadedKey: null, caption: '', uploading: false, error: null }
 }
 
-export default function NewOrderForm({ subcontractors }: { subcontractors: Subcontractor[] }) {
+export default function NewOrderForm({
+  subcontractors,
+  templates = [],
+  defaultValues,
+}: {
+  subcontractors: Subcontractor[]
+  templates?: OrderTemplate[]
+  defaultValues?: Partial<OrderTemplate>
+}) {
   const [state, action, pending] = useActionState(createOrder, null)
   const [photos, setPhotos] = useState<PhotoSlot[]>([emptySlot(), emptySlot(), emptySlot(), emptySlot()])
-  const [summary, setSummary] = useState({ job: '', client: '', sub: '', cost: '0' })
+  const [summary, setSummary] = useState({
+    job: defaultValues?.job_name ?? '',
+    client: '',
+    sub: defaultValues?.subcontractor_name ?? '',
+    cost: '0',
+  })
   const [subOther, setSubOther] = useState(false)
   const fileInputRefs = useRef<(HTMLInputElement | null)[]>([null, null, null, null])
+  const router = useRouter()
 
   function updateSummary(field: string, value: string) {
     setSummary(prev => ({ ...prev, [field]: value }))
@@ -99,6 +114,34 @@ export default function NewOrderForm({ subcontractors }: { subcontractors: Subco
               {state.error}
             </div>
           )}
+
+          {/* Template selector */}
+          {templates.length > 0 && (
+            <div style={{ background: '#F4F8FF', border: '1.5px solid #D4E4F4', borderRadius: '10px', padding: '14px 18px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '12px', maxWidth: '1000px', margin: '0 auto 20px' }}>
+              <span style={{ fontSize: '12.5px', fontWeight: 600, color: '#4D6B8A', flexShrink: 0 }}>Start from Template:</span>
+              <select
+                style={{ flex: 1, padding: '7px 10px', border: '1.5px solid #D4E4F4', borderRadius: '7px', fontSize: '13px', color: '#0F2137', background: 'white', fontFamily: 'var(--font-body)' }}
+                defaultValue={defaultValues ? '' : ''}
+                onChange={e => {
+                  const val = e.target.value
+                  if (val) {
+                    router.push(`/orders/new?template=${val}`)
+                  }
+                }}
+              >
+                <option value="">Select a template…</option>
+                {templates.map(t => (
+                  <option key={t.id} value={t.id}>{t.name}</option>
+                ))}
+              </select>
+              {defaultValues && (
+                <span style={{ fontSize: '12px', color: '#0D7A4E', fontWeight: 500, flexShrink: 0 }}>
+                  &#10003; Template applied
+                </span>
+              )}
+            </div>
+          )}
+
           <form action={action} encType="multipart/form-data">
             {photos.map((slot, i) =>
               slot.caption ? (
@@ -114,7 +157,7 @@ export default function NewOrderForm({ subcontractors }: { subcontractors: Subco
                   <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
                       <Field label="Job Name" required>
-                        <input style={inputStyle} type="text" name="job_name" placeholder="e.g. Riverside Commons – Unit 4B" onChange={e => updateSummary('job', e.target.value)} />
+                        <input style={inputStyle} type="text" name="job_name" placeholder="e.g. Riverside Commons – Unit 4B" defaultValue={defaultValues?.job_name ?? ''} onChange={e => updateSummary('job', e.target.value)} />
                       </Field>
                       <Field label="Client Name" required>
                         <input style={inputStyle} type="text" name="client_name" placeholder="Full name" onChange={e => updateSummary('client', e.target.value)} />
@@ -178,10 +221,10 @@ export default function NewOrderForm({ subcontractors }: { subcontractors: Subco
                       )}
                     </Field>
                     <Field label="Description of Additional Work" required>
-                      <textarea style={{ ...inputStyle, minHeight: '90px', resize: 'vertical' }} name="work_description" placeholder="Describe the additional work in detail…" rows={4} />
+                      <textarea style={{ ...inputStyle, minHeight: '90px', resize: 'vertical' }} name="work_description" placeholder="Describe the additional work in detail…" rows={4} defaultValue={defaultValues?.work_description ?? ''} />
                     </Field>
                     <Field label="Reason for Additional Scope">
-                      <textarea style={{ ...inputStyle, minHeight: '60px', resize: 'vertical' }} name="scope_reason" placeholder="Why is this additional scope needed?" rows={2} />
+                      <textarea style={{ ...inputStyle, minHeight: '60px', resize: 'vertical' }} name="scope_reason" placeholder="Why is this additional scope needed?" rows={2} defaultValue={defaultValues?.scope_reason ?? ''} />
                     </Field>
                   </div>
                 </div>

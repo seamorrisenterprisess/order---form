@@ -1,5 +1,5 @@
 import { db } from './supabase'
-import type { Order, AuditEntry, AuditEvent, OrderStatus, Subcontractor } from '@/types'
+import type { Order, AuditEntry, AuditEvent, OrderStatus, Subcontractor, OrderNote, OrderTemplate } from '@/types'
 
 // Fetch a single order with joined relations
 export async function getOrder(id: string): Promise<Order | null> {
@@ -158,6 +158,147 @@ export async function pipelineMetrics(submittedById?: string): Promise<PipelineM
       clientApprovedValue,
     },
   }
+}
+
+// ─── Order Notes ─────────────────────────────────────────────────────────────
+
+export async function getOrderNotes(orderId: string): Promise<OrderNote[]> {
+  const { data } = await db
+    .from('order_notes')
+    .select('*, author:users!author_id(id,name,avatar_initials)')
+    .eq('order_id', orderId)
+    .order('created_at', { ascending: true })
+  return (data ?? []) as OrderNote[]
+}
+
+export async function addOrderNote(orderId: string, authorId: string, body: string): Promise<void> {
+  await db.from('order_notes').insert({ order_id: orderId, author_id: authorId, body })
+}
+
+// ─── Report Metrics ───────────────────────────────────────────────────────────
+
+export interface ReportMetrics {
+  totalOrders: number
+  totalValueSent: number
+  totalValueApproved: number
+  approvalRate: number
+  byStatus: Record<string, { count: number; value: number }>
+  topSubcontractors: { name: string; orderCount: number; totalSubCost: number; totalClientPrice: number }[]
+  submittedBy: { name: string; orderCount: number; totalValue: number }[]
+}
+
+function dateRangeBounds(range: string): { start: string; end: string } {
+  const now = new Date()
+  const y = now.getFullYear()
+  const m = now.getMonth() // 0-based
+
+  if (range === 'last_month') {
+    const first = new Date(y, m - 1, 1)
+    const last = new Date(y, m, 0)
+    return { start: first.toISOString().slice(0, 10), end: last.toISOString().slice(0, 10) }
+  }
+  if (range === 'this_quarter') {
+    const qStart = Math.floor(m / 3) * 3
+    const first = new Date(y, qStart, 1)
+    const last = new Date(y, qStart + 3, 0)
+    return { start: first.toISOString().slice(0, 10), end: last.toISOString().slice(0, 10) }
+  }
+  if (range === 'this_year') {
+    return { start: `${y}-01-01`, end: `${y}-12-31` }
+  }
+  // default: this_month
+  const first = new Date(y, m, 1)
+  const last = new Date(y, m + 1, 0)
+  return { start: first.toISOString().slice(0, 10), end: last.toISOString().slice(0, 10) }
+}
+
+export async function reportMetrics(range: string): Promise<ReportMetrics> {
+  const { start, end } = dateRangeBounds(range)
+
+  const { data: rows } = await db
+    .from('orders')
+    .select('status,client_price,sub_cost,subcontractor_name,submitted_by_id,date_submitted,created_at,submitted_by:users!submitted_by_id(id,name)')
+    .gte('created_at', `${start}T00:00:00.000Z`)
+    .lte('created_at', `${end}T23:59:59.999Z`)
+
+  const orders = rows ?? []
+
+  let totalValueSent = 0
+  let totalValueApproved = 0
+  let clientApproved = 0
+  let clientDeclined = 0
+  const byStatus: Record<string, { count: number; value: number }> = {}
+  const subMap: Record<string, { orderCount: number; totalSubCost: number; totalClientPrice: number }> = {}
+  const userMap: Record<string, { name: string; orderCount: number; totalValue: number }> = {}
+
+  for (const row of orders) {
+    const price = Number(row.client_price ?? 0)
+    const cost = Number(row.sub_cost ?? 0)
+    const st = row.status as string
+
+    // by status
+    if (!byStatus[st]) byStatus[st] = { count: 0, value: 0 }
+    byStatus[st].count++
+    byStatus[st].value += price
+
+    if (st === 'sent_to_client' || st === 'client_approved' || st === 'client_declined') {
+      totalValueSent += price
+    }
+    if (st === 'client_approved') {
+      totalValueApproved += price
+      clientApproved++
+    }
+    if (st === 'client_declined') clientDeclined++
+
+    // subcontractor
+    const subName = (row.subcontractor_name as string) ?? 'Unknown'
+    if (!subMap[subName]) subMap[subName] = { orderCount: 0, totalSubCost: 0, totalClientPrice: 0 }
+    subMap[subName].orderCount++
+    subMap[subName].totalSubCost += cost
+    subMap[subName].totalClientPrice += price
+
+    // submitted by
+    const submitterRaw = row.submitted_by as unknown
+    const submitter = submitterRaw && typeof submitterRaw === 'object' && !Array.isArray(submitterRaw)
+      ? (submitterRaw as { id: string; name: string })
+      : null
+    if (submitter) {
+      if (!userMap[submitter.id]) userMap[submitter.id] = { name: submitter.name, orderCount: 0, totalValue: 0 }
+      userMap[submitter.id].orderCount++
+      userMap[submitter.id].totalValue += price
+    }
+  }
+
+  const total = clientApproved + clientDeclined
+  const approvalRate = total > 0 ? Math.round((clientApproved / total) * 100) : 0
+
+  const topSubcontractors = Object.entries(subMap)
+    .map(([name, v]) => ({ name, ...v }))
+    .sort((a, b) => b.totalClientPrice - a.totalClientPrice)
+    .slice(0, 10)
+
+  const submittedBy = Object.values(userMap)
+    .sort((a, b) => b.orderCount - a.orderCount)
+
+  return {
+    totalOrders: orders.length,
+    totalValueSent,
+    totalValueApproved,
+    approvalRate,
+    byStatus,
+    topSubcontractors,
+    submittedBy,
+  }
+}
+
+// ─── Templates ────────────────────────────────────────────────────────────────
+
+export async function listTemplates(): Promise<OrderTemplate[]> {
+  const { data } = await db
+    .from('order_templates')
+    .select('*')
+    .order('created_at', { ascending: false })
+  return (data ?? []) as OrderTemplate[]
 }
 
 // List active subcontractors ordered by name

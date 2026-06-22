@@ -6,7 +6,7 @@ import { cookies } from 'next/headers'
 import bcrypt from 'bcryptjs'
 import { db, PHOTOS_BUCKET } from './supabase'
 import { signToken, setSessionCookie, clearSessionCookie, getSessionUser, ALLOWED_TRANSITIONS } from './auth'
-import { getOrder, addAudit, nextOrderId } from './orders'
+import { getOrder, addAudit, nextOrderId, addOrderNote, listTemplates } from './orders'
 import { buildEmailHtml, buildSmsText, sendEmail, sendSms } from './email'
 import type { OrderStatus, AuditEvent } from '@/types'
 
@@ -401,6 +401,88 @@ export async function duplicateOrder(orderId: string) {
   await addAudit(newId, user.id, user.name, 'created',
     `Duplicated from order ${orderId}`)
 
+  redirect(`/orders/${newId}`)
+}
+
+// ─── Order Notes ─────────────────────────────────────────────────────────────
+
+export async function addNote(_prev: unknown, formData: FormData) {
+  const user = await getSessionUser()
+  if (!user) return { error: 'Not authenticated.' }
+
+  const orderId = formData.get('order_id') as string
+  const body = (formData.get('body') as string)?.trim()
+
+  if (!orderId || !body) return { error: 'Note body is required.' }
+
+  await addOrderNote(orderId, user.id, body)
+  revalidatePath(`/orders/${orderId}`)
+  return { success: true }
+}
+
+// ─── Templates ────────────────────────────────────────────────────────────────
+
+export async function saveAsTemplate(_prev: unknown, formData: FormData) {
+  const user = await getSessionUser()
+  if (!user) return { error: 'Not authenticated.' }
+
+  const orderId = formData.get('order_id') as string
+  const templateName = (formData.get('template_name') as string)?.trim()
+
+  if (!orderId || !templateName) return { error: 'Template name is required.' }
+
+  const order = await getOrder(orderId)
+  if (!order) return { error: 'Order not found.' }
+
+  const { error } = await db.from('order_templates').insert({
+    name: templateName,
+    job_name: order.job_name,
+    work_description: order.work_description,
+    scope_reason: order.scope_reason ?? null,
+    subcontractor_name: order.subcontractor_name,
+    markup_pct: order.markup_pct,
+    created_by: user.id,
+  })
+
+  if (error) return { error: error.message }
+  return { success: true }
+}
+
+export async function createOrderFromTemplate(templateId: string) {
+  const user = await getSessionUser()
+  if (!user) return { error: 'Not authenticated.' }
+
+  const canCreate = ['operations_analyst', 'account_manager', 'admin'].includes(user.role)
+  if (!canCreate) return { error: 'Not authorized.' }
+
+  const { data: template } = await db
+    .from('order_templates')
+    .select('*')
+    .eq('id', templateId)
+    .single()
+
+  if (!template) return { error: 'Template not found.' }
+
+  const newId = await nextOrderId()
+
+  const { error } = await db.from('orders').insert({
+    id: newId,
+    job_name: template.job_name ?? '',
+    client_name: '',
+    client_email: '',
+    subcontractor_name: template.subcontractor_name ?? '',
+    submitted_by_id: user.id,
+    work_description: template.work_description ?? '',
+    scope_reason: template.scope_reason ?? null,
+    sub_cost: 0,
+    markup_pct: template.markup_pct ?? 20,
+    status: 'draft',
+    date_submitted: null,
+  })
+
+  if (error) return { error: error.message }
+
+  await addAudit(newId, user.id, user.name, 'created', `Created from template: ${template.name}`)
   redirect(`/orders/${newId}`)
 }
 

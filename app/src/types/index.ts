@@ -131,6 +131,31 @@ export interface ApiResponse<T = void> {
 
 export type StatusCount = Record<OrderStatus, number>
 
+export interface OrderNote {
+  id: string
+  order_id: string
+  author_id: string
+  body: string
+  created_at: string
+  author?: {
+    id: string
+    name: string
+    avatar_initials: string
+  }
+}
+
+export interface OrderTemplate {
+  id: string
+  name: string
+  job_name?: string
+  work_description?: string
+  scope_reason?: string
+  subcontractor_name?: string
+  markup_pct?: number
+  created_by?: string
+  created_at: string
+}
+
 export interface Subcontractor {
   id: string
   name: string
