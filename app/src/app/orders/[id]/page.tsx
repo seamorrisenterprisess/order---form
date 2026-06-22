@@ -8,6 +8,7 @@ import Link from 'next/link'
 import { ReviewActions } from './ReviewActions'
 import { PhotoUpload } from './PhotoUpload'
 import { CopyLinkButton } from './CopyLinkButton'
+import { DuplicateButton } from './DuplicateButton'
 import type { Order, OrderStatus, OrderPhoto } from '@/types'
 
 function fmt(n: number) {
@@ -113,6 +114,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
 
   const isAM = user.role === 'account_manager' || user.role === 'admin'
   const isAnalyst = user.role === 'operations_analyst' || user.role === 'admin'
+  const canCreate = user.role === 'operations_analyst' || user.role === 'account_manager' || user.role === 'admin'
   const markupAmt = (order.client_price ?? 0) - (order.sub_cost ?? 0)
 
   // Resolve photo public URLs server-side
@@ -124,7 +126,12 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
   return (
     <AppShell
       title={`${order.id} — ${order.job_name}`}
-      actions={<Link href="/dashboard" style={{ padding: '7px 14px', border: '1.5px solid #D4E4F4', borderRadius: '7px', textDecoration: 'none', fontSize: '13px', color: '#4D6B8A', display: 'inline-flex' }}>← Back</Link>}
+      actions={
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          {canCreate && <DuplicateButton orderId={order.id} />}
+          <Link href="/dashboard" style={{ padding: '7px 14px', border: '1.5px solid #D4E4F4', borderRadius: '7px', textDecoration: 'none', fontSize: '13px', color: '#4D6B8A', display: 'inline-flex' }}>← Back</Link>
+        </div>
+      }
     >
       <div className="dot-grid" style={{ padding: '28px', minHeight: '100%' }}>
         <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
