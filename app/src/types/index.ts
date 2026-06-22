@@ -130,3 +130,14 @@ export interface ApiResponse<T = void> {
 }
 
 export type StatusCount = Record<OrderStatus, number>
+
+export interface Subcontractor {
+  id: string
+  name: string
+  contact_name?: string
+  phone?: string
+  email?: string
+  specialty?: string
+  active: boolean
+  created_at: string
+}

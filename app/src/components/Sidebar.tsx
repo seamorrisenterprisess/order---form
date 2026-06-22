@@ -4,9 +4,9 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import type { User } from '@/types'
 
-function NavItem({ href, icon, label, active }: { href: string; icon: string; label: string; active: boolean }) {
+function NavItem({ href, icon, label, active, onClick }: { href: string; icon: string; label: string; active: boolean; onClick?: () => void }) {
   return (
-    <Link href={href} style={{
+    <Link href={href} onClick={onClick} style={{
       display: 'flex', alignItems: 'center', gap: '10px',
       padding: '10px 20px', textDecoration: 'none',
       color: active ? 'white' : 'rgba(255,255,255,0.55)',
@@ -24,7 +24,7 @@ function NavItem({ href, icon, label, active }: { href: string; icon: string; la
   )
 }
 
-export function Sidebar({ user }: { user: User }) {
+export function Sidebar({ user, onNavigate }: { user: User; onNavigate?: () => void }) {
   const pathname = usePathname()
   const router = useRouter()
 
@@ -67,13 +67,13 @@ export function Sidebar({ user }: { user: User }) {
 
       {/* Nav */}
       <nav style={{ flex: 1, padding: '12px 0', overflowY: 'auto' }}>
-        <NavItem href="/dashboard" icon="▦" label="Dashboard" active={pathname === '/dashboard'} />
+        <NavItem href="/dashboard" icon="▦" label="Dashboard" active={pathname === '/dashboard'} onClick={onNavigate} />
         {(isAnalyst || isAdmin) && (
-          <NavItem href="/orders/new" icon="＋" label="New Scope Order" active={pathname === '/orders/new'} />
+          <NavItem href="/orders/new" icon="＋" label="New Scope Order" active={pathname === '/orders/new'} onClick={onNavigate} />
         )}
-        <NavItem href="/orders" icon="≡" label="All Orders" active={pathname.startsWith('/orders') && !pathname.includes('new')} />
+        <NavItem href="/orders" icon="≡" label="All Orders" active={pathname.startsWith('/orders') && !pathname.includes('new')} onClick={onNavigate} />
         {isAdmin && (
-          <NavItem href="/admin/users" icon="◉" label="Admin" active={pathname.startsWith('/admin')} />
+          <NavItem href="/admin/users" icon="◉" label="Admin" active={pathname.startsWith('/admin')} onClick={onNavigate} />
         )}
       </nav>
 

@@ -1,5 +1,5 @@
 import { db } from './supabase'
-import type { Order, AuditEntry, AuditEvent, OrderStatus } from '@/types'
+import type { Order, AuditEntry, AuditEvent, OrderStatus, Subcontractor } from '@/types'
 
 // Fetch a single order with joined relations
 export async function getOrder(id: string): Promise<Order | null> {
@@ -158,6 +158,25 @@ export async function pipelineMetrics(submittedById?: string): Promise<PipelineM
       clientApprovedValue,
     },
   }
+}
+
+// List active subcontractors ordered by name
+export async function listSubcontractors(): Promise<Subcontractor[]> {
+  const { data } = await db
+    .from('subcontractors')
+    .select('*')
+    .eq('active', true)
+    .order('name', { ascending: true })
+  return (data ?? []) as Subcontractor[]
+}
+
+// List all subcontractors (admin)
+export async function listAllSubcontractors(): Promise<Subcontractor[]> {
+  const { data } = await db
+    .from('subcontractors')
+    .select('*')
+    .order('name', { ascending: true })
+  return (data ?? []) as Subcontractor[]
 }
 
 // Get order by client token (for client portal — no auth required)

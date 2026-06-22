@@ -44,7 +44,7 @@ export default async function AllOrdersPage({ searchParams }: { searchParams: Pr
     <AppShell title="All Orders" actions={newBtn}>
       <div className="dot-grid" style={{ padding: '28px', minHeight: '100%' }}>
         <div style={{ background: 'white', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.07)' }}>
-          <div style={{ padding: '14px 16px 0', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          <div className="orders-filter-row" style={{ padding: '14px 16px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
             <form method="get" style={{ display: 'contents' }}>
               <input
                 type="text" name="search" defaultValue={search}
@@ -69,7 +69,7 @@ export default async function AllOrdersPage({ searchParams }: { searchParams: Pr
               )}
             </form>
           </div>
-          <div style={{ overflowX: 'auto', marginTop: '0' }}>
+          <div className="table-scroll-wrap" style={{ overflowX: 'auto', marginTop: '0' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13.5px' }}>
               <thead>
                 <tr>

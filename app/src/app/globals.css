@@ -67,3 +67,113 @@ body {
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+/* ── Mobile responsiveness (375px–768px) ── */
+
+/* AppShell: show hamburger, hide desktop sidebar */
+@media (max-width: 768px) {
+  .mobile-hamburger {
+    display: flex !important;
+    align-items: center;
+  }
+
+  .desktop-sidebar {
+    display: none !important;
+  }
+
+  /* Drawer only visible when JS sets translateX(0) */
+  .mobile-nav-drawer {
+    display: block;
+  }
+}
+
+/* Hide hamburger & drawer on desktop */
+@media (min-width: 769px) {
+  .mobile-hamburger {
+    display: none !important;
+  }
+  .mobile-nav-drawer {
+    display: none !important;
+  }
+}
+
+/* Orders page: stack filter inputs vertically on mobile */
+@media (max-width: 768px) {
+  .orders-filter-row {
+    flex-direction: column !important;
+  }
+  .orders-filter-row input,
+  .orders-filter-row select,
+  .orders-filter-row button,
+  .orders-filter-row a {
+    width: 100%;
+    min-width: 0 !important;
+    box-sizing: border-box;
+  }
+}
+
+/* Orders table: scroll hint gradient on the right edge */
+.table-scroll-wrap {
+  position: relative;
+}
+.table-scroll-wrap::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 40px;
+  background: linear-gradient(to right, transparent, rgba(255,255,255,0.85));
+  pointer-events: none;
+  border-radius: 0 12px 12px 0;
+}
+@media (min-width: 769px) {
+  .table-scroll-wrap::after {
+    display: none;
+  }
+}
+
+/* Order detail: info grid — 1-column on mobile */
+@media (max-width: 768px) {
+  .info-grid-2col {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Order detail: pipeline steps — horizontal scroll on mobile */
+@media (max-width: 768px) {
+  .pipeline-scroll {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  .pipeline-scroll > div {
+    min-width: 480px;
+  }
+}
+
+/* New order form: stack two-column layout on mobile */
+@media (max-width: 768px) {
+  .new-order-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .new-order-summary-sticky {
+    position: static !important;
+  }
+}
+
+/* Dashboard: status cards — 2-column on mobile */
+@media (max-width: 768px) {
+  .status-cards-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .summary-cards-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* General: reduce page padding on mobile */
+@media (max-width: 768px) {
+  .dot-grid {
+    padding: 16px !important;
+  }
+}

@@ -35,7 +35,7 @@ function getPipelineIdx(status: OrderStatus) {
 function Pipeline({ status }: { status: OrderStatus }) {
   const idx = getPipelineIdx(status)
   return (
-    <div style={{ display: 'flex', alignItems: 'center', background: 'white', borderRadius: '12px', padding: '16px 20px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', marginBottom: '20px' }}>
+    <div className="pipeline-scroll" style={{ display: 'flex', alignItems: 'center', background: 'white', borderRadius: '12px', padding: '16px 20px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', marginBottom: '20px' }}>
       {PIPELINE.map((step, i) => {
         const done = i < idx
         const active = i === idx
@@ -153,7 +153,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           )}
 
           {/* Info grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
+          <div className="info-grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
             <InfoBlock title="Job & Property" rows={[
               ['Job Name', order.job_name],
               ['Property', order.property_address ?? '—'],
