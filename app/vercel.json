@@ -1,0 +1,12 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
+  "outputDirectory": ".next",
+  "env": {
+    "SUPABASE_URL": "@supabase-url",
+    "SUPABASE_SERVICE_ROLE_KEY": "@supabase-service-role-key",
+    "JWT_SECRET": "@jwt-secret",
+    "NEXT_PUBLIC_APP_URL": "@app-url"
+  }
+}
