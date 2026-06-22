@@ -72,6 +72,9 @@ export function Sidebar({ user }: { user: User }) {
           <NavItem href="/orders/new" icon="＋" label="New Scope Order" active={pathname === '/orders/new'} />
         )}
         <NavItem href="/orders" icon="≡" label="All Orders" active={pathname.startsWith('/orders') && !pathname.includes('new')} />
+        {isAdmin && (
+          <NavItem href="/admin/users" icon="◉" label="Admin" active={pathname.startsWith('/admin')} />
+        )}
       </nav>
 
       {/* User footer */}

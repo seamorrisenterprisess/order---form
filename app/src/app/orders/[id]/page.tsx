@@ -2,10 +2,12 @@ import { AppShell } from '@/components/AppShell'
 import { StatusBadge } from '@/components/StatusBadge'
 import { getSessionUser } from '@/lib/auth'
 import { getOrder } from '@/lib/orders'
+import { db, PHOTOS_BUCKET } from '@/lib/supabase'
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ReviewActions } from './ReviewActions'
-import type { Order, OrderStatus } from '@/types'
+import { PhotoUpload } from './PhotoUpload'
+import type { Order, OrderStatus, OrderPhoto } from '@/types'
 
 function fmt(n: number) {
   return '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 0 })
@@ -76,14 +78,6 @@ function InfoBlock({ title, rows }: { title: string; rows: [string, string][] })
   )
 }
 
-const PHOTO_COLORS = [
-  'linear-gradient(135deg,#C8DFF8,#93C6EE)',
-  'linear-gradient(135deg,#B7D9C4,#7CBFA2)',
-  'linear-gradient(135deg,#F0C070,#E8A030)',
-  'linear-gradient(135deg,#C4A8E8,#9B72D0)',
-]
-const PHOTO_CAPTIONS = ['Overview of affected area', 'Close-up detail', 'Full scope area', 'Before work began']
-
 const AUDIT_COLORS: Record<string, string> = {
   created: '#8BAAC4', submitted: '#1355C2', resubmitted: '#1355C2', reviewed: '#1355C2',
   approved: '#0D7A4E', sent_email: '#0D7A4E', sent_sms: '#0D7A4E',
@@ -113,6 +107,12 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
   const isAM = user.role === 'account_manager' || user.role === 'admin'
   const isAnalyst = user.role === 'operations_analyst' || user.role === 'admin'
   const markupAmt = (order.client_price ?? 0) - (order.sub_cost ?? 0)
+
+  // Resolve photo public URLs server-side
+  const photosWithUrls: OrderPhoto[] = (order.photos ?? []).map(p => ({
+    ...p,
+    public_url: p.public_url ?? db.storage.from(PHOTOS_BUCKET).getPublicUrl(p.storage_key).data.publicUrl,
+  }))
 
   return (
     <AppShell
@@ -179,21 +179,15 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
 
           {/* Photos */}
           <div style={{ background: 'white', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', marginBottom: '20px' }}>
-            <div style={{ padding: '16px 20px', borderBottom: '1px solid #D4E4F4', fontWeight: 600, fontSize: '14px' }}>Photos</div>
-            <div style={{ padding: '20px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '12px' }}>
-                {[0,1,2,3].map(i => (
-                  <div key={i}>
-                    <div style={{ borderRadius: '8px', background: order.photos && i < order.photos.length ? PHOTO_COLORS[i] : '#F0F4F8', aspectRatio: '4/3', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px' }}>
-                      {order.photos && i < order.photos.length ? '🖼' : '📷'}
-                    </div>
-                    <div style={{ fontSize: '11px', color: order.photos && i < order.photos.length ? '#4D6B8A' : '#D4E4F4', marginTop: '5px', fontWeight: 500 }}>
-                      {order.photos && i < order.photos.length ? PHOTO_CAPTIONS[i] : '—'}
-                    </div>
-                  </div>
-                ))}
-              </div>
+            <div style={{ padding: '16px 20px', borderBottom: '1px solid #D4E4F4', fontWeight: 600, fontSize: '14px' }}>
+              Photos
+              {photosWithUrls.length > 0 && (
+                <span style={{ marginLeft: '8px', fontSize: '11px', fontWeight: 500, color: '#4D6B8A', background: '#F4F8FF', padding: '2px 8px', borderRadius: '20px' }}>
+                  {photosWithUrls.length} of 4
+                </span>
+              )}
             </div>
+            <PhotoUpload orderId={order.id} existingPhotos={photosWithUrls} />
           </div>
 
           {/* Financials */}

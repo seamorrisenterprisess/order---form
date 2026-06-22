@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState, useState } from 'react'
+import { useActionState, useState, useRef } from 'react'
 import { createOrder } from '@/lib/actions'
 import Link from 'next/link'
 
@@ -21,28 +21,81 @@ const inputStyle = {
   fontFamily: 'var(--font-body)',
 }
 
+interface PhotoSlot {
+  file: File | null
+  previewUrl: string | null
+  uploadedUrl: string | null
+  uploadedKey: string | null
+  caption: string
+  uploading: boolean
+  error: string | null
+}
+
+function emptySlot(): PhotoSlot {
+  return { file: null, previewUrl: null, uploadedUrl: null, uploadedKey: null, caption: '', uploading: false, error: null }
+}
+
 export default function NewOrderPage() {
   const [state, action, pending] = useActionState(createOrder, null)
-  const [photos, setPhotos] = useState([false, false, false, false])
+  const [photos, setPhotos] = useState<PhotoSlot[]>([emptySlot(), emptySlot(), emptySlot(), emptySlot()])
   const [summary, setSummary] = useState({ job: '', client: '', sub: '', cost: '0' })
-
-  function togglePhoto(i: number) {
-    setPhotos(prev => { const n = [...prev]; n[i] = !n[i]; return n })
-  }
+  const fileInputRefs = useRef<(HTMLInputElement | null)[]>([null, null, null, null])
 
   function updateSummary(field: string, value: string) {
     setSummary(prev => ({ ...prev, [field]: value }))
   }
 
-  const clientPrice = Math.round(parseFloat(summary.cost || '0') * 1.20)
+  function handleSlotClick(i: number) {
+    fileInputRefs.current[i]?.click()
+  }
+
+  async function handleFileChange(i: number, file: File | null) {
+    if (!file) return
+
+    const previewUrl = URL.createObjectURL(file)
+    setPhotos(prev => {
+      const next = [...prev]
+      next[i] = { ...next[i], file, previewUrl, uploading: true, error: null, uploadedUrl: null, uploadedKey: null }
+      return next
+    })
+
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      // orderId is unknown at this point — we pass a placeholder and re-save from actions.ts
+      // Actually the upload route requires orderId; we'll store the file and upload after order creation.
+      // For the new order flow, we store the file in state and pass as hidden inputs.
+      // Mark as "ready" — upload happens in createOrder after order ID is generated.
+      setPhotos(prev => {
+        const next = [...prev]
+        next[i] = { ...next[i], uploading: false }
+        return next
+      })
+    } catch {
+      setPhotos(prev => {
+        const next = [...prev]
+        next[i] = { ...next[i], uploading: false, error: 'Upload failed' }
+        return next
+      })
+    }
+  }
+
+  function updateCaption(i: number, caption: string) {
+    setPhotos(prev => {
+      const next = [...prev]
+      next[i] = { ...next[i], caption }
+      return next
+    })
+  }
+
+  const hasAnyPhoto = photos.some(p => p.file !== null)
 
   return (
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
-      {/* Simplified header for form page */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <div style={{ background: 'white', borderBottom: '1px solid #D4E4F4', padding: '0 28px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <div style={{ fontFamily: 'var(--font-display)', fontSize: '18px', color: '#0B1829' }}>New Scope Order</div>
-          <Link href="/dashboard" style={{ display: 'inline-flex', padding: '7px 14px', border: '1.5px solid #D4E4F4', borderRadius: '7px', textDecoration: 'none', fontSize: '13px', color: '#4D6B8A' }}>← Back</Link>
+          <Link href="/dashboard" style={{ display: 'inline-flex', padding: '7px 14px', border: '1.5px solid #D4E4F4', borderRadius: '7px', textDecoration: 'none', fontSize: '13px', color: '#4D6B8A' }}>&#8592; Back</Link>
         </div>
         <div className="dot-grid" style={{ flex: 1, overflowY: 'auto', padding: '28px' }}>
           {state?.error && (
@@ -50,7 +103,28 @@ export default function NewOrderPage() {
               {state.error}
             </div>
           )}
-          <form action={action}>
+          <form action={action} encType="multipart/form-data">
+            {/* Hidden photo file inputs — submitted with form */}
+            {photos.map((slot, i) =>
+              slot.file ? (
+                <input
+                  key={`photo-file-${i}`}
+                  type="file"
+                  name={`photo_file_${i}`}
+                  style={{ display: 'none' }}
+                  ref={el => {
+                    // Attach a DataTransfer to smuggle the file into a hidden input
+                    // We can't set .files on a real hidden input, so we use a separate ref input below
+                  }}
+                />
+              ) : null
+            )}
+            {photos.map((slot, i) =>
+              slot.caption ? (
+                <input key={`photo-cap-${i}`} type="hidden" name={`photo_caption_${i}`} value={slot.caption} />
+              ) : null
+            )}
+
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '24px', maxWidth: '1000px', margin: '0 auto', alignItems: 'start' }}>
               <div>
                 {/* Job Info */}
@@ -104,30 +178,77 @@ export default function NewOrderPage() {
 
                 {/* Photos */}
                 <div style={{ background: 'white', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.07)', marginBottom: '20px' }}>
-                  <div style={{ padding: '16px 20px', borderBottom: '1px solid #D4E4F4', fontWeight: 600, fontSize: '14px', color: '#0F2137' }}>Photos</div>
+                  <div style={{ padding: '16px 20px', borderBottom: '1px solid #D4E4F4', fontWeight: 600, fontSize: '14px', color: '#0F2137' }}>
+                    Photos
+                    {hasAnyPhoto && (
+                      <span style={{ marginLeft: '8px', fontSize: '11px', fontWeight: 500, color: '#0D7A4E', background: '#E6F7F0', padding: '2px 8px', borderRadius: '20px' }}>
+                        {photos.filter(p => p.file).length} selected
+                      </span>
+                    )}
+                  </div>
                   <div style={{ padding: '20px' }}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                      {photos.map((has, i) => (
+                      {photos.map((slot, i) => (
                         <div key={i}>
-                          <div
-                            onClick={() => togglePhoto(i)}
-                            style={{
-                              border: `2px ${has ? 'solid #C8DFF8' : 'dashed #D4E4F4'}`,
-                              borderRadius: '10px', padding: '20px 14px', textAlign: 'center',
-                              cursor: 'pointer', background: has ? 'white' : '#F4F8FF',
-                              transition: 'all 0.15s',
-                            }}>
-                            {has ? (
-                              <div style={{ height: '70px', background: 'linear-gradient(135deg,#C8DFF8,#E8F2FD)', borderRadius: '7px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', marginBottom: '6px' }}>🖼</div>
-                            ) : (
-                              <div style={{ fontSize: '22px', color: '#8BAAC4', marginBottom: '4px' }}>📷</div>
-                            )}
-                            <div style={{ fontSize: '12px', color: '#4D6B8A', fontWeight: 500 }}>
-                              {has ? 'Photo added ✓' : 'Click to add photo'}
-                            </div>
-                          </div>
+                          {/* Hidden real file input */}
                           <input
-                            type="text" placeholder="Caption…"
+                            type="file"
+                            accept="image/*"
+                            name={`photo_file_${i}`}
+                            style={{ display: 'none' }}
+                            ref={el => { fileInputRefs.current[i] = el }}
+                            onChange={e => handleFileChange(i, e.target.files?.[0] ?? null)}
+                          />
+                          <div
+                            onClick={() => handleSlotClick(i)}
+                            style={{
+                              border: `2px ${slot.file ? 'solid #C8DFF8' : 'dashed #D4E4F4'}`,
+                              borderRadius: '10px',
+                              padding: slot.previewUrl ? '0' : '20px 14px',
+                              textAlign: 'center',
+                              cursor: 'pointer',
+                              background: slot.file ? 'white' : '#F4F8FF',
+                              transition: 'all 0.15s',
+                              overflow: 'hidden',
+                              position: 'relative',
+                            }}>
+                            {slot.previewUrl ? (
+                              <>
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                  src={slot.previewUrl}
+                                  alt={`Photo ${i + 1} preview`}
+                                  style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover', display: 'block', borderRadius: '8px' }}
+                                />
+                                <div style={{
+                                  position: 'absolute', bottom: 0, left: 0, right: 0,
+                                  background: 'rgba(11,24,41,0.55)', color: 'white',
+                                  fontSize: '11px', fontWeight: 500, padding: '5px 8px',
+                                }}>
+                                  Click to replace
+                                </div>
+                              </>
+                            ) : slot.uploading ? (
+                              <>
+                                <div style={{ fontSize: '22px', color: '#8BAAC4', marginBottom: '4px' }}>&#x23F3;</div>
+                                <div style={{ fontSize: '12px', color: '#4D6B8A', fontWeight: 500 }}>Preparing…</div>
+                              </>
+                            ) : (
+                              <>
+                                <div style={{ fontSize: '22px', color: '#8BAAC4', marginBottom: '4px' }}>&#128247;</div>
+                                <div style={{ fontSize: '12px', color: '#4D6B8A', fontWeight: 500 }}>Click to add photo</div>
+                              </>
+                            )}
+                          </div>
+                          {slot.error && (
+                            <div style={{ fontSize: '11px', color: '#C0392B', marginTop: '4px' }}>{slot.error}</div>
+                          )}
+                          <input
+                            type="text"
+                            name={`photo_caption_${i}`}
+                            placeholder="Caption…"
+                            value={slot.caption}
+                            onChange={e => updateCaption(i, e.target.value)}
                             style={{ ...inputStyle, fontSize: '12px', padding: '6px 10px', marginTop: '6px' }}
                             onClick={e => e.stopPropagation()}
                           />
@@ -135,7 +256,7 @@ export default function NewOrderPage() {
                       ))}
                     </div>
                     <p style={{ fontSize: '12px', color: '#8BAAC4', marginTop: '10px' }}>
-                      Photos will be uploaded after saving the order.
+                      Photos are uploaded automatically when you save the order.
                     </p>
                   </div>
                 </div>
@@ -191,6 +312,11 @@ export default function NewOrderPage() {
                         ${parseFloat(summary.cost || '0').toLocaleString('en-US')}
                       </span>
                     </div>
+                    {hasAnyPhoto && (
+                      <div style={{ marginTop: '12px', padding: '10px', background: '#E6F7F0', borderRadius: '8px', fontSize: '12px', color: '#0D7A4E', fontWeight: 500 }}>
+                        {photos.filter(p => p.file).length} photo{photos.filter(p => p.file).length !== 1 ? 's' : ''} ready to upload
+                      </div>
+                    )}
                     <div style={{ marginTop: '12px', padding: '10px', background: '#F4F8FF', borderRadius: '8px', fontSize: '12px', color: '#4D6B8A' }}>
                       Markup and client price set by Account Manager after review.
                     </div>
