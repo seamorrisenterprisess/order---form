@@ -8,13 +8,14 @@ function fmt(n: number) {
   return '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 0 })
 }
 
-const PHOTO_COLORS = [
-  'linear-gradient(135deg,#C8DFF8,#93C6EE)',
-  'linear-gradient(135deg,#B7D9C4,#7CBFA2)',
-  'linear-gradient(135deg,#F0C070,#E8A030)',
-  'linear-gradient(135deg,#C4A8E8,#9B72D0)',
-]
-const PHOTO_CAPTIONS = ['Overview of affected area', 'Close-up detail', 'Full scope area', 'Before work began']
+const PRINT_STYLES = `
+@media print {
+  .client-portal-actions { display: none !important; }
+  .client-portal-print-btn { display: none !important; }
+  body { background: white !important; }
+  .client-portal-wrapper { box-shadow: none !important; padding: 0 !important; }
+}
+`
 
 export function ClientPortal({ order, token, initialAction }: {
   order: Order
@@ -49,6 +50,15 @@ export function ClientPortal({ order, token, initialAction }: {
 
   return (
     <>
+      <style>{PRINT_STYLES}</style>
+      {/* Print button */}
+      <div className="client-portal-print-btn" style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '12px' }}>
+        <button
+          onClick={() => window.print()}
+          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '7px 14px', background: 'white', border: '1.5px solid #D4E4F4', borderRadius: '7px', fontSize: '13px', color: '#4D6B8A', cursor: 'pointer', fontWeight: 500 }}>
+          🖨 Print / Save as PDF
+        </button>
+      </div>
       {/* Hero */}
       <div style={{ textAlign: 'center', marginBottom: '28px', paddingTop: '8px' }}>
         <div style={{ fontSize: '12px', color: '#4D6B8A', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>Order {order.id}</div>
@@ -97,17 +107,26 @@ export function ClientPortal({ order, token, initialAction }: {
 
       {/* Photos */}
       {order.photos && order.photos.length > 0 && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '12px', marginBottom: '20px' }}>
-          {order.photos.slice(0, 4).map((photo, i) => (
-            <div key={photo.id}>
-              <div style={{ borderRadius: '10px', background: PHOTO_COLORS[i], height: '140px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '36px', overflow: 'hidden' }}>
-                {(photo as any).public_url ? (
-                  <img src={(photo as any).public_url} alt={photo.caption ?? ''} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                ) : '🖼'}
+        <div style={{ marginBottom: '20px' }}>
+          <div style={{ fontSize: '12px', fontWeight: 700, color: '#4D6B8A', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '10px' }}>Scope Photos</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '12px' }}>
+            {order.photos.slice(0, 4).map((photo) => (
+              <div key={photo.id} style={{ borderRadius: '10px', overflow: 'hidden', border: '1px solid #D4E4F4' }}>
+                {photo.public_url ? (
+                  <img
+                    src={photo.public_url}
+                    alt={photo.caption ?? 'Scope photo'}
+                    style={{ width: '100%', height: '160px', objectFit: 'cover', display: 'block' }}
+                  />
+                ) : (
+                  <div style={{ height: '160px', background: '#F0F4F8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px' }}>🖼</div>
+                )}
+                {photo.caption && (
+                  <div style={{ padding: '6px 10px', fontSize: '12px', color: '#4D6B8A', fontWeight: 500, background: 'white' }}>{photo.caption}</div>
+                )}
               </div>
-              {photo.caption && <div style={{ fontSize: '12px', color: '#4D6B8A', marginTop: '5px', fontWeight: 500 }}>{photo.caption}</div>}
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       )}
 
@@ -139,7 +158,7 @@ export function ClientPortal({ order, token, initialAction }: {
 
       {/* CTA */}
       {canAct && !responded && (
-        <>
+        <div className="client-portal-actions">
           {!showDeclineForm ? (
             <div style={{ display: 'flex', gap: '14px', marginBottom: '24px' }}>
               <button
@@ -182,7 +201,7 @@ export function ClientPortal({ order, token, initialAction }: {
               </div>
             </div>
           )}
-        </>
+        </div>
       )}
 
       {/* Footer */}

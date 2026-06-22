@@ -101,6 +101,65 @@ export async function statusCounts(submittedById?: string): Promise<Record<strin
   return counts
 }
 
+export interface PipelineMetrics {
+  revenueByStatus: Record<string, number>
+  thisMonth: {
+    submitted: number
+    sentToClientValue: number
+    clientApprovedValue: number
+  }
+}
+
+// Revenue pipeline metrics for dashboard
+export async function pipelineMetrics(submittedById?: string): Promise<PipelineMetrics> {
+  let query = db.from('orders').select('status,client_price,date_submitted,created_at')
+  if (submittedById) query = query.eq('submitted_by_id', submittedById)
+  const { data } = await query
+
+  const rows = data ?? []
+  const revenueByStatus: Record<string, number> = {
+    submitted: 0,
+    approved_internally: 0,
+    sent_to_client: 0,
+    client_approved: 0,
+  }
+
+  const now = new Date()
+  const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
+
+  let thisMonthSubmitted = 0
+  let sentToClientValue = 0
+  let clientApprovedValue = 0
+
+  for (const row of rows) {
+    const price = Number(row.client_price ?? 0)
+    if (revenueByStatus[row.status] !== undefined) {
+      revenueByStatus[row.status] += price
+    }
+    const dateKey = row.date_submitted ?? row.created_at?.slice(0, 10) ?? ''
+    if (dateKey >= monthStart) {
+      if (row.status === 'submitted' || row.status === 'needs_changes' || row.status === 'approved_internally' || row.status === 'sent_to_client' || row.status === 'client_approved' || row.status === 'client_declined') {
+        thisMonthSubmitted++
+      }
+      if (row.status === 'sent_to_client' || row.status === 'client_approved' || row.status === 'client_declined') {
+        sentToClientValue += price
+      }
+      if (row.status === 'client_approved') {
+        clientApprovedValue += price
+      }
+    }
+  }
+
+  return {
+    revenueByStatus,
+    thisMonth: {
+      submitted: thisMonthSubmitted,
+      sentToClientValue,
+      clientApprovedValue,
+    },
+  }
+}
+
 // Get order by client token (for client portal — no auth required)
 export async function getOrderByToken(token: string): Promise<Order | null> {
   const { data: order } = await db

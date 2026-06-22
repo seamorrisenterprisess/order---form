@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { AppShell } from '@/components/AppShell'
 import { StatusBadge } from '@/components/StatusBadge'
 import { getSessionUser } from '@/lib/auth'
-import { listOrders, statusCounts } from '@/lib/orders'
+import { listOrders, statusCounts, pipelineMetrics } from '@/lib/orders'
 import { redirect } from 'next/navigation'
 import type { Order, OrderStatus } from '@/types'
 
@@ -82,13 +82,14 @@ export default async function DashboardPage() {
   const isAnalyst = user.role === 'operations_analyst'
   const isAM = user.role === 'account_manager' || user.role === 'admin'
 
-  const [counts, orders, priorityOrders] = await Promise.all([
+  const [counts, orders, priorityOrders, pipeline] = await Promise.all([
     statusCounts(isAnalyst ? user.id : undefined),
     listOrders({
       submittedById: isAnalyst ? user.id : undefined,
       limit: 50,
     }),
     isAM ? listOrders({ status: ['submitted', 'needs_changes'] as OrderStatus[], limit: 10 }) : Promise.resolve([]),
+    pipelineMetrics(isAnalyst ? user.id : undefined),
   ])
 
   const newOrderAction = isAnalyst || user.role === 'admin'
@@ -114,6 +115,53 @@ export default async function DashboardPage() {
             </div>
           ))}
         </div>
+
+        {/* This Month summary */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '12px', marginBottom: '24px' }}>
+          {[
+            { label: 'Orders Submitted This Month', value: String(pipeline.thisMonth.submitted), unit: 'orders' },
+            { label: 'Sent to Client This Month', value: fmt(pipeline.thisMonth.sentToClientValue), unit: 'value' },
+            { label: 'Client-Approved This Month', value: fmt(pipeline.thisMonth.clientApprovedValue), unit: 'value' },
+          ].map(({ label, value }) => (
+            <div key={label} style={{ background: 'white', borderRadius: '10px', padding: '16px 18px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', borderTop: '3px solid #1355C2' }}>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: '24px', color: '#1355C2', lineHeight: 1 }}>{value}</div>
+              <div style={{ fontSize: '11px', color: '#4D6B8A', marginTop: '6px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Revenue Pipeline */}
+        {(() => {
+          const PIPE_STATUSES = [
+            { key: 'submitted', label: 'Submitted', color: '#1355C2' },
+            { key: 'approved_internally', label: 'Approved Internally', color: '#0D7A4E' },
+            { key: 'sent_to_client', label: 'Sent to Client', color: '#2990FF' },
+            { key: 'client_approved', label: 'Client Approved', color: '#0D4E30' },
+          ]
+          const total = PIPE_STATUSES.reduce((s, ps) => s + (pipeline.revenueByStatus[ps.key] ?? 0), 0)
+          return (
+            <div style={{ background: 'white', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.07)', marginBottom: '24px', padding: '20px' }}>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: '18px', color: '#0B1829', marginBottom: '18px' }}>Revenue Pipeline</div>
+              {PIPE_STATUSES.map(ps => {
+                const amount = pipeline.revenueByStatus[ps.key] ?? 0
+                const pct = total > 0 ? Math.round((amount / total) * 100) : 0
+                const widthPct = total > 0 ? Math.max((amount / total) * 100, amount > 0 ? 2 : 0) : 0
+                return (
+                  <div key={ps.key} style={{ marginBottom: '14px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
+                      <span style={{ fontSize: '12.5px', fontWeight: 600, color: '#0F2137' }}>{ps.label}</span>
+                      <span style={{ fontSize: '12.5px', color: '#4D6B8A' }}>{fmt(amount)} <span style={{ color: '#8BAAC4', fontSize: '11px' }}>({pct}%)</span></span>
+                    </div>
+                    <div style={{ height: '10px', background: '#F0F4F8', borderRadius: '99px', overflow: 'hidden' }}>
+                      <div style={{ height: '100%', width: `${widthPct}%`, background: ps.color, borderRadius: '99px', transition: 'width 0.4s ease' }} />
+                    </div>
+                  </div>
+                )
+              })}
+              <div style={{ marginTop: '8px', fontSize: '11px', color: '#8BAAC4', textAlign: 'right' }}>Total pipeline: {fmt(total)}</div>
+            </div>
+          )
+        })()}
 
         {/* AM Priority section */}
         {isAM && priorityOrders.length > 0 && (

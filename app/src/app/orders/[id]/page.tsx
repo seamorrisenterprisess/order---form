@@ -91,6 +91,12 @@ const AUDIT_LABELS: Record<string, string> = {
   changes_requested: 'Requested changes', rejected: 'Rejected', client_declined: 'Client declined',
   pricing_updated: 'Updated pricing', message_updated: 'Updated client message',
 }
+const AUDIT_ICONS: Record<string, string> = {
+  created: '📝', submitted: '📤', resubmitted: '📤', reviewed: '✅',
+  approved: '✅', changes_requested: '✏️', rejected: '❌',
+  sent_email: '📧', sent_sms: '📧', client_approved: '👤',
+  client_declined: '❌', pricing_updated: '✏️', message_updated: '✏️',
+}
 
 export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -245,32 +251,52 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
 
           {/* Audit Trail */}
           <div style={{ background: 'white', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-            <div style={{ padding: '16px 20px', borderBottom: '1px solid #D4E4F4', fontWeight: 600, fontSize: '14px' }}>Audit Trail</div>
-            <div style={{ padding: '20px' }}>
-              {(order.audit_trail ?? []).map((entry, i) => (
-                <div key={entry.id} style={{ display: 'flex', gap: '14px', paddingBottom: i < (order.audit_trail?.length ?? 0) - 1 ? '20px' : 0, position: 'relative' }}>
-                  {i < (order.audit_trail?.length ?? 0) - 1 && (
-                    <div style={{ position: 'absolute', left: '13px', top: '28px', bottom: 0, width: '2px', background: '#D4E4F4' }} />
-                  )}
-                  <div style={{
-                    width: '28px', height: '28px', borderRadius: '50%', flexShrink: 0, zIndex: 1,
-                    background: AUDIT_COLORS[entry.event] ?? '#8BAAC4',
-                    border: '2px solid white', boxShadow: '0 0 0 2px #D4E4F4',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '10px', color: 'white', fontWeight: 700,
-                  }}>●</div>
-                  <div style={{ flex: 1, paddingTop: '4px' }}>
-                    <div style={{ fontSize: '13.5px', fontWeight: 600, color: '#0F2137' }}>{entry.actor_name}</div>
-                    <div style={{ fontSize: '13px', color: '#4D6B8A', marginBottom: '2px' }}>{AUDIT_LABELS[entry.event] ?? entry.event}</div>
-                    <div style={{ fontSize: '11px', color: '#8BAAC4' }}>{new Date(entry.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}</div>
-                    {entry.note && (
-                      <div style={{ marginTop: '6px', background: '#F4F8FF', borderRadius: '6px', padding: '8px 10px', borderLeft: '2px solid #D4E4F4', fontSize: '12.5px', color: '#4D6B8A', fontStyle: 'italic' }}>
-                        {entry.note}
-                      </div>
+            <div style={{ padding: '16px 20px', borderBottom: '1px solid #D4E4F4', fontWeight: 600, fontSize: '14px' }}>Activity Feed</div>
+            <div style={{ padding: '24px 20px' }}>
+              {(order.audit_trail ?? []).length === 0 ? (
+                <div style={{ color: '#8BAAC4', fontSize: '13px', textAlign: 'center', padding: '20px 0' }}>No activity yet.</div>
+              ) : (order.audit_trail ?? []).map((entry, i) => {
+                const isLast = i === (order.audit_trail?.length ?? 0) - 1
+                const color = AUDIT_COLORS[entry.event] ?? '#8BAAC4'
+                const icon = AUDIT_ICONS[entry.event] ?? '•'
+                return (
+                  <div key={entry.id} style={{ display: 'flex', gap: '16px', position: 'relative', paddingBottom: isLast ? 0 : '24px' }}>
+                    {/* Vertical line connector */}
+                    {!isLast && (
+                      <div style={{ position: 'absolute', left: '19px', top: '40px', bottom: 0, width: '2px', background: '#E8EFF7', zIndex: 0 }} />
                     )}
+                    {/* Icon circle */}
+                    <div style={{
+                      width: '40px', height: '40px', borderRadius: '50%', flexShrink: 0, zIndex: 1,
+                      background: `${color}18`,
+                      border: `2px solid ${color}40`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: '16px',
+                    }}>{icon}</div>
+                    {/* Card body */}
+                    <div style={{ flex: 1 }}>
+                      <div style={{ background: '#F8FAFD', borderRadius: '10px', padding: '12px 14px', border: '1px solid #E8EFF7' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' }}>
+                          <div style={{ fontSize: '13.5px', fontWeight: 700, color: '#0F2137' }}>
+                            {AUDIT_LABELS[entry.event] ?? entry.event}
+                          </div>
+                          <div style={{ fontSize: '11px', color: '#8BAAC4', whiteSpace: 'nowrap' }}>
+                            {new Date(entry.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                          </div>
+                        </div>
+                        <div style={{ fontSize: '12.5px', color: '#4D6B8A', marginBottom: entry.note ? '8px' : 0 }}>
+                          by <strong style={{ color: '#0F2137' }}>{entry.actor_name}</strong>
+                        </div>
+                        {entry.note && (
+                          <div style={{ background: 'white', borderRadius: '6px', padding: '8px 10px', borderLeft: `3px solid ${color}`, fontSize: '12.5px', color: '#4D6B8A', fontStyle: 'italic', lineHeight: 1.5 }}>
+                            {entry.note}
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         </div>
