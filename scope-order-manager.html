@@ -1,0 +1,1673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Additional Scope Order Manager — Sea Morris</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0B1829;--ink:#0F2137;--blue:#1355C2;--blue-mid:#1A6FE8;--sky:#2990FF;
+  --ice:#C8DFF8;--frost:#E8F2FD;--mist:#F4F8FF;--white:#FFFFFF;
+  --slate:#4D6B8A;--silver:#8BAAC4;--border:#D4E4F4;
+  --green:#0D7A4E;--green-bg:#E6F5EE;--red:#C0392B;--red-bg:#FDECEA;
+  --amber:#B85C00;--amber-bg:#FFF3E6;--purple:#6B21A8;--purple-bg:#F5F0FF;
+  --font-display:'DM Serif Display',Georgia,serif;
+  --font-body:'DM Sans',system-ui,sans-serif;
+  --sidebar:240px;
+}
+html{font-size:16px;scroll-behavior:smooth}
+body{font-family:var(--font-body);background:var(--mist);color:var(--ink);min-height:100vh;overflow-x:hidden}
+
+/* SCREENS */
+.screen{display:none}
+.screen.active{display:flex;flex-direction:column;min-height:100vh}
+#screen-login.active{display:flex;align-items:center;justify-content:center;background:linear-gradient(160deg,#0B1829 0%,#0F2D4A 50%,#0B1829 100%);min-height:100vh}
+#screen-client.active{display:block;background:#F4F8FF;min-height:100vh}
+
+/* APP SHELL */
+.app-shell{display:flex;flex:1;height:100vh;overflow:hidden}
+.sidebar{width:var(--sidebar);background:var(--navy);flex-shrink:0;display:flex;flex-direction:column;height:100vh;position:sticky;top:0}
+.sidebar-logo{padding:20px 20px 16px;border-bottom:1px solid rgba(255,255,255,0.08)}
+.sidebar-logo-inner{display:flex;align-items:center;gap:10px}
+.logo-mark{width:36px;height:36px;background:var(--blue);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:15px;color:white;flex-shrink:0}
+.sidebar-brand{font-family:var(--font-display);font-size:14px;color:white;line-height:1.2}
+.sidebar-brand span{display:block;font-family:var(--font-body);font-size:10px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.08em;margin-top:2px}
+.sidebar-nav{flex:1;padding:12px 0;overflow-y:auto}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;cursor:pointer;color:rgba(255,255,255,0.55);font-size:13.5px;font-weight:500;border-left:3px solid transparent;transition:all 0.15s}
+.nav-item:hover{color:white;background:rgba(255,255,255,0.05)}
+.nav-item.active{color:white;background:rgba(19,85,194,0.25);border-left-color:var(--sky)}
+.nav-icon{font-size:16px;width:20px;text-align:center;flex-shrink:0}
+.sidebar-footer{padding:16px 20px;border-top:1px solid rgba(255,255,255,0.08)}
+.user-pill{display:flex;align-items:center;gap:8px}
+.user-avatar{width:30px;height:30px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:white;flex-shrink:0}
+.user-info{flex:1;min-width:0}
+.user-name{font-size:12px;font-weight:600;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-role{font-size:10px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.06em}
+.logout-btn{background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.35);font-size:14px;padding:4px;border-radius:4px}
+.logout-btn:hover{color:white}
+
+/* MAIN CONTENT */
+.main-content{flex:1;overflow-y:auto;display:flex;flex-direction:column}
+.topbar{background:white;border-bottom:1px solid var(--border);padding:0 28px;height:56px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.topbar-title{font-family:var(--font-display);font-size:18px;color:var(--navy)}
+.topbar-actions{display:flex;align-items:center;gap:12px}
+.content-area{flex:1;padding:28px;background-image:radial-gradient(circle,rgba(19,85,194,0.07) 1px,transparent 1px);background-size:24px 24px}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:7px;font-family:var(--font-body);font-size:13.5px;font-weight:600;cursor:pointer;transition:all 0.15s;border:none;text-decoration:none}
+.btn-primary{background:var(--blue);color:white}
+.btn-primary:hover{background:var(--blue-mid)}
+.btn-outline{background:white;color:var(--blue);border:1.5px solid var(--blue)}
+.btn-outline:hover{background:var(--frost)}
+.btn-green{background:var(--green);color:white}
+.btn-green:hover{background:#0a6040}
+.btn-red{background:var(--red);color:white}
+.btn-red:hover{background:#a93226}
+.btn-amber{background:var(--amber);color:white}
+.btn-amber:hover{background:#a04e00}
+.btn-ghost{background:transparent;color:var(--slate);border:1.5px solid var(--border)}
+.btn-ghost:hover{background:var(--mist);border-color:var(--silver)}
+.btn-sm{padding:6px 12px;font-size:12.5px}
+.btn-lg{padding:14px 28px;font-size:15px}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:4px;font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;border:1.5px solid currentColor}
+.badge-draft{color:var(--slate);background:#F4F8FF;border-color:var(--silver)}
+.badge-submitted{color:var(--blue);background:var(--frost);border-color:var(--ice)}
+.badge-needs_changes{color:var(--amber);background:var(--amber-bg);border-color:#f0c070}
+.badge-approved_internally{color:var(--green);background:var(--green-bg);border-color:#a7d7c1}
+.badge-sent_to_client{color:var(--purple);background:var(--purple-bg);border-color:#c4a8e8}
+.badge-client_approved{color:var(--green);background:#D1FAE5;border-color:var(--green)}
+.badge-client_declined{color:var(--red);background:var(--red-bg);border-color:#e8a09a}
+
+/* CARDS */
+.card{background:white;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.07),0 0 0 1px rgba(0,0,0,0.05)}
+.card-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-body{padding:20px}
+.card-title{font-weight:600;font-size:14px;color:var(--ink)}
+
+/* STATUS CARDS ROW */
+.status-cards{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:24px}
+.status-card{background:white;border-radius:10px;padding:14px 16px;border:2px solid transparent;cursor:pointer;transition:all 0.15s;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
+.status-card:hover{border-color:var(--ice);transform:translateY(-1px)}
+.status-card.active-filter{border-color:var(--blue);background:var(--frost)}
+.status-card-count{font-family:var(--font-display);font-size:28px;color:var(--navy);line-height:1}
+.status-card-label{font-size:11px;color:var(--slate);margin-top:4px;font-weight:500;text-transform:uppercase;letter-spacing:0.05em}
+
+/* TABLE */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+thead th{padding:10px 14px;text-align:left;font-size:11px;font-weight:600;color:var(--slate);text-transform:uppercase;letter-spacing:0.06em;border-bottom:2px solid var(--border);background:var(--mist);white-space:nowrap}
+tbody tr{border-bottom:1px solid #F0F4F8;cursor:pointer;transition:background 0.1s}
+tbody tr:hover{background:var(--frost)}
+tbody td{padding:12px 14px;vertical-align:middle}
+.order-id-cell{font-family:var(--font-display);font-size:13px;color:var(--blue);font-weight:400}
+.col-amt{font-family:'DM Sans',monospace;font-weight:600;color:var(--ink)}
+
+/* FILTER BAR */
+.filter-bar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.search-input{flex:1;min-width:200px;padding:8px 12px 8px 34px;border:1.5px solid var(--border);border-radius:7px;font-family:var(--font-body);font-size:13.5px;color:var(--ink);background:white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='%238BAAC4' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.44 1.146a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z'/%3E%3C/svg%3E") no-repeat 10px center;outline:none}
+.search-input:focus{border-color:var(--sky);box-shadow:0 0 0 3px rgba(41,144,255,0.12)}
+select.filter-select{padding:8px 12px;border:1.5px solid var(--border);border-radius:7px;font-family:var(--font-body);font-size:13.5px;color:var(--ink);background:white;outline:none;cursor:pointer}
+select.filter-select:focus{border-color:var(--sky)}
+
+/* FORM */
+.form-page{max-width:980px;margin:0 auto}
+.form-grid{display:grid;grid-template-columns:1fr 300px;gap:24px;align-items:start}
+.form-section{margin-bottom:24px}
+.form-section-title{font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.form-row.full{grid-template-columns:1fr}
+.form-group{display:flex;flex-direction:column;gap:5px}
+label{font-size:12.5px;font-weight:600;color:var(--ink)}
+label span.req{color:var(--red)}
+input[type=text],input[type=email],input[type=tel],input[type=number],textarea,select{padding:9px 12px;border:1.5px solid var(--border);border-radius:7px;font-family:var(--font-body);font-size:13.5px;color:var(--ink);outline:none;transition:border-color 0.15s;width:100%;background:white}
+input:focus,textarea:focus,select:focus{border-color:var(--sky);box-shadow:0 0 0 3px rgba(41,144,255,0.1)}
+input.error,textarea.error{border-color:var(--red)!important}
+textarea{resize:vertical;min-height:80px}
+.input-prefix{position:relative}
+.input-prefix span{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--slate);font-size:14px;pointer-events:none}
+.input-prefix input{padding-left:22px}
+
+/* PHOTO UPLOAD */
+.photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.photo-box{border:2px dashed var(--border);border-radius:10px;padding:20px 14px;text-align:center;cursor:pointer;transition:all 0.15s;background:var(--mist)}
+.photo-box:hover{border-color:var(--sky);background:var(--frost)}
+.photo-box.has-photo{border-style:solid;border-color:var(--ice);background:white}
+.photo-icon{font-size:22px;color:var(--silver);margin-bottom:6px}
+.photo-label{font-size:12px;color:var(--slate);font-weight:500}
+.photo-caption{margin-top:8px}
+.photo-caption input{font-size:12px;padding:6px 10px}
+.photo-thumb{width:100%;height:80px;background:linear-gradient(135deg,var(--ice) 0%,var(--frost) 100%);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:6px}
+
+/* SUMMARY CARD (form sidebar) */
+.summary-card{position:sticky;top:16px}
+.summary-line{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:13.5px}
+.summary-line:last-child{border-bottom:none}
+.summary-label{color:var(--slate)}
+.summary-value{font-weight:600;color:var(--ink)}
+.summary-price{font-family:var(--font-display);font-size:22px;color:var(--blue)}
+
+/* ORDER DETAIL */
+.detail-page{max-width:1000px;margin:0 auto}
+.detail-header{margin-bottom:24px}
+.breadcrumb{font-size:12px;color:var(--slate);margin-bottom:8px;cursor:pointer}
+.breadcrumb span{color:var(--blue)}
+.detail-title{font-family:var(--font-display);font-size:30px;color:var(--navy);letter-spacing:-0.02em;margin-bottom:6px}
+.detail-subtitle{font-size:14px;color:var(--slate)}
+
+/* STATUS PIPELINE */
+.pipeline{display:flex;align-items:center;margin-bottom:28px;background:white;border-radius:12px;padding:16px 20px;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
+.pipeline-step{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;position:relative}
+.pipeline-step:not(:last-child)::after{content:'';position:absolute;left:calc(50% + 14px);right:calc(-50% + 14px);top:14px;height:2px;background:var(--border)}
+.pipeline-step.done::after{background:var(--blue)}
+.pipeline-step.active::after{background:var(--border)}
+.step-dot{width:28px;height:28px;border-radius:50%;border:2px solid var(--border);background:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--silver);position:relative;z-index:1;flex-shrink:0}
+.pipeline-step.done .step-dot{background:var(--blue);border-color:var(--blue);color:white}
+.pipeline-step.active .step-dot{background:white;border-color:var(--blue);color:var(--blue);box-shadow:0 0 0 4px rgba(19,85,194,0.12)}
+.step-label{font-size:10px;font-weight:600;color:var(--silver);text-transform:uppercase;letter-spacing:0.05em;text-align:center;white-space:nowrap}
+.pipeline-step.done .step-label,.pipeline-step.active .step-label{color:var(--ink)}
+
+/* INFO GRID */
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.info-block{background:white;border-radius:10px;padding:16px 18px;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
+.info-block-title{font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:12px}
+.info-row{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px solid #F4F7FA}
+.info-row:last-child{border-bottom:none}
+.info-key{color:var(--slate)}
+.info-val{font-weight:500;color:var(--ink);text-align:right;max-width:60%}
+
+/* PHOTOS DISPLAY */
+.photos-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.photo-display{border-radius:8px;overflow:hidden;background:linear-gradient(135deg,#C8DFF8,#E8F2FD);aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;font-size:28px;position:relative;cursor:pointer}
+.photo-display-caption{font-size:11px;color:var(--slate);margin-top:5px;font-weight:500}
+.photo-placeholder{display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--silver)}
+.photo-placeholder span{font-size:11px}
+
+/* FINANCIALS */
+.financials-card{background:white;border-radius:12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.06);margin-bottom:20px}
+.financials-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #F0F4F8;font-size:14px}
+.financials-row:last-child{border-bottom:none;padding-top:12px;margin-top:4px}
+.financials-label{color:var(--slate)}
+.financials-val{font-weight:600;font-family:'DM Sans',monospace}
+.financials-total{font-family:var(--font-display);font-size:26px;color:var(--blue)}
+.financials-total-label{font-size:13px;font-weight:600;color:var(--ink)}
+
+/* MARKUP EDITOR */
+.markup-editor{background:var(--frost);border-radius:10px;padding:16px;border:1px solid var(--ice)}
+.markup-row{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.markup-slider{flex:1;accent-color:var(--blue)}
+.markup-pct{font-family:var(--font-display);font-size:22px;color:var(--blue);min-width:48px;text-align:center}
+
+/* MESSAGE BOX */
+.message-box{background:var(--frost);border-radius:10px;padding:16px 18px;border-left:3px solid var(--sky);margin-bottom:20px;font-size:14px;line-height:1.6;color:var(--ink)}
+.message-box-header{font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.notes-box{background:var(--amber-bg);border-radius:10px;padding:16px 18px;border-left:3px solid var(--amber);margin-bottom:20px;font-size:14px;line-height:1.6}
+
+/* AUDIT TRAIL */
+.audit-trail{margin-top:8px}
+.audit-entry{display:flex;gap:14px;padding-bottom:20px;position:relative}
+.audit-entry:not(:last-child)::before{content:'';position:absolute;left:13px;top:28px;bottom:0;width:2px;background:var(--border)}
+.audit-dot{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;z-index:1;border:2px solid white;box-shadow:0 0 0 2px var(--border)}
+.audit-dot-gray{background:#8BAAC4;box-shadow:0 0 0 2px #D4E4F4}
+.audit-dot-blue{background:var(--blue);box-shadow:0 0 0 2px var(--ice)}
+.audit-dot-green{background:var(--green);box-shadow:0 0 0 2px #a7d7c1}
+.audit-dot-amber{background:var(--amber);box-shadow:0 0 0 2px #f0c070}
+.audit-dot-red{background:var(--red);box-shadow:0 0 0 2px #e8a09a}
+.audit-content{flex:1;padding-top:4px}
+.audit-who{font-size:13.5px;font-weight:600;color:var(--ink)}
+.audit-action{font-size:13px;color:var(--slate);margin-bottom:2px}
+.audit-note{font-size:12.5px;color:var(--slate);background:var(--mist);border-radius:6px;padding:8px 10px;margin-top:6px;border-left:2px solid var(--border);font-style:italic}
+.audit-time{font-size:11px;color:var(--silver);margin-top:2px}
+
+/* ACTION BAR */
+.action-bar{background:white;border-top:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;gap:10px;position:sticky;bottom:0;z-index:10}
+.action-bar-info{flex:1;font-size:13px;color:var(--slate)}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(11,24,41,0.6);z-index:100;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.modal-overlay.open{display:flex}
+.modal{background:white;border-radius:16px;width:90%;max-width:620px;max-height:90vh;overflow-y:auto;box-shadow:0 40px 100px rgba(0,0,0,0.3)}
+.modal-header{padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-family:var(--font-display);font-size:20px;color:var(--navy)}
+.modal-close{background:none;border:none;cursor:pointer;color:var(--slate);font-size:20px;line-height:1;padding:4px;border-radius:4px}
+.modal-close:hover{background:var(--mist);color:var(--ink)}
+.modal-body{padding:20px 24px}
+.modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end}
+
+/* EMAIL PREVIEW */
+.email-tabs{display:flex;gap:0;border:1.5px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:16px}
+.email-tab{flex:1;padding:8px;text-align:center;font-size:13px;font-weight:600;cursor:pointer;background:var(--mist);color:var(--slate);border:none;transition:all 0.15s}
+.email-tab.active{background:var(--blue);color:white}
+.email-preview-wrap{background:#e8edf2;border-radius:8px;padding:16px}
+.email-preview-inner{background:white;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
+.email-preview-header{background:var(--navy);padding:14px 18px;display:flex;align-items:center;gap:10px}
+.email-preview-header .logo-mark{width:28px;height:28px;font-size:12px}
+.email-preview-header span{color:white;font-family:var(--font-display);font-size:14px}
+.email-meta{padding:12px 18px;border-bottom:1px solid var(--border);font-size:12px;color:var(--slate)}
+.email-meta div{margin-bottom:3px}
+.email-body{padding:18px}
+.email-h1{font-family:var(--font-display);font-size:18px;color:var(--navy);margin-bottom:12px}
+.email-info-box{background:var(--mist);border-radius:7px;padding:12px;margin-bottom:12px;font-size:12.5px}
+.email-price-box{background:var(--navy);border-radius:8px;padding:14px;margin:12px 0;text-align:center;color:white}
+.email-price-box .lbl{font-size:11px;text-transform:uppercase;letter-spacing:0.07em;opacity:0.7}
+.email-price-box .amt{font-family:var(--font-display);font-size:28px}
+.email-btns{display:flex;gap:10px;margin-top:14px}
+.email-btn-approve{flex:1;background:var(--green);color:white;padding:11px;border-radius:7px;text-align:center;font-weight:700;font-size:13px}
+.email-btn-decline{flex:1;background:white;color:var(--red);border:2px solid var(--red);padding:11px;border-radius:7px;text-align:center;font-weight:700;font-size:13px}
+.email-footer{padding:12px 18px;background:var(--mist);font-size:11px;color:var(--silver);border-top:1px solid var(--border)}
+
+/* SMS PREVIEW */
+.phone-frame{width:240px;margin:0 auto;border:3px solid var(--ink);border-radius:32px;padding:24px 12px 20px;background:#1a1a2e;position:relative}
+.phone-notch{width:60px;height:14px;background:var(--ink);border-radius:0 0 10px 10px;position:absolute;top:0;left:50%;transform:translateX(-50%)}
+.phone-screen{background:white;border-radius:18px;min-height:200px;padding:12px 8px;overflow:hidden}
+.sms-bubble{background:var(--ice);border-radius:14px 14px 14px 4px;padding:10px 12px;font-size:12px;color:var(--ink);line-height:1.5;margin:8px 0;max-width:90%}
+.sms-sender{font-size:11px;color:var(--slate);text-align:center;margin-bottom:6px;font-weight:600}
+.sms-char{font-size:11px;color:var(--slate);text-align:center;margin-top:10px}
+
+/* PRIORITY CARDS */
+.priority-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-bottom:24px}
+.priority-card{background:white;border-radius:12px;padding:16px 18px;border-left:4px solid var(--blue);box-shadow:0 1px 3px rgba(0,0,0,0.07);cursor:pointer;transition:all 0.15s}
+.priority-card:hover{box-shadow:0 4px 14px rgba(0,0,0,0.1);transform:translateY(-1px)}
+.priority-card.needs-changes{border-left-color:var(--amber)}
+.priority-card-job{font-weight:700;font-size:14px;color:var(--navy);margin-bottom:4px}
+.priority-card-meta{font-size:12.5px;color:var(--slate);margin-bottom:8px}
+.priority-card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.priority-card-cost{font-family:var(--font-display);font-size:16px;color:var(--blue)}
+
+/* LOGIN */
+.login-card{background:white;border-radius:20px;padding:40px;width:100%;max-width:440px;box-shadow:0 40px 100px rgba(0,0,0,0.5)}
+.login-logo{display:flex;align-items:center;gap:12px;margin-bottom:28px}
+.login-logo-mark{width:46px;height:46px;background:var(--blue);border-radius:11px;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:20px;color:white;box-shadow:0 8px 20px rgba(19,85,194,0.4)}
+.login-brand{font-family:var(--font-display);font-size:18px;color:var(--navy)}
+.login-brand span{display:block;font-family:var(--font-body);font-size:11px;color:var(--slate);text-transform:uppercase;letter-spacing:0.08em;margin-top:2px}
+.login-title{font-family:var(--font-display);font-size:24px;color:var(--navy);margin-bottom:6px}
+.login-sub{font-size:13.5px;color:var(--slate);margin-bottom:24px}
+.role-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.role-card{border:2px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;transition:all 0.15s;background:white}
+.role-card:hover{border-color:var(--ice);background:var(--frost)}
+.role-card.selected{border-color:var(--blue);background:var(--frost)}
+.role-card-icon{font-size:20px;margin-bottom:6px}
+.role-card-name{font-size:13px;font-weight:600;color:var(--ink)}
+.role-card-desc{font-size:11px;color:var(--slate)}
+.quick-logins{margin-top:16px;padding-top:16px;border-top:1px solid var(--border)}
+.quick-login-label{font-size:11px;color:var(--silver);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px}
+.quick-login-btns{display:flex;flex-direction:column;gap:6px}
+.quick-btn{background:var(--mist);border:1.5px solid var(--border);border-radius:7px;padding:8px 12px;font-size:12.5px;cursor:pointer;text-align:left;color:var(--ink);font-family:var(--font-body);transition:all 0.15s}
+.quick-btn:hover{background:var(--frost);border-color:var(--sky)}
+.quick-btn strong{color:var(--blue)}
+
+/* CLIENT VIEW */
+.client-view-wrap{max-width:720px;margin:0 auto;padding:32px 20px 60px}
+.client-header{background:var(--navy);padding:16px 24px;display:flex;align-items:center;justify-content:space-between}
+.client-header-brand{display:flex;align-items:center;gap:10px;color:white}
+.client-secure{font-size:11px;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:0.07em}
+.client-hero{text-align:center;margin-bottom:28px;padding-top:8px}
+.client-order-id{font-size:12px;color:var(--slate);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px}
+.client-job-name{font-family:var(--font-display);font-size:26px;color:var(--navy);margin-bottom:10px}
+.client-info-bar{display:flex;justify-content:center;gap:24px;font-size:13px;color:var(--slate);margin-bottom:24px;flex-wrap:wrap}
+.client-section-title{font-size:12px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:12px}
+.invest-box{border:2px solid var(--navy);border-radius:12px;padding:20px 24px;margin-bottom:24px;text-align:center}
+.invest-breakdown{display:flex;justify-content:center;gap:32px;font-size:13px;color:var(--slate);margin-bottom:12px}
+.invest-total{font-family:var(--font-display);font-size:36px;color:var(--navy);margin-bottom:4px}
+.invest-label{font-size:12px;color:var(--slate)}
+.client-actions{display:flex;gap:14px;margin-bottom:24px}
+.client-actions .btn{flex:1;justify-content:center;font-size:15px;padding:16px}
+.client-success{text-align:center;padding:32px;display:none}
+.client-success .check{font-size:52px;margin-bottom:12px}
+.client-success h2{font-family:var(--font-display);font-size:24px;color:var(--green);margin-bottom:8px}
+.client-decline-form{display:none;margin-bottom:16px}
+.client-footer{text-align:center;font-size:12px;color:var(--silver);padding-top:20px;border-top:1px solid var(--border);margin-top:24px}
+
+/* SECTION HEADERS */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.section-title-big{font-family:var(--font-display);font-size:20px;color:var(--navy)}
+.section-title-sm{font-size:12px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:0.07em}
+
+/* AM INLINE EDIT */
+.edit-mode-banner{background:var(--amber-bg);border:1px solid #f0c070;border-radius:8px;padding:10px 14px;font-size:13px;color:var(--amber);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:48px 24px;color:var(--silver)}
+.empty-state-icon{font-size:40px;margin-bottom:12px}
+.empty-state p{font-size:14px}
+
+/* RESPONSIVE ADJUSTMENTS */
+@media(max-width:900px){
+  .status-cards{grid-template-columns:repeat(3,1fr)}
+  .form-grid{grid-template-columns:1fr}
+  .info-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== LOGIN SCREEN ===== -->
+<div id="screen-login" class="screen active">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-mark">SM</div>
+      <div>
+        <div class="login-brand">Sea Morris<span>Operations Platform</span></div>
+      </div>
+    </div>
+    <div class="login-title">Scope Order Manager</div>
+    <div class="login-sub">Sign in to continue</div>
+    <div class="role-cards" id="role-cards">
+      <div class="role-card selected" onclick="selectRole('analyst')" data-role="analyst">
+        <div class="role-card-icon">📋</div>
+        <div class="role-card-name">Operations Analyst</div>
+        <div class="role-card-desc">Submit & track orders</div>
+      </div>
+      <div class="role-card" onclick="selectRole('am')" data-role="am">
+        <div class="role-card-icon">📊</div>
+        <div class="role-card-name">Account Manager</div>
+        <div class="role-card-desc">Review & approve</div>
+      </div>
+      <div class="role-card" onclick="selectRole('admin')" data-role="admin">
+        <div class="role-card-icon">⚙️</div>
+        <div class="role-card-name">Admin</div>
+        <div class="role-card-desc">Full system access</div>
+      </div>
+      <div class="role-card" onclick="selectRole('client')" data-role="client">
+        <div class="role-card-icon">🏠</div>
+        <div class="role-card-name">Client</div>
+        <div class="role-card-desc">Review scope orders</div>
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom:12px">
+      <label>Email</label>
+      <input type="email" id="login-email" value="marcus@seamorris.com">
+    </div>
+    <div class="form-group" style="margin-bottom:20px">
+      <label>Password</label>
+      <input type="password" id="login-password" placeholder="Any value">
+    </div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="doLogin()">Sign In →</button>
+    <div class="quick-logins">
+      <div class="quick-login-label">Quick demo access</div>
+      <div class="quick-login-btns">
+        <button class="quick-btn" onclick="quickLogin('analyst')">Sign in as <strong>Marcus Webb</strong> — Operations Analyst</button>
+        <button class="quick-btn" onclick="quickLogin('am')">Sign in as <strong>Claire Okafor</strong> — Account Manager</button>
+        <button class="quick-btn" onclick="quickLogin('admin')">Sign in as <strong>Admin</strong></button>
+        <button class="quick-btn" onclick="quickLogin('client')">View as <strong>Jennifer Harmon</strong> — Client (SMO-2024-001)</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MAIN APP SHELL ===== -->
+<div id="screen-app" class="screen">
+  <div class="app-shell">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-inner">
+          <div class="logo-mark">SM</div>
+          <div class="sidebar-brand">Sea Morris<span>Scope Orders</span></div>
+        </div>
+      </div>
+      <nav class="sidebar-nav" id="sidebar-nav">
+        <div class="nav-item active" onclick="navTo('dashboard')" data-nav="dashboard">
+          <span class="nav-icon">▦</span> Dashboard
+        </div>
+        <div class="nav-item" onclick="navTo('new-order')" data-nav="new-order" id="nav-new-order">
+          <span class="nav-icon">＋</span> New Scope Order
+        </div>
+        <div class="nav-item" onclick="navTo('all-orders')" data-nav="all-orders">
+          <span class="nav-icon">≡</span> All Orders
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-pill">
+          <div class="user-avatar" id="sidebar-avatar">MW</div>
+          <div class="user-info">
+            <div class="user-name" id="sidebar-name">Marcus Webb</div>
+            <div class="user-role" id="sidebar-role">Operations Analyst</div>
+          </div>
+          <button class="logout-btn" onclick="doLogout()" title="Sign out">↩</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main -->
+    <div class="main-content" id="main-content">
+      <!-- Dashboard -->
+      <div id="view-dashboard" class="view active-view">
+        <div class="topbar">
+          <div class="topbar-title" id="dash-title">Dashboard</div>
+          <div class="topbar-actions">
+            <button class="btn btn-primary btn-sm" onclick="navTo('new-order')" id="topbar-new-btn">+ New Scope Order</button>
+          </div>
+        </div>
+        <div class="content-area">
+          <!-- Status cards -->
+          <div class="status-cards" id="status-cards"></div>
+          <!-- Priority section (AM only) -->
+          <div id="priority-section" style="display:none;margin-bottom:24px">
+            <div class="section-header">
+              <div class="section-title-big">Needs Your Review</div>
+            </div>
+            <div class="priority-cards" id="priority-cards"></div>
+          </div>
+          <!-- Orders table -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title" id="table-title">My Orders</div>
+              <div style="display:flex;gap:10px;align-items:center">
+                <button class="btn btn-ghost btn-sm" onclick="clearFilter()" id="clear-filter-btn" style="display:none">✕ Clear filter</button>
+              </div>
+            </div>
+            <div class="card-body" style="padding:0">
+              <div class="filter-bar" style="padding:14px 16px 0">
+                <input type="text" class="search-input" id="search-input" placeholder="Search jobs, clients, subcontractors…" oninput="filterOrders()">
+                <select class="filter-select" id="status-filter" onchange="filterOrders()">
+                  <option value="">All statuses</option>
+                  <option value="draft">Draft</option>
+                  <option value="submitted">Submitted</option>
+                  <option value="needs_changes">Needs Changes</option>
+                  <option value="approved_internally">Approved</option>
+                  <option value="sent_to_client">Sent to Client</option>
+                  <option value="client_approved">Client Approved</option>
+                  <option value="client_declined">Client Declined</option>
+                </select>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Order ID</th>
+                      <th>Job Name</th>
+                      <th>Client</th>
+                      <th>Subcontractor</th>
+                      <th>Status</th>
+                      <th>Date</th>
+                      <th>Sub Cost</th>
+                      <th>Client Price</th>
+                    </tr>
+                  </thead>
+                  <tbody id="orders-tbody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- New Order Form -->
+      <div id="view-new-order" class="view" style="display:none">
+        <div class="topbar">
+          <div class="topbar-title">New Scope Order</div>
+          <div class="topbar-actions">
+            <button class="btn btn-ghost btn-sm" onclick="navTo('dashboard')">← Back</button>
+          </div>
+        </div>
+        <div class="content-area">
+          <div class="form-page">
+            <div class="form-grid">
+              <div>
+                <!-- Job Info -->
+                <div class="card" style="margin-bottom:20px">
+                  <div class="card-header"><div class="card-title">Job Information</div></div>
+                  <div class="card-body">
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label>Job Name <span class="req">*</span></label>
+                        <input type="text" id="f-job-name" placeholder="e.g. Riverside Commons – Unit 4B">
+                      </div>
+                      <div class="form-group">
+                        <label>Client Name <span class="req">*</span></label>
+                        <input type="text" id="f-client-name" placeholder="Full name">
+                      </div>
+                    </div>
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label>Client Email <span class="req">*</span></label>
+                        <input type="email" id="f-client-email" placeholder="client@email.com">
+                      </div>
+                      <div class="form-group">
+                        <label>Client Phone</label>
+                        <input type="tel" id="f-client-phone" placeholder="(512) 000-0000">
+                      </div>
+                    </div>
+                    <div class="form-row full">
+                      <div class="form-group">
+                        <label>Property Address</label>
+                        <input type="text" id="f-address" placeholder="Street address, city, state ZIP">
+                      </div>
+                    </div>
+                    <div class="form-row full">
+                      <div class="form-group">
+                        <label>Account Manager</label>
+                        <select id="f-am">
+                          <option value="Claire Okafor">Claire Okafor</option>
+                          <option value="Jordan Rivera">Jordan Rivera</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Scope Details -->
+                <div class="card" style="margin-bottom:20px">
+                  <div class="card-header"><div class="card-title">Scope Details</div></div>
+                  <div class="card-body">
+                    <div class="form-row full" style="margin-bottom:14px">
+                      <div class="form-group">
+                        <label>Subcontractor Name <span class="req">*</span></label>
+                        <input type="text" id="f-sub-name" placeholder="Subcontractor company">
+                      </div>
+                    </div>
+                    <div class="form-group" style="margin-bottom:14px">
+                      <label>Description of Additional Work <span class="req">*</span></label>
+                      <textarea id="f-work-desc" rows="4" placeholder="Describe the work in detail…"></textarea>
+                    </div>
+                    <div class="form-group">
+                      <label>Reason for Additional Scope</label>
+                      <textarea id="f-reason" rows="2" placeholder="Why is this additional scope needed?"></textarea>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Photos -->
+                <div class="card" style="margin-bottom:20px">
+                  <div class="card-header"><div class="card-title">Photos</div></div>
+                  <div class="card-body">
+                    <div class="photo-grid" id="photo-upload-grid">
+                      <div class="photo-box" id="photo-box-0" onclick="togglePhoto(0)">
+                        <div class="photo-icon">📷</div>
+                        <div class="photo-label">Upload photo</div>
+                        <div class="photo-caption"><input type="text" placeholder="Caption…" onclick="event.stopPropagation()" id="photo-caption-0"></div>
+                      </div>
+                      <div class="photo-box" id="photo-box-1" onclick="togglePhoto(1)">
+                        <div class="photo-icon">📷</div>
+                        <div class="photo-label">Upload photo</div>
+                        <div class="photo-caption"><input type="text" placeholder="Caption…" onclick="event.stopPropagation()" id="photo-caption-1"></div>
+                      </div>
+                      <div class="photo-box" id="photo-box-2" onclick="togglePhoto(2)">
+                        <div class="photo-icon">📷</div>
+                        <div class="photo-label">Upload photo</div>
+                        <div class="photo-caption"><input type="text" placeholder="Caption…" onclick="event.stopPropagation()" id="photo-caption-2"></div>
+                      </div>
+                      <div class="photo-box" id="photo-box-3" onclick="togglePhoto(3)">
+                        <div class="photo-icon">📷</div>
+                        <div class="photo-label">Upload photo</div>
+                        <div class="photo-caption"><input type="text" placeholder="Caption…" onclick="event.stopPropagation()" id="photo-caption-3"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Costs -->
+                <div class="card" style="margin-bottom:20px">
+                  <div class="card-header"><div class="card-title">Costs &amp; Notes</div></div>
+                  <div class="card-body">
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label>Subcontractor Cost <span class="req">*</span></label>
+                        <div class="input-prefix">
+                          <span>$</span>
+                          <input type="number" id="f-sub-cost" placeholder="0.00" min="0" step="0.01" oninput="updateFormSummary()">
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label>Internal Notes</label>
+                      <textarea id="f-internal-notes" rows="3" placeholder="Notes for the Account Manager (not shown to client)…"></textarea>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="display:flex;gap:12px">
+                  <button class="btn btn-ghost" onclick="saveOrderDraft()">Save as Draft</button>
+                  <button class="btn btn-primary" onclick="submitOrder()">Submit to Account Manager →</button>
+                </div>
+              </div>
+
+              <!-- Summary sidebar -->
+              <div class="summary-card">
+                <div class="card">
+                  <div class="card-header"><div class="card-title">Order Summary</div></div>
+                  <div class="card-body">
+                    <div class="summary-line">
+                      <span class="summary-label">Job</span>
+                      <span class="summary-value" id="sum-job">—</span>
+                    </div>
+                    <div class="summary-line">
+                      <span class="summary-label">Client</span>
+                      <span class="summary-value" id="sum-client">—</span>
+                    </div>
+                    <div class="summary-line">
+                      <span class="summary-label">Subcontractor</span>
+                      <span class="summary-value" id="sum-sub">—</span>
+                    </div>
+                    <div class="summary-line" style="border-top:2px solid var(--border);padding-top:14px;margin-top:6px">
+                      <span class="summary-label">Sub Cost</span>
+                      <span class="summary-price" id="sum-cost">$0</span>
+                    </div>
+                    <div style="margin-top:12px;padding:10px;background:var(--mist);border-radius:8px;font-size:12px;color:var(--slate)">
+                      Markup and client price will be set by the Account Manager after review.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order Detail -->
+      <div id="view-order-detail" class="view" style="display:none">
+        <div class="topbar">
+          <div class="topbar-title" id="detail-topbar-title">Order Detail</div>
+          <div class="topbar-actions" id="detail-topbar-actions"></div>
+        </div>
+        <div class="content-area">
+          <div class="detail-page" id="detail-content"></div>
+        </div>
+        <div class="action-bar" id="detail-action-bar"></div>
+      </div>
+
+      <!-- All Orders -->
+      <div id="view-all-orders" class="view" style="display:none">
+        <div class="topbar">
+          <div class="topbar-title">All Orders</div>
+          <div class="topbar-actions">
+            <button class="btn btn-primary btn-sm" onclick="navTo('new-order')" id="all-orders-new-btn">+ New Scope Order</button>
+          </div>
+        </div>
+        <div class="content-area">
+          <div class="card">
+            <div class="card-body" style="padding:0">
+              <div class="filter-bar" style="padding:14px 16px 0">
+                <input type="text" class="search-input" id="all-search-input" placeholder="Search jobs, clients, subcontractors…" oninput="filterAllOrders()">
+                <select class="filter-select" id="all-status-filter" onchange="filterAllOrders()">
+                  <option value="">All statuses</option>
+                  <option value="draft">Draft</option>
+                  <option value="submitted">Submitted</option>
+                  <option value="needs_changes">Needs Changes</option>
+                  <option value="approved_internally">Approved</option>
+                  <option value="sent_to_client">Sent to Client</option>
+                  <option value="client_approved">Client Approved</option>
+                  <option value="client_declined">Client Declined</option>
+                </select>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Order ID</th><th>Job Name</th><th>Client</th><th>Subcontractor</th><th>Submitted By</th><th>Status</th><th>Date</th><th>Sub Cost</th><th>Client Price</th>
+                    </tr>
+                  </thead>
+                  <tbody id="all-orders-tbody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CLIENT VIEW ===== -->
+<div id="screen-client" class="screen">
+  <div class="client-header">
+    <div class="client-header-brand">
+      <div class="logo-mark">SM</div>
+      <span style="font-family:var(--font-display);font-size:16px">Sea Morris</span>
+    </div>
+    <div class="client-secure">🔒 Secure Order Review</div>
+  </div>
+  <div class="client-view-wrap" id="client-view-content"></div>
+</div>
+
+<!-- ===== MODALS ===== -->
+<!-- Send Modal -->
+<div class="modal-overlay" id="modal-send" onclick="closeModalOnOverlay(event,'modal-send')">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Send to Client</div>
+      <button class="modal-close" onclick="closeModal('modal-send')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="email-tabs">
+        <button class="email-tab active" onclick="switchSendTab('email',this)">✉ Email Preview</button>
+        <button class="email-tab" onclick="switchSendTab('sms',this)">💬 SMS Preview</button>
+      </div>
+      <div id="send-email-tab">
+        <div class="email-preview-wrap">
+          <div class="email-preview-inner" id="email-preview-content"></div>
+        </div>
+      </div>
+      <div id="send-sms-tab" style="display:none">
+        <div class="phone-frame">
+          <div class="phone-notch"></div>
+          <div class="phone-screen">
+            <div class="sms-sender">Sea Morris</div>
+            <div class="sms-bubble" id="sms-preview-content"></div>
+          </div>
+        </div>
+        <div class="sms-char" id="sms-char-count"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-send')">Cancel</button>
+      <button class="btn btn-outline" onclick="sendOrder('sms')" id="send-sms-btn" style="display:none">Send SMS</button>
+      <button class="btn btn-primary" onclick="sendOrder('email')" id="send-email-btn">Send Email</button>
+    </div>
+  </div>
+</div>
+
+<!-- Request Changes Modal -->
+<div class="modal-overlay" id="modal-changes" onclick="closeModalOnOverlay(event,'modal-changes')">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Request Changes</div>
+      <button class="modal-close" onclick="closeModal('modal-changes')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13.5px;color:var(--slate);margin-bottom:16px">Describe what needs to be corrected before this order can be approved. The Operations Analyst will be notified.</p>
+      <div class="form-group">
+        <label>Notes for Operations Analyst</label>
+        <textarea id="change-request-notes" rows="4" placeholder="What needs to change?"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-changes')">Cancel</button>
+      <button class="btn btn-amber" onclick="confirmRequestChanges()">Send Request</button>
+    </div>
+  </div>
+</div>
+
+<!-- Approve Modal -->
+<div class="modal-overlay" id="modal-approve" onclick="closeModalOnOverlay(event,'modal-approve')">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-header">
+      <div class="modal-title">Approve Scope Order</div>
+      <button class="modal-close" onclick="closeModal('modal-approve')">✕</button>
+    </div>
+    <div class="modal-body" id="approve-modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-approve')">Cancel</button>
+      <button class="btn btn-green" onclick="confirmApprove()">Confirm Approval ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reject Modal -->
+<div class="modal-overlay" id="modal-reject" onclick="closeModalOnOverlay(event,'modal-reject')">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-header">
+      <div class="modal-title">Reject Order</div>
+      <button class="modal-close" onclick="closeModal('modal-reject')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13.5px;color:var(--slate);margin-bottom:16px">This will permanently reject the order. The Operations Analyst will be notified.</p>
+      <div class="form-group">
+        <label>Reason for rejection</label>
+        <textarea id="reject-notes" rows="3" placeholder="Explain the rejection reason…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-reject')">Cancel</button>
+      <button class="btn btn-red" onclick="confirmReject()">Reject Order</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===================== STATE =====================
+const state = {
+  currentUser: null,
+  currentOrderId: null,
+  dashboardFilter: '',
+  editMode: false,
+  sendTab: 'email',
+  orders: [
+    {
+      id:'SMO-2024-001', jobName:'Riverside Commons – Unit 4B', clientName:'Jennifer Harmon',
+      clientEmail:'j.harmon@email.com', clientPhone:'(512) 334-8821',
+      address:'2201 Riverside Dr, Unit 4B, Austin TX 78741', subName:'Apex Concrete & Masonry',
+      submittedBy:'Marcus Webb', am:'Claire Okafor',
+      workDesc:'Full replacement of deteriorated deck boards and structural joists on rear balcony. Existing lumber showed advanced dry rot upon demo of original scope.',
+      reason:'Hidden rot discovered during original scope demolition — existing structure not visible until walls were opened.',
+      subCost:3200, markup:25, clientPrice:4000, status:'client_approved', photos:3,
+      internalNotes:'Apex confirmed material availability. Rush job — schedule ASAP.',
+      clientMessage:'During our scheduled work, we uncovered significant wood rot beneath the deck surface that poses a safety risk. We recommend replacing the deck joists and boards to bring the balcony back to safe, code-compliant condition.',
+      dateSubmitted:'2024-11-04',
+      auditTrail:[
+        {who:'Marcus Webb',action:'Created order',time:'Nov 4, 2024 9:12am',type:'gray',note:null},
+        {who:'Marcus Webb',action:'Submitted for Account Manager review',time:'Nov 4, 2024 9:48am',type:'blue',note:null},
+        {who:'Claire Okafor',action:'Reviewed order',time:'Nov 4, 2024 11:20am',type:'blue',note:null},
+        {who:'Claire Okafor',action:'Approved internally',time:'Nov 4, 2024 11:34am',type:'green',note:null},
+        {who:'Claire Okafor',action:'Sent to Jennifer Harmon via email',time:'Nov 4, 2024 11:36am',type:'green',note:null},
+        {who:'Jennifer Harmon',action:'Approved the scope',time:'Nov 4, 2024 2:15pm',type:'green',note:'Client responded via email approval link.'},
+      ]
+    },
+    {
+      id:'SMO-2024-002', jobName:'Mesa Verde HOA – Bldg C', clientName:'Robert Delgado',
+      clientEmail:'rdelgado@mesaverde.com', clientPhone:'(737) 209-4455',
+      address:'1840 Mesa Verde Blvd, Bldg C, Austin TX 78749', subName:'Lone Star Foundation LLC',
+      submittedBy:'Priya Nair', am:'Claire Okafor',
+      workDesc:'Epoxy injection and carbon fiber stapling of three foundation cracks discovered during plumbing rough-in. Cracks measured 1/8" to 3/16" width.',
+      reason:'Foundation cracks exposed during plumbing rough-in — not visible until demo.',
+      subCost:2100, markup:30, clientPrice:2730, status:'sent_to_client', photos:4,
+      internalNotes:'Lone Star can start within 48 hours of approval.',
+      clientMessage:'While completing the approved plumbing work, our crew identified active foundation cracks that require immediate attention. The repair involves injecting structural epoxy and applying carbon fiber straps — a proven, minimally invasive solution.',
+      dateSubmitted:'2024-11-12',
+      auditTrail:[
+        {who:'Priya Nair',action:'Created order',time:'Nov 12, 2024 8:30am',type:'gray',note:null},
+        {who:'Priya Nair',action:'Submitted for Account Manager review',time:'Nov 12, 2024 9:00am',type:'blue',note:null},
+        {who:'Claire Okafor',action:'Approved internally',time:'Nov 12, 2024 10:45am',type:'green',note:null},
+        {who:'Claire Okafor',action:'Sent to Robert Delgado via email',time:'Nov 12, 2024 10:52am',type:'green',note:null},
+      ]
+    },
+    {
+      id:'SMO-2024-003', jobName:'Barton Hills Renovation – Master Bath', clientName:'Sarah Chen',
+      clientEmail:'s.chen@gmail.com', clientPhone:'(512) 887-3310',
+      address:'4412 Barton Hills Dr, Austin TX 78704', subName:'PrimeElec Services',
+      submittedBy:'Marcus Webb', am:'Claire Okafor',
+      workDesc:'Upgrade of existing 100A sub-panel to 200A to support new radiant floor heating and steam shower unit. Current panel is at capacity.',
+      reason:'Existing electrical panel insufficient for approved scope equipment load.',
+      subCost:2800, markup:20, clientPrice:3360, status:'approved_internally', photos:2,
+      internalNotes:'PrimeElec quoted two options — recommend the 200A upgrade for future-proofing.',
+      clientMessage:'To safely support the radiant floor heating and steam shower we\'re installing, your electrical sub-panel needs to be upgraded. This is a code requirement and ensures safe, reliable operation of all new systems.',
+      dateSubmitted:'2024-11-18',
+      auditTrail:[
+        {who:'Marcus Webb',action:'Created order',time:'Nov 18, 2024 10:00am',type:'gray',note:null},
+        {who:'Marcus Webb',action:'Submitted for Account Manager review',time:'Nov 18, 2024 10:30am',type:'blue',note:null},
+        {who:'Claire Okafor',action:'Approved internally',time:'Nov 18, 2024 2:00pm',type:'green',note:null},
+      ]
+    },
+    {
+      id:'SMO-2024-004', jobName:'Domain North – Suite 210', clientName:'TechFlow Inc.',
+      clientEmail:'facilities@techflow.io', clientPhone:'(512) 446-7700',
+      address:'9600 N MoPac Expwy, Suite 210, Austin TX 78759', subName:'Gulf Coast Roofing',
+      submittedBy:'Priya Nair', am:'Claire Okafor',
+      workDesc:'Rerouting of two roof drains currently discharging directly onto HVAC equipment pad. Requires new 4" PVC runs totaling approx. 35 linear feet.',
+      reason:'Roof drain discharge causing standing water on HVAC pad, risking equipment damage and voiding warranty.',
+      subCost:1280, markup:25, clientPrice:1600, status:'needs_changes', photos:2,
+      internalNotes:'AM requested clearer client-facing explanation and better photo documentation.',
+      clientMessage:'Roof drains are discharging near HVAC units.',
+      changeRequest:'Please add more detail about the equipment damage risk in the client message. Also confirm photo 2 clearly shows the drain discharge point — current image is too dark.',
+      dateSubmitted:'2024-11-20',
+      auditTrail:[
+        {who:'Priya Nair',action:'Created order',time:'Nov 20, 2024 8:15am',type:'gray',note:null},
+        {who:'Priya Nair',action:'Submitted for Account Manager review',time:'Nov 20, 2024 8:45am',type:'blue',note:null},
+        {who:'Claire Okafor',action:'Requested changes',time:'Nov 20, 2024 11:30am',type:'amber',note:'Please add more detail about the equipment damage risk in the client message. Also confirm photo 2 clearly shows the drain discharge point.'},
+      ]
+    },
+    {
+      id:'SMO-2024-005', jobName:'Lamar Lofts – Unit 112', clientName:'David Park',
+      clientEmail:'d.park@email.com', clientPhone:'(512) 228-9934',
+      address:'3500 S Lamar Blvd, Unit 112, Austin TX 78704', subName:'CoolAir HVAC Solutions',
+      submittedBy:'Marcus Webb', am:'Claire Okafor',
+      workDesc:'Extension of existing supply duct run by 22 feet to service new home office addition. Includes new diffuser, damper, and rigid duct fabrication.',
+      reason:'New room addition requires dedicated HVAC supply — existing system cannot reach.',
+      subCost:4100, markup:22, clientPrice:5002, status:'submitted', photos:3,
+      internalNotes:'CoolAir confirmed 3-day installation window.',
+      clientMessage:'',
+      dateSubmitted:'2024-11-21',
+      auditTrail:[
+        {who:'Marcus Webb',action:'Created order',time:'Nov 21, 2024 9:00am',type:'gray',note:null},
+        {who:'Marcus Webb',action:'Submitted for Account Manager review',time:'Nov 21, 2024 9:30am',type:'blue',note:null},
+      ]
+    },
+    {
+      id:'SMO-2024-006', jobName:'Oak Cliff Estates – Lot 7', clientName:'Maria Espinoza',
+      clientEmail:'m.espinoza@email.com', clientPhone:'(512) 554-0218',
+      address:'7701 Oak Cliff Dr, Austin TX 78745', subName:'Texan Tile & Stone',
+      submittedBy:'Marcus Webb', am:null,
+      workDesc:'', reason:'', subCost:0, markup:20, clientPrice:0, status:'draft', photos:0,
+      internalNotes:'', clientMessage:'',
+      dateSubmitted:'2024-11-22',
+      auditTrail:[
+        {who:'Marcus Webb',action:'Created order (draft)',time:'Nov 22, 2024 3:00pm',type:'gray',note:null},
+      ]
+    }
+  ]
+};
+
+// ===================== HELPERS =====================
+function fmt(n){return '$'+Number(n||0).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0})}
+function badgeHtml(status){
+  const labels={draft:'Draft',submitted:'Submitted',needs_changes:'Needs Changes',approved_internally:'Approved',sent_to_client:'Sent to Client',client_approved:'Client Approved',client_declined:'Client Declined'};
+  return `<span class="badge badge-${status}">${labels[status]||status}</span>`;
+}
+function getOrder(id){return state.orders.find(o=>o.id===id)}
+function now(){const d=new Date();return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+' '+d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}
+
+// ===================== NAVIGATION =====================
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function showView(id){
+  document.querySelectorAll('.view').forEach(v=>v.style.display='none');
+  document.getElementById(id).style.display='block';
+  document.querySelectorAll('[data-nav]').forEach(n=>n.classList.remove('active'));
+  const map={'view-dashboard':'dashboard','view-new-order':'new-order','view-all-orders':'all-orders','view-order-detail':'dashboard'};
+  const nav=document.querySelector(`[data-nav="${map[id]}"]`);
+  if(nav)nav.classList.add('active');
+}
+function navTo(dest){
+  if(dest==='dashboard'){showView('view-dashboard');renderDashboard();}
+  else if(dest==='new-order'){showView('view-new-order');resetForm();}
+  else if(dest==='all-orders'){showView('view-all-orders');renderAllOrders();}
+}
+function openOrder(id){
+  state.currentOrderId=id;
+  state.editMode=false;
+  showView('view-order-detail');
+  renderOrderDetail();
+}
+
+// ===================== LOGIN =====================
+let selectedRole='analyst';
+function selectRole(role){
+  selectedRole=role;
+  document.querySelectorAll('.role-card').forEach(c=>c.classList.remove('selected'));
+  document.querySelector(`[data-role="${role}"]`).classList.add('selected');
+  const emails={analyst:'marcus@seamorris.com',am:'claire@seamorris.com',admin:'admin@seamorris.com',client:''};
+  document.getElementById('login-email').value=emails[role]||'';
+}
+function quickLogin(role){
+  selectedRole=role;
+  doLogin();
+}
+function doLogin(){
+  const roles={
+    analyst:{name:'Marcus Webb',role:'Operations Analyst',initials:'MW',showNew:true},
+    am:{name:'Claire Okafor',role:'Account Manager',initials:'CO',showNew:false},
+    admin:{name:'Admin User',role:'Administrator',initials:'AD',showNew:true},
+    client:{name:'Jennifer Harmon',role:'Client',initials:'JH',showNew:false}
+  };
+  if(selectedRole==='client'){
+    state.currentUser={...roles.client,roleKey:'client'};
+    renderClientView('SMO-2024-001');
+    showScreen('screen-client');
+    return;
+  }
+  const u=roles[selectedRole];
+  state.currentUser={...u,roleKey:selectedRole};
+  document.getElementById('sidebar-name').textContent=u.name;
+  document.getElementById('sidebar-role').textContent=u.role;
+  document.getElementById('sidebar-avatar').textContent=u.initials;
+  // Show/hide new order nav
+  document.getElementById('nav-new-order').style.display=u.showNew||selectedRole==='admin'?'flex':'none';
+  document.getElementById('topbar-new-btn').style.display=u.showNew||selectedRole==='admin'?'inline-flex':'none';
+  showScreen('screen-app');
+  navTo('dashboard');
+}
+function doLogout(){
+  state.currentUser=null;
+  selectedRole='analyst';
+  selectRole('analyst');
+  showScreen('screen-login');
+}
+
+// ===================== DASHBOARD =====================
+function renderDashboard(){
+  const role=state.currentUser?.roleKey;
+  document.getElementById('dash-title').textContent=role==='am'?'Account Manager Dashboard':role==='admin'?'Admin Dashboard':'My Dashboard';
+  renderStatusCards();
+  renderOrdersTable();
+  if(role==='am'||role==='admin'){
+    document.getElementById('priority-section').style.display='block';
+    document.getElementById('table-title').textContent='All Orders';
+    renderPriorityCards();
+  } else {
+    document.getElementById('priority-section').style.display='none';
+    document.getElementById('table-title').textContent='My Orders';
+  }
+}
+function getFilteredOrders(){
+  const role=state.currentUser?.roleKey;
+  const search=document.getElementById('search-input')?.value.toLowerCase()||'';
+  const statusF=document.getElementById('status-filter')?.value||'';
+  let orders=state.orders;
+  if(role==='analyst')orders=orders.filter(o=>o.submittedBy==='Marcus Webb');
+  if(state.dashboardFilter)orders=orders.filter(o=>o.status===state.dashboardFilter);
+  if(statusF)orders=orders.filter(o=>o.status===statusF);
+  if(search)orders=orders.filter(o=>(o.jobName+o.clientName+o.subName+o.id).toLowerCase().includes(search));
+  return orders;
+}
+function renderStatusCards(){
+  const statuses=[
+    {key:'draft',label:'Draft'},
+    {key:'submitted',label:'Submitted'},
+    {key:'needs_changes',label:'Needs Changes'},
+    {key:'approved_internally',label:'Approved'},
+    {key:'sent_to_client',label:'Sent to Client'},
+    {key:'client_approved',label:'Client Approved'},
+  ];
+  const role=state.currentUser?.roleKey;
+  let base=state.orders;
+  if(role==='analyst')base=base.filter(o=>o.submittedBy==='Marcus Webb');
+  const counts={};
+  statuses.forEach(s=>counts[s.key]=base.filter(o=>o.status===s.key).length);
+  const container=document.getElementById('status-cards');
+  container.innerHTML=statuses.map(s=>`
+    <div class="status-card ${state.dashboardFilter===s.key?'active-filter':''}" onclick="setStatusFilter('${s.key}')">
+      <div class="status-card-count">${counts[s.key]}</div>
+      <div class="status-card-label">${s.label}</div>
+    </div>`).join('');
+}
+function setStatusFilter(key){
+  state.dashboardFilter=state.dashboardFilter===key?'':key;
+  const clearBtn=document.getElementById('clear-filter-btn');
+  if(clearBtn)clearBtn.style.display=state.dashboardFilter?'inline-flex':'none';
+  renderStatusCards();
+  renderOrdersTable();
+}
+function clearFilter(){state.dashboardFilter='';renderStatusCards();renderOrdersTable();document.getElementById('clear-filter-btn').style.display='none';}
+function filterOrders(){renderOrdersTable();}
+function renderOrdersTable(){
+  const orders=getFilteredOrders();
+  const tbody=document.getElementById('orders-tbody');
+  if(!tbody)return;
+  if(!orders.length){
+    tbody.innerHTML=`<tr><td colspan="8"><div class="empty-state"><div class="empty-state-icon">📭</div><p>No orders match your filters.</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML=orders.map(o=>`
+    <tr onclick="openOrder('${o.id}')">
+      <td class="order-id-cell">${o.id}</td>
+      <td style="font-weight:500">${o.jobName}</td>
+      <td>${o.clientName}</td>
+      <td>${o.subName||'—'}</td>
+      <td>${badgeHtml(o.status)}</td>
+      <td style="color:var(--slate);font-size:13px">${o.dateSubmitted}</td>
+      <td class="col-amt">${o.subCost?fmt(o.subCost):'—'}</td>
+      <td class="col-amt">${o.clientPrice?fmt(o.clientPrice):'—'}</td>
+    </tr>`).join('');
+}
+function renderPriorityCards(){
+  const orders=state.orders.filter(o=>o.status==='submitted'||o.status==='needs_changes');
+  const container=document.getElementById('priority-cards');
+  if(!orders.length){
+    container.innerHTML=`<div style="color:var(--slate);font-size:14px;padding:8px 0">✓ No orders currently awaiting review.</div>`;
+    return;
+  }
+  container.innerHTML=orders.map(o=>`
+    <div class="priority-card ${o.status==='needs_changes'?'needs-changes':''}" onclick="openOrder('${o.id}')">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px">
+        <div class="priority-card-job">${o.jobName}</div>
+        ${badgeHtml(o.status)}
+      </div>
+      <div class="priority-card-meta">${o.clientName} · ${o.subName}</div>
+      <div style="font-size:12.5px;color:var(--slate);margin-bottom:4px">${o.workDesc?o.workDesc.substring(0,80)+'…':''}</div>
+      <div class="priority-card-footer">
+        <div class="priority-card-cost">${fmt(o.subCost)} sub cost</div>
+        <button class="btn btn-primary btn-sm">Review →</button>
+      </div>
+    </div>`).join('');
+}
+
+// ===================== ALL ORDERS =====================
+function renderAllOrders(){
+  const search=document.getElementById('all-search-input')?.value.toLowerCase()||'';
+  const statusF=document.getElementById('all-status-filter')?.value||'';
+  let orders=state.orders;
+  if(statusF)orders=orders.filter(o=>o.status===statusF);
+  if(search)orders=orders.filter(o=>(o.jobName+o.clientName+o.subName+o.id).toLowerCase().includes(search));
+  const tbody=document.getElementById('all-orders-tbody');
+  if(!tbody)return;
+  tbody.innerHTML=orders.map(o=>`
+    <tr onclick="openOrder('${o.id}')">
+      <td class="order-id-cell">${o.id}</td>
+      <td style="font-weight:500">${o.jobName}</td>
+      <td>${o.clientName}</td>
+      <td>${o.subName||'—'}</td>
+      <td style="color:var(--slate)">${o.submittedBy}</td>
+      <td>${badgeHtml(o.status)}</td>
+      <td style="color:var(--slate);font-size:13px">${o.dateSubmitted}</td>
+      <td class="col-amt">${o.subCost?fmt(o.subCost):'—'}</td>
+      <td class="col-amt">${o.clientPrice?fmt(o.clientPrice):'—'}</td>
+    </tr>`).join('');
+  // Show/hide new btn for AM
+  const newBtn=document.getElementById('all-orders-new-btn');
+  if(newBtn)newBtn.style.display=state.currentUser?.roleKey==='am'?'none':'inline-flex';
+}
+function filterAllOrders(){renderAllOrders();}
+
+// ===================== ORDER DETAIL =====================
+const pipelineSteps=[
+  {key:'draft',label:'Draft'},
+  {key:'submitted',label:'Submitted'},
+  {key:'needs_changes',label:'Changes Requested'},
+  {key:'approved_internally',label:'Approved'},
+  {key:'sent_to_client',label:'Sent to Client'},
+  {key:'client_approved',label:'Client Response'},
+];
+function getPipelineIndex(status){
+  const map={draft:0,submitted:1,needs_changes:2,approved_internally:3,sent_to_client:4,client_approved:5,client_declined:5};
+  return map[status]??0;
+}
+function renderOrderDetail(){
+  const o=getOrder(state.currentOrderId);
+  if(!o)return;
+  const role=state.currentUser?.roleKey;
+  const idx=getPipelineIndex(o.status);
+  document.getElementById('detail-topbar-title').textContent=o.id+' — '+o.jobName;
+  // Pipeline
+  const pipelineHtml=`<div class="pipeline">${pipelineSteps.map((s,i)=>{
+    const cls=i<idx?'done':i===idx?'active':'';
+    return `<div class="pipeline-step ${cls}"><div class="step-dot">${i<idx?'✓':(i+1)}</div><div class="step-label">${s.label}</div></div>`;
+  }).join('')}</div>`;
+  // Photos
+  const photoColors=['linear-gradient(135deg,#C8DFF8,#93C6EE)','linear-gradient(135deg,#B7D9C4,#7CBFA2)','linear-gradient(135deg,#F0C070,#E8A030)','linear-gradient(135deg,#C4A8E8,#9B72D0)'];
+  const photoCaptions=['Overview of affected area','Close-up detail view','Full scope area','Before work began'];
+  let photosHtml='<div class="photos-grid">';
+  for(let i=0;i<4;i++){
+    if(i<(o.photos||0)){
+      photosHtml+=`<div><div class="photo-display" style="background:${photoColors[i]}"><span style="font-size:30px">🖼</span></div><div class="photo-display-caption">${photoCaptions[i]}</div></div>`;
+    } else {
+      photosHtml+=`<div><div class="photo-display" style="background:#F0F4F8"><div class="photo-placeholder"><span>📷</span><span>No photo</span></div></div><div class="photo-display-caption" style="color:var(--border)">—</div></div>`;
+    }
+  }
+  photosHtml+='</div>';
+
+  // Financials
+  const markupAmt=(o.clientPrice||0)-(o.subCost||0);
+  let financialsHtml=`<div class="financials-card">
+    <div class="form-section-title" style="margin-bottom:14px">Financials</div>
+    ${state.editMode&&(role==='am'||role==='admin')?`
+      <div class="edit-mode-banner">✏️ Editing mode — changes save when you click Save.</div>
+      <div class="markup-editor">
+        <div class="form-row" style="margin-bottom:10px">
+          <div class="form-group">
+            <label>Subcontractor Cost</label>
+            <div class="input-prefix"><span>$</span><input type="number" id="edit-sub-cost" value="${o.subCost}" oninput="recalcMarkup()"></div>
+          </div>
+        </div>
+        <label style="margin-bottom:6px;display:block">Markup Percentage</label>
+        <div class="markup-row">
+          <input type="range" class="markup-slider" id="markup-slider" min="0" max="50" step="1" value="${o.markup}" oninput="recalcMarkup()">
+          <div class="markup-pct" id="markup-pct-display">${o.markup}%</div>
+        </div>
+        <div class="financials-row">
+          <span class="financials-label">Final Client Price</span>
+          <span class="financials-total" id="edit-client-price">${fmt(o.clientPrice)}</span>
+        </div>
+        <div class="financials-row">
+          <span class="financials-label">Markup Amount</span>
+          <span class="financials-val" id="edit-markup-amt" style="color:var(--green)">+${fmt(markupAmt)}</span>
+        </div>
+      </div>
+    `:`
+    <div class="financials-row"><span class="financials-label">Subcontractor Cost</span><span class="financials-val">${fmt(o.subCost)}</span></div>
+    <div class="financials-row"><span class="financials-label">Markup</span><span class="financials-val">${o.markup}%</span></div>
+    <div class="financials-row"><span class="financials-label">Markup Amount</span><span class="financials-val" style="color:var(--green)">+${fmt(markupAmt)}</span></div>
+    <div class="financials-row"><span class="financials-total-label">Final Client Price</span><span class="financials-total">${fmt(o.clientPrice)}</span></div>
+    `}
+  </div>`;
+
+  // Client message
+  let clientMsgHtml='';
+  if(state.editMode&&(role==='am'||role==='admin')){
+    clientMsgHtml=`<div style="margin-bottom:20px">
+      <div class="message-box-header" style="margin-bottom:8px">✉ Client-Facing Message</div>
+      <textarea id="edit-client-msg" rows="4" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:8px;font-family:var(--font-body);font-size:14px;line-height:1.6">${o.clientMessage||''}</textarea>
+    </div>`;
+  } else {
+    clientMsgHtml=`<div class="message-box"><div class="message-box-header">✉ Client-Facing Message</div>${o.clientMessage||'<em style="color:var(--silver)">No client message set yet.</em>'}</div>`;
+  }
+
+  // Change request note
+  let changeNoteHtml='';
+  if(o.status==='needs_changes'&&o.changeRequest){
+    changeNoteHtml=`<div class="notes-box" style="margin-bottom:20px"><div class="message-box-header" style="color:var(--amber)">⚠ Changes Requested by ${o.am||'Account Manager'}</div>${o.changeRequest}</div>`;
+  }
+
+  // Audit trail
+  const dotClass={gray:'audit-dot-gray',blue:'audit-dot-blue',green:'audit-dot-green',amber:'audit-dot-amber',red:'audit-dot-red'};
+  const auditHtml=`<div class="audit-trail">${(o.auditTrail||[]).map(e=>`
+    <div class="audit-entry">
+      <div class="audit-dot ${dotClass[e.type]||'audit-dot-gray'}">●</div>
+      <div class="audit-content">
+        <div class="audit-who">${e.who}</div>
+        <div class="audit-action">${e.action}</div>
+        <div class="audit-time">${e.time}</div>
+        ${e.note?`<div class="audit-note">${e.note}</div>`:''}
+      </div>
+    </div>`).join('')}</div>`;
+
+  const content=`
+    <div class="detail-header">
+      <div class="breadcrumb" onclick="navTo('dashboard')">← Dashboard / <span>${o.id}</span></div>
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:4px">
+        <div class="detail-title">${o.id}</div>
+        ${badgeHtml(o.status)}
+      </div>
+      <div class="detail-subtitle">${o.jobName}</div>
+    </div>
+    ${pipelineHtml}
+    ${changeNoteHtml}
+    <div class="info-grid">
+      <div class="info-block">
+        <div class="info-block-title">Job &amp; Property</div>
+        <div class="info-row"><span class="info-key">Job Name</span><span class="info-val">${o.jobName}</span></div>
+        <div class="info-row"><span class="info-key">Property Address</span><span class="info-val">${o.address||'—'}</span></div>
+        <div class="info-row"><span class="info-key">Subcontractor</span><span class="info-val">${o.subName}</span></div>
+        <div class="info-row"><span class="info-key">Date Submitted</span><span class="info-val">${o.dateSubmitted}</span></div>
+      </div>
+      <div class="info-block">
+        <div class="info-block-title">People</div>
+        <div class="info-row"><span class="info-key">Client</span><span class="info-val">${o.clientName}</span></div>
+        <div class="info-row"><span class="info-key">Client Email</span><span class="info-val">${o.clientEmail}</span></div>
+        <div class="info-row"><span class="info-key">Client Phone</span><span class="info-val">${o.clientPhone||'—'}</span></div>
+        <div class="info-row"><span class="info-key">Submitted By</span><span class="info-val">${o.submittedBy}</span></div>
+        <div class="info-row"><span class="info-key">Account Manager</span><span class="info-val">${o.am||'Unassigned'}</span></div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-header"><div class="card-title">Scope of Work</div></div>
+      <div class="card-body">
+        <div style="font-size:14px;line-height:1.7;color:var(--ink);margin-bottom:12px">${o.workDesc||'<em style="color:var(--silver)">No description entered.</em>'}</div>
+        ${o.reason?`<div style="padding:10px 14px;background:var(--mist);border-radius:8px;border-left:3px solid var(--silver);font-size:13px;color:var(--slate)"><strong>Why additional scope:</strong> ${o.reason}</div>`:''}
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-header"><div class="card-title">Photos (${o.photos||0})</div></div>
+      <div class="card-body">${photosHtml}</div>
+    </div>
+    ${financialsHtml}
+    ${clientMsgHtml}
+    ${o.internalNotes?`<div class="notes-box"><div class="message-box-header" style="color:var(--amber)">🔒 Internal Notes</div>${o.internalNotes}</div>`:''}
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-header"><div class="card-title">Audit Trail</div></div>
+      <div class="card-body">${auditHtml}</div>
+    </div>
+  `;
+  document.getElementById('detail-content').innerHTML=content;
+  renderActionBar(o,role);
+}
+
+function renderActionBar(o,role){
+  const bar=document.getElementById('detail-action-bar');
+  const topActions=document.getElementById('detail-topbar-actions');
+  let html='';
+  let topHtml='<button class="btn btn-ghost btn-sm" onclick="navTo(\'dashboard\')">← Back</button>';
+
+  if(role==='analyst'||role==='admin'){
+    if(o.status==='draft'||o.status==='needs_changes'){
+      html+=`<button class="btn btn-outline" onclick="editDraft()">✏ Edit Order</button>`;
+      if(o.status==='draft'){
+        html+=`<button class="btn btn-primary" onclick="submitExistingOrder()">Submit to Account Manager →</button>`;
+      } else {
+        html+=`<button class="btn btn-primary" onclick="submitExistingOrder()">Resubmit →</button>`;
+      }
+    }
+  }
+  if(role==='am'||role==='admin'){
+    if(o.status==='submitted'||o.status==='needs_changes'){
+      if(!state.editMode){
+        html+=`<button class="btn btn-ghost" onclick="toggleEditMode()">✏ Edit Pricing &amp; Message</button>`;
+        html+=`<button class="btn btn-ghost" onclick="openModal('modal-changes')">⚠ Request Changes</button>`;
+        html+=`<button class="btn btn-ghost" onclick="openModal('modal-reject')">✕ Reject</button>`;
+        html+=`<button class="btn btn-green" onclick="openApproveModal()">✓ Approve</button>`;
+      } else {
+        html+=`<button class="btn btn-ghost" onclick="cancelEditMode()">Cancel</button>`;
+        html+=`<button class="btn btn-primary" onclick="saveEditMode()">Save Changes</button>`;
+      }
+    }
+    if(o.status==='approved_internally'){
+      if(!state.editMode){
+        html+=`<button class="btn btn-ghost" onclick="toggleEditMode()">✏ Edit Pricing &amp; Message</button>`;
+        html+=`<div class="action-bar-info">Order approved — ready to send to client</div>`;
+        html+=`<button class="btn btn-primary" onclick="openSendModal()">✉ Send to Client</button>`;
+      } else {
+        html+=`<button class="btn btn-ghost" onclick="cancelEditMode()">Cancel</button>`;
+        html+=`<button class="btn btn-primary" onclick="saveEditMode()">Save Changes</button>`;
+      }
+    }
+    if(o.status==='sent_to_client'){
+      html+=`<div class="action-bar-info">Awaiting client response</div>`;
+      html+=`<button class="btn btn-outline" onclick="openSendModal()">Resend</button>`;
+    }
+  }
+  if(!html&&o.status!=='client_approved'&&o.status!=='client_declined'){
+    html=`<div class="action-bar-info">Order ID: ${o.id}</div>`;
+  } else if(o.status==='client_approved'){
+    html=`<div class="action-bar-info" style="color:var(--green);font-weight:600">✓ Client approved this scope order</div>`;
+  } else if(o.status==='client_declined'){
+    html=`<div class="action-bar-info" style="color:var(--red)">✕ Client declined this scope order</div>`;
+  }
+  bar.innerHTML=html;
+  topActions.innerHTML=topHtml;
+}
+
+function recalcMarkup(){
+  const cost=parseFloat(document.getElementById('edit-sub-cost')?.value)||0;
+  const markup=parseInt(document.getElementById('markup-slider')?.value)||0;
+  const price=cost*(1+markup/100);
+  const el=document.getElementById('markup-pct-display');
+  const pp=document.getElementById('edit-client-price');
+  const ma=document.getElementById('edit-markup-amt');
+  if(el)el.textContent=markup+'%';
+  if(pp)pp.textContent=fmt(price);
+  if(ma)ma.textContent='+'+fmt(price-cost);
+}
+
+function toggleEditMode(){state.editMode=true;renderOrderDetail();}
+function cancelEditMode(){state.editMode=false;renderOrderDetail();}
+function saveEditMode(){
+  const o=getOrder(state.currentOrderId);
+  const costEl=document.getElementById('edit-sub-cost');
+  const sliderEl=document.getElementById('markup-slider');
+  const msgEl=document.getElementById('edit-client-msg');
+  if(costEl)o.subCost=parseFloat(costEl.value)||0;
+  if(sliderEl){o.markup=parseInt(sliderEl.value)||0;o.clientPrice=o.subCost*(1+o.markup/100);}
+  if(msgEl)o.clientMessage=msgEl.value;
+  o.auditTrail.push({who:state.currentUser.name,action:'Updated pricing and client message',time:now(),type:'blue',note:null});
+  state.editMode=false;
+  renderOrderDetail();
+}
+
+function openApproveModal(){
+  const o=getOrder(state.currentOrderId);
+  document.getElementById('approve-modal-body').innerHTML=`
+    <div style="text-align:center;padding:12px 0">
+      <div style="font-size:40px;margin-bottom:12px">✓</div>
+      <div style="font-weight:700;font-size:16px;color:var(--navy);margin-bottom:8px">${o.id}</div>
+      <div style="color:var(--slate);margin-bottom:4px">${o.jobName}</div>
+      <div style="color:var(--slate);margin-bottom:20px">${o.clientName}</div>
+      <div style="background:var(--green-bg);border-radius:10px;padding:14px;border:1.5px solid #a7d7c1">
+        <div style="font-size:12px;color:var(--slate);text-transform:uppercase;letter-spacing:0.06em">Client Price</div>
+        <div style="font-family:var(--font-display);font-size:28px;color:var(--green)">${fmt(o.clientPrice)}</div>
+      </div>
+    </div>`;
+  openModal('modal-approve');
+}
+function confirmApprove(){
+  const o=getOrder(state.currentOrderId);
+  o.status='approved_internally';
+  o.auditTrail.push({who:state.currentUser.name,action:'Approved internally',time:now(),type:'green',note:null});
+  closeModal('modal-approve');
+  state.editMode=false;
+  renderOrderDetail();
+}
+function confirmRequestChanges(){
+  const notes=document.getElementById('change-request-notes').value;
+  const o=getOrder(state.currentOrderId);
+  o.status='needs_changes';
+  o.changeRequest=notes||'Please review and resubmit.';
+  o.auditTrail.push({who:state.currentUser.name,action:'Requested changes',time:now(),type:'amber',note:notes||null});
+  document.getElementById('change-request-notes').value='';
+  closeModal('modal-changes');
+  state.editMode=false;
+  renderOrderDetail();
+}
+function confirmReject(){
+  const notes=document.getElementById('reject-notes').value;
+  const o=getOrder(state.currentOrderId);
+  o.status='client_declined';
+  o.auditTrail.push({who:state.currentUser.name,action:'Rejected order',time:now(),type:'red',note:notes||null});
+  document.getElementById('reject-notes').value='';
+  closeModal('modal-reject');
+  state.editMode=false;
+  renderOrderDetail();
+}
+function editDraft(){
+  // Pre-fill new order form with existing order data and switch to it
+  const o=getOrder(state.currentOrderId);
+  showView('view-new-order');
+  setTimeout(()=>{
+    document.getElementById('f-job-name').value=o.jobName;
+    document.getElementById('f-client-name').value=o.clientName;
+    document.getElementById('f-client-email').value=o.clientEmail;
+    document.getElementById('f-client-phone').value=o.clientPhone||'';
+    document.getElementById('f-address').value=o.address||'';
+    document.getElementById('f-sub-name').value=o.subName;
+    document.getElementById('f-work-desc').value=o.workDesc;
+    document.getElementById('f-reason').value=o.reason||'';
+    document.getElementById('f-sub-cost').value=o.subCost||'';
+    document.getElementById('f-internal-notes').value=o.internalNotes||'';
+    updateFormSummary();
+  },50);
+}
+function submitExistingOrder(){
+  const o=getOrder(state.currentOrderId);
+  const prev=o.status;
+  o.status='submitted';
+  o.auditTrail.push({who:state.currentUser.name,action:prev==='needs_changes'?'Resubmitted for review':'Submitted for Account Manager review',time:now(),type:'blue',note:null});
+  renderOrderDetail();
+}
+
+// ===================== SEND MODAL =====================
+function openSendModal(){
+  const o=getOrder(state.currentOrderId);
+  buildEmailPreview(o);
+  buildSmsPreview(o);
+  openModal('modal-send');
+}
+function buildEmailPreview(o){
+  document.getElementById('email-preview-content').innerHTML=`
+    <div class="email-preview-header">
+      <div class="logo-mark">SM</div>
+      <span>Sea Morris</span>
+    </div>
+    <div class="email-meta">
+      <div><strong>From:</strong> Sea Morris &lt;orders@seamorris.com&gt;</div>
+      <div><strong>To:</strong> ${o.clientEmail}</div>
+      <div><strong>Subject:</strong> Additional Work Authorization – ${o.jobName}</div>
+    </div>
+    <div class="email-body">
+      <div class="email-h1">Additional Scope Authorization Required</div>
+      <div class="email-info-box">
+        <div><strong>Job:</strong> ${o.jobName}</div>
+        <div><strong>Property:</strong> ${o.address||'—'}</div>
+        <div><strong>Order:</strong> ${o.id}</div>
+      </div>
+      <p style="font-size:13px;line-height:1.6;margin-bottom:12px">${o.clientMessage||o.workDesc}</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+        ${[0,1,2,3].map(i=>i<(o.photos||0)?`<div style="width:70px;height:52px;background:linear-gradient(135deg,#C8DFF8,#93C6EE);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:16px">🖼</div>`:``).join('')}
+      </div>
+      <div class="email-price-box">
+        <div class="lbl">Total Client Investment</div>
+        <div class="amt">${fmt(o.clientPrice)}</div>
+        <div style="font-size:11px;opacity:0.6;margin-top:4px">Includes labor, materials &amp; coordination</div>
+      </div>
+      <div class="email-btns">
+        <div class="email-btn-approve">✓ Approve Scope</div>
+        <div class="email-btn-decline">Decline</div>
+      </div>
+    </div>
+    <div class="email-footer">Questions? Contact ${o.am||'your Account Manager'} · claire@seamorris.com · (512) 555-0100<br>Sea Morris | This link is secure and unique to ${o.clientName}.</div>`;
+}
+function buildSmsPreview(o){
+  const msg=`Sea Morris: New scope needed for ${o.jobName.split('–')[0].trim()}. ${(o.clientMessage||o.workDesc).substring(0,60)}... Total: ${fmt(o.clientPrice)}. Review & approve: seamorris.com/order/${o.id}. Reply STOP to opt out.`;
+  document.getElementById('sms-preview-content').textContent=msg;
+  document.getElementById('sms-char-count').textContent=`${msg.length} characters ${msg.length>160?'(will send as '+Math.ceil(msg.length/153)+' messages)':''}`;
+}
+function switchSendTab(tab,btn){
+  state.sendTab=tab;
+  document.querySelectorAll('.email-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('send-email-tab').style.display=tab==='email'?'block':'none';
+  document.getElementById('send-sms-tab').style.display=tab==='sms'?'block':'none';
+  document.getElementById('send-email-btn').style.display=tab==='email'?'inline-flex':'none';
+  document.getElementById('send-sms-btn').style.display=tab==='sms'?'inline-flex':'none';
+}
+function sendOrder(via){
+  const o=getOrder(state.currentOrderId);
+  o.status='sent_to_client';
+  o.auditTrail.push({who:state.currentUser.name,action:`Sent to ${o.clientName} via ${via}`,time:now(),type:'green',note:null});
+  closeModal('modal-send');
+  state.editMode=false;
+  renderOrderDetail();
+}
+
+// ===================== CLIENT VIEW =====================
+function renderClientView(orderId){
+  const o=getOrder(orderId);
+  if(!o)return;
+  const photoColors=['linear-gradient(135deg,#C8DFF8,#93C6EE)','linear-gradient(135deg,#B7D9C4,#7CBFA2)','linear-gradient(135deg,#F0C070,#E8A030)','linear-gradient(135deg,#C4A8E8,#9B72D0)'];
+  const photoCaptions=['Overview','Close-up detail','Full scope area','Before work'];
+  let photosHtml='<div class="photos-grid" style="margin-bottom:24px">';
+  for(let i=0;i<4;i++){
+    if(i<(o.photos||0)){
+      photosHtml+=`<div><div class="photo-display" style="background:${photoColors[i]};border-radius:10px;height:120px"><span style="font-size:36px">🖼</span></div><div class="photo-display-caption">${photoCaptions[i]}</div></div>`;
+    } else {
+      photosHtml+=`<div><div class="photo-display" style="background:#F0F4F8;border-radius:10px;height:120px"><div class="photo-placeholder"><span>📷</span></div></div></div>`;
+    }
+  }
+  photosHtml+='</div>';
+
+  const canAct=o.status==='sent_to_client';
+  document.getElementById('client-view-content').innerHTML=`
+    <div class="client-hero">
+      <div class="client-order-id">Order ${o.id}</div>
+      <div class="client-job-name">${o.jobName}</div>
+      <div style="margin-bottom:8px">${canAct?'<span class="badge badge-needs_changes">⏳ Awaiting Your Response</span>':badgeHtml(o.status)}</div>
+    </div>
+    <div class="client-info-bar">
+      <span>👤 ${o.clientName}</span>
+      <span>📍 ${o.address}</span>
+      <span>📅 ${o.dateSubmitted}</span>
+    </div>
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-body">
+        <div class="client-section-title">Scope of Work</div>
+        <div style="font-size:15px;line-height:1.8;color:var(--ink)">${o.clientMessage||o.workDesc}</div>
+      </div>
+    </div>
+    ${photosHtml}
+    <div style="margin-bottom:20px">
+      <div class="client-section-title">Why this work is needed</div>
+      <div class="message-box" style="border-left-color:var(--amber)">${o.reason||'Additional scope identified during ongoing work.'}</div>
+    </div>
+    <div class="invest-box">
+      <div class="client-section-title">Investment Summary</div>
+      <div class="invest-breakdown">
+        <span>Subcontractor: ${fmt(o.subCost)}</span>
+        <span>Coordination: +${fmt((o.clientPrice||0)-(o.subCost||0))}</span>
+      </div>
+      <div class="invest-total">${fmt(o.clientPrice)}</div>
+      <div class="invest-label">Total investment including labor, materials &amp; project coordination</div>
+    </div>
+    <div id="client-action-area">
+      ${canAct?`
+      <div class="client-actions">
+        <button class="btn btn-green btn-lg" onclick="clientApprove()">✓ Approve Scope</button>
+        <button class="btn btn-ghost btn-lg" style="color:var(--red);border-color:var(--red)" onclick="showDeclineForm()">Decline</button>
+      </div>
+      <div class="client-decline-form" id="client-decline-form">
+        <div class="form-group" style="margin-bottom:12px">
+          <label>Reason for declining (optional)</label>
+          <textarea id="decline-reason" rows="3" placeholder="Let us know if you have concerns or questions…"></textarea>
+        </div>
+        <button class="btn btn-red" onclick="clientDecline()">Confirm — Decline Scope</button>
+        <button class="btn btn-ghost" style="margin-left:8px" onclick="document.getElementById('client-decline-form').style.display='none'">Cancel</button>
+      </div>
+      `:`<div style="text-align:center;padding:20px;color:var(--slate);font-size:14px">This order has already been ${o.status==='client_approved'?'<strong style="color:var(--green)">approved</strong>':'processed'}.</div>`}
+    </div>
+    <div class="client-success" id="client-success"></div>
+    <div class="client-footer">Prepared by Sea Morris · Secure link for ${o.clientName} only<br>Questions: (512) 555-0100 · claire@seamorris.com</div>`;
+}
+function clientApprove(){
+  const o=getOrder('SMO-2024-001');// client view shows first order
+  o.status='client_approved';
+  o.auditTrail.push({who:'Jennifer Harmon',action:'Approved the scope',time:now(),type:'green',note:'Approved via client portal.'});
+  document.querySelector('.client-actions').style.display='none';
+  const s=document.getElementById('client-success');
+  s.style.display='block';
+  s.innerHTML=`<div class="check">✅</div><h2>Scope Approved!</h2><p style="color:var(--slate);font-size:14px">Thank you, Jennifer. The Sea Morris team will be in touch shortly to schedule the work.</p>`;
+}
+function showDeclineForm(){document.getElementById('client-decline-form').style.display='block';}
+function clientDecline(){
+  const o=getOrder('SMO-2024-001');
+  const reason=document.getElementById('decline-reason').value;
+  o.status='client_declined';
+  o.auditTrail.push({who:'Jennifer Harmon',action:'Declined the scope',time:now(),type:'red',note:reason||null});
+  document.getElementById('client-action-area').innerHTML=`<div style="text-align:center;padding:20px;color:var(--red)">You have declined this scope order. A Sea Morris team member will follow up.</div>`;
+}
+
+// ===================== FORM =====================
+const photoState=[false,false,false,false];
+function togglePhoto(i){
+  photoState[i]=!photoState[i];
+  const box=document.getElementById(`photo-box-${i}`);
+  if(photoState[i]){
+    box.classList.add('has-photo');
+    box.querySelector('.photo-icon').innerHTML='<div class="photo-thumb">🖼</div>';
+    box.querySelector('.photo-label').textContent='Photo added ✓';
+  } else {
+    box.classList.remove('has-photo');
+    box.querySelector('.photo-icon').innerHTML='📷';
+    box.querySelector('.photo-label').textContent='Upload photo';
+  }
+}
+function resetForm(){photoState.fill(false);[0,1,2,3].forEach(i=>{const b=document.getElementById(`photo-box-${i}`);if(b){b.classList.remove('has-photo');b.querySelector('.photo-icon').innerHTML='📷';b.querySelector('.photo-label').textContent='Upload photo';}});['f-job-name','f-client-name','f-client-email','f-client-phone','f-address','f-sub-name','f-work-desc','f-reason','f-sub-cost','f-internal-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});updateFormSummary();}
+function updateFormSummary(){
+  const j=document.getElementById('f-job-name')?.value||'—';
+  const c=document.getElementById('f-client-name')?.value||'—';
+  const s=document.getElementById('f-sub-name')?.value||'—';
+  const cost=parseFloat(document.getElementById('f-sub-cost')?.value)||0;
+  document.getElementById('sum-job').textContent=j;
+  document.getElementById('sum-client').textContent=c;
+  document.getElementById('sum-sub').textContent=s;
+  document.getElementById('sum-cost').textContent=fmt(cost);
+}
+function validateForm(){
+  const required=['f-job-name','f-client-name','f-client-email','f-sub-name','f-work-desc','f-sub-cost'];
+  let valid=true;
+  required.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.classList.remove('error');if(!el.value.trim()){el.classList.add('error');valid=false;}}
+  });
+  return valid;
+}
+function createOrderFromForm(status){
+  const newId='SMO-2024-00'+(state.orders.length+1);
+  const photoCount=photoState.filter(Boolean).length;
+  const order={
+    id:newId,
+    jobName:document.getElementById('f-job-name').value,
+    clientName:document.getElementById('f-client-name').value,
+    clientEmail:document.getElementById('f-client-email').value,
+    clientPhone:document.getElementById('f-client-phone').value,
+    address:document.getElementById('f-address').value,
+    subName:document.getElementById('f-sub-name').value,
+    submittedBy:state.currentUser.name,
+    am:document.getElementById('f-am').value,
+    workDesc:document.getElementById('f-work-desc').value,
+    reason:document.getElementById('f-reason').value,
+    subCost:parseFloat(document.getElementById('f-sub-cost').value)||0,
+    markup:20, clientPrice:0, status, photos:photoCount,
+    internalNotes:document.getElementById('f-internal-notes').value,
+    clientMessage:'',
+    dateSubmitted:new Date().toISOString().split('T')[0],
+    auditTrail:[{who:state.currentUser.name,action:status==='draft'?'Created order (draft)':'Created and submitted order',time:now(),type:status==='draft'?'gray':'blue',note:null}]
+  };
+  state.orders.unshift(order);
+  return order;
+}
+function saveOrderDraft(){createOrderFromForm('draft');navTo('dashboard');}
+function submitOrder(){
+  if(!validateForm())return;
+  createOrderFromForm('submitted');
+  navTo('dashboard');
+}
+
+// ===================== MODALS =====================
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function closeModalOnOverlay(e,id){if(e.target===document.getElementById(id))closeModal(id);}
+
+// ===================== INIT =====================
+document.addEventListener('DOMContentLoaded',()=>{
+  showScreen('screen-login');
+  // Auto-update form summary on input
+  ['f-job-name','f-client-name','f-sub-name','f-sub-cost'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.addEventListener('input',updateFormSummary);
+  });
+});
+</script>
+</body>
+</html>
